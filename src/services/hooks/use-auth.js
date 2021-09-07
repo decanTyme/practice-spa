@@ -8,25 +8,57 @@ function useAuth() {
   const [user, setUser] = useState(cookieJar.getCookie("userId"));
 
   const signIn = async (credentials) => {
-    return http.login(credentials).then((user) => {
-      if (!user?.error) {
-        cookieJar.giveCookie("userId", user.userId, { expiresIn: user.exp });
-        setUser(user);
+    return http.login(credentials).then((response) => {
+      if (!response?.error) {
+        cookieJar.giveCookie("userId", response.userId, {
+          expiresIn: response.exp,
+        });
+        setUser(response.userId);
       }
-      return user;
+      return response;
     });
   };
 
-  const signOut = async (userId) => {
-    cookieJar.clearCookies();
-    setUser(null);
+  const signOut = async () => {
+    http.onAuthSignoffRequest(user).then((response) => {
+      if (response?.signoff) {
+        cookieJar.clearCookies();
+        setUser(null);
+      }
+    });
+  };
+
+  const fetchUserData = () => {
+    return http.fetchUserData(user);
+  };
+
+  const getDatabaseStatus = () => {
+    return http.ping();
+  };
+
+  const fetchData = () => {
+    return http.fetchData();
+  };
+
+  const pushData = (data) => {
+    return http.pushData(data);
+  };
+
+  const removeData = (id) => {
+    return http.removeData(id);
   };
 
   useEffect(() => {
     const unsubscribe = () => {
       http
-        .authenticate(user.userId)
-        .then((response) => {})
+        .onReAuthRequest(user)
+        .then((response) => {
+          if (response) {
+            setUser(response);
+          } else {
+            setUser(null);
+          }
+        })
         .catch(() => {
           setUser(null);
         });
@@ -41,6 +73,11 @@ function useAuth() {
     user,
     signIn,
     signOut,
+    fetchUserData,
+    getDatabaseStatus,
+    fetchData,
+    pushData,
+    removeData,
   };
 }
 

@@ -23,7 +23,24 @@ function HttpService() {
       });
   };
 
-  const authenticate = async (userId, issuedAt) => {
+  const onAuthSignoffRequest = async (userId) => {
+    return await fetch(API_URI + "/signoff", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      body: new URLSearchParams({ userId: userId }),
+    })
+      .then((data) => {
+        return data.json();
+      })
+      .catch((error) => {
+        return { error: error };
+      });
+  };
+
+  const onReAuthRequest = async (userId, issuedAt) => {
     return await fetch(API_URI + "/authenticate", {
       method: "POST",
       credentials: "include",
@@ -98,7 +115,7 @@ function HttpService() {
       });
   };
 
-  const pushData = async (item) => {
+  const pushData = async (data) => {
     return await fetch(
       API_URI + "/add?" + new URLSearchParams({ item_: "product" }),
       {
@@ -108,13 +125,13 @@ function HttpService() {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         },
         body: new URLSearchParams({
-          name: item.name,
-          code: item.code,
-          class: item.class,
-          category: item.category,
-          quantity: item.quantity,
-          price: item.price,
-          salePrice: item.salePrice,
+          name: data.name,
+          code: data.code,
+          class: data.class,
+          category: data.category,
+          quantity: data.quantity,
+          price: data.price,
+          salePrice: data.salePrice,
         }),
       }
     )
@@ -126,9 +143,11 @@ function HttpService() {
       });
   };
 
-  const removeData = async (id) => {
+  const removeData = async (dataId) => {
     return await fetch(
-      API_URI + "/del?" + new URLSearchParams({ item_: "product", _id: id }),
+      API_URI +
+        "/del?" +
+        new URLSearchParams({ item_: "product", _id: dataId }),
       {
         method: "DELETE",
         credentials: "include",
@@ -147,7 +166,8 @@ function HttpService() {
 
   return {
     login,
-    authenticate,
+    onAuthSignoffRequest,
+    onReAuthRequest,
     ping,
     fetchUserData,
     fetchData,

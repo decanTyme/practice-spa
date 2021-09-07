@@ -1,7 +1,7 @@
 import "./add-product.css";
 import { useLayoutEffect, useState } from "react";
-import HttpService from "../../../../../../../services/http";
 import Spinner from "../../../../components/spinner";
+import useAuthManager from "../../../../../../../services/providers/auth";
 
 function AddProduct(props) {
   const [product, setProduct] = useState({
@@ -15,25 +15,29 @@ function AddProduct(props) {
   });
   const [disable, disableOn] = useState(false);
   const [isLoading, setLoadingState] = useState(false);
-  const http = HttpService();
+  const auth = useAuthManager();
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    disableOn({ id: "submitBtn" });
-    setLoadingState(true);
-
     const addProductForm = document.getElementById("addProductForm");
-    if (addProductForm.checkValidity()) {
-      const response = await http.pushData(product);
 
-      if (response?.success) {
-        props.updateProducts(response.product);
-      }
+    if (addProductForm.checkValidity()) {
+      setLoadingState(true);
+      disableOn({ id: "submitBtn" });
+      auth
+        .pushData(product)
+        .then((response) => {
+          if (response?.success) {
+            props.updateProducts(response.product);
+          }
+        })
+        .finally(() => {
+          disableOn(false);
+          setLoadingState(false);
+        });
     } else {
       addProductForm.classList.add("was-validated");
     }
-    disableOn(false);
-    setLoadingState(false);
   };
 
   const handleChangeOn = (e) => {
