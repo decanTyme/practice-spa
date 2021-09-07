@@ -7,14 +7,16 @@ import Scanner from "./routes/home/pages/shop/products/components/scanner";
 import AuthManager from "./routes/components/manager-auth";
 import ThemeProvider from "./routes/components/manager-theme";
 import ProtectedRoute from "./routes/auth/route-protected";
+import NotFoundPage from "./routes/404";
+import Authentication from "./routes/auth/authenticate";
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home/wrapper"));
 
 function App() {
   return (
-    <AuthManager>
-      <Switch>
-        <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<Spinner />}>
+      <AuthManager>
+        <Switch>
           {/* -------------------------- Base Route --------------------------- */}
           <Route exact path="/">
             <Redirect to="/dashboard" />
@@ -25,21 +27,24 @@ function App() {
             <Login />
           </Route>
 
-          {/* --------------------------- Homepage ---------------------------- */}
-          <ThemeProvider>
-            <ProtectedRoute path="/dashboard">
-              <Home />
-            </ProtectedRoute>
-          </ThemeProvider>
-        </Suspense>
-      </Switch>
+          <Route path="/authenticate">
+            <Authentication />
+          </Route>
 
-      {/* ----------------  Modals ---------------- */}
-      <ThemeProvider>
-        <SettingsMenu />
-        <Scanner id="addProductScannerModal" />
-      </ThemeProvider>
-    </AuthManager>
+          {/* --------------------------- Dashboard --------------------------- */}
+          <ProtectedRoute path="/dashboard">
+            <ThemeProvider>
+              <Home />
+
+              {/* ----------------  Modals ---------------- */}
+              <SettingsMenu />
+              <Scanner id="addProductScannerModal" />
+            </ThemeProvider>
+          </ProtectedRoute>
+          <Route path="*" component={NotFoundPage} />
+        </Switch>
+      </AuthManager>
+    </Suspense>
   );
 }
 
