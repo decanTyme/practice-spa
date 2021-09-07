@@ -25,11 +25,12 @@ function StatefulButton(props) {
       disabled={props?.disabled}
       // eslint-disable-next-line
       role={props?.role}
-      style={{ minWidth: "75px", minHeight: "40px" }}
     >
-      <Spinner addClass="spinner-border-sm" show={isLoading}>
-        {isLoading ? undefined : props.children}
-      </Spinner>
+      {isLoading ? (
+        <Spinner addClass="spinner-border-sm">{props.children}</Spinner>
+      ) : (
+        props.children
+      )}
     </button>
   );
 }
