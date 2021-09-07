@@ -1,178 +1,147 @@
-function HttpService() {
-  const API_URI = "https://polar-wave-26304.herokuapp.com/api";
+import axios from "axios";
 
-  const login = async (credentials) => {
-    return await fetch(API_URI + "/login", {
+/**
+ * The HTTP Service that communicates with the BodyTalks.PH API. It prepares,
+ * processes, and wraps the necessary data before sending it to the API.
+ * It also processes responses before sending it back to the caller.
+ */
+function HttpService() {
+  /* Axios instance */
+  const instance = axios.create({
+    baseURL: "http://localhost:8080/api",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    },
+
+    withCredentials: true,
+    timeout: 10000,
+    responseType: "json",
+    responseEncoding: "utf8",
+
+    transformResponse: (data) => {
+      data = JSON.parse(data);
+      if (data?.error) data = data.error;
+      return data;
+    },
+
+    validateStatus: (status) => {
+      return status >= 200 && status < 300;
+    },
+  });
+
+  /**
+   * Facilitates the wrapping of credentials to be sent to the API.
+   *
+   * @param  {Object} credentials
+   *
+   * @version 0.2.4
+   * @since 0.0.9
+   */
+  const onLoginRequest = async (credentials) => {
+    const requestConfig = {
+      url: "/login",
       method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body: new URLSearchParams({
+
+      data: new URLSearchParams({
         username: credentials.username,
         password: credentials.password,
         grant_type: "password",
         rememberUser: credentials.rememberUser,
       }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+    };
+
+    return instance(requestConfig);
   };
 
   const onAuthSignoffRequest = async (userId) => {
-    return await fetch(API_URI + "/signoff", {
+    const requestConfig = {
+      url: "/signoff",
       method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body: new URLSearchParams({ userId: userId }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+
+      data: new URLSearchParams({ userId: userId }),
+    };
+    return instance(requestConfig);
   };
 
   const onReAuthRequest = async (userId, issuedAt) => {
-    return await fetch(API_URI + "/authenticate", {
+    const requestConfig = {
+      url: "/authenticate",
       method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body: new URLSearchParams({ userId: userId, iat: issuedAt }),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          let error = new Error(response.statusText);
-          error.response = response;
-          throw error;
-        }
-      })
-      .catch((error) => {
-        return error;
-      });
+
+      data: new URLSearchParams({ userId: userId, iat: issuedAt }),
+    };
+    return instance(requestConfig);
   };
 
-  const ping = async () => {
-    return await fetch(API_URI + "/ping", {
+  const onDatabasePing = async () => {
+    const requestConfig = {
+      url: "/ping",
       method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+    };
+
+    return instance(requestConfig);
   };
 
-  const fetchUserData = async (userId) => {
-    return await fetch(API_URI + "/user", {
+  const onFetchUserData = async (userId) => {
+    const requestConfig = {
+      url: "/user",
       method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body: new URLSearchParams({ userId: userId }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+
+      data: new URLSearchParams({ userId: userId }),
+    };
+
+    return instance(requestConfig);
   };
 
-  const fetchData = async () => {
-    return await fetch(
-      API_URI + "/load?" + new URLSearchParams({ item_: "products" }),
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-      }
-    )
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+  const onFetchData = async () => {
+    const requestConfig = {
+      url: "/load",
+      method: "GET",
+      params: { item_: "products" },
+    };
+
+    return instance(requestConfig);
   };
 
-  const pushData = async (data) => {
-    return await fetch(
-      API_URI + "/add?" + new URLSearchParams({ item_: "product" }),
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-        body: new URLSearchParams({
-          name: data.name,
-          code: data.code,
-          class: data.class,
-          category: data.category,
-          quantity: data.quantity,
-          price: data.price,
-          salePrice: data.salePrice,
-        }),
-      }
-    )
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+  const onPushData = async (data) => {
+    const requestConfig = {
+      url: "/add",
+      method: "POST",
+      params: { item_: "product" },
+
+      data: new URLSearchParams({
+        name: data.name,
+        code: data.code,
+        class: data.class,
+        category: data.category,
+        quantity: data.quantity,
+        price: data.price,
+        salePrice: data.salePrice,
+      }),
+    };
+
+    return instance(requestConfig);
   };
 
-  const removeData = async (dataId) => {
-    return await fetch(
-      API_URI +
-        "/del?" +
-        new URLSearchParams({ item_: "product", _id: dataId }),
-      {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-      }
-    )
-      .then((data) => {
-        return data.json();
-      })
-      .catch((error) => {
-        return { error: error };
-      });
+  const onRemoveData = async (dataId) => {
+    const requestConfig = {
+      url: "/del",
+      method: "DELETE",
+      params: { item_: "product", _id: dataId },
+    };
+
+    return instance(requestConfig);
   };
 
   return {
-    login,
+    onLoginRequest,
     onAuthSignoffRequest,
     onReAuthRequest,
-    ping,
-    fetchUserData,
-    fetchData,
-    pushData,
-    removeData,
+    onDatabasePing,
+    onFetchUserData,
+    onFetchData,
+    onPushData,
+    onRemoveData,
   };
 }
 

@@ -7,45 +7,138 @@ function useAuth() {
   const cookieJar = cookieMaster();
   const [user, setUser] = useState(cookieJar.getCookie("userId"));
 
+  console.log("User:", user);
   const signIn = async (credentials) => {
-    return http.login(credentials).then((response) => {
-      if (!response?.error) {
-        cookieJar.giveCookie("userId", response.userId, {
-          expiresIn: response.exp,
+    return http
+      .onLoginRequest(credentials)
+      .then((response) => {
+        console.log(response.data.userId);
+        cookieJar.giveCookie("userId", response.data.userId, {
+          expiresIn: response.data.exp,
         });
-        setUser(response.userId);
-      }
-      return response;
-    });
+        setUser(response);
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
   const signOut = async () => {
-    http.onAuthSignoffRequest(user).then((response) => {
-      if (response?.signoff) {
-        cookieJar.clearCookies();
-        setUser(null);
-      }
-    });
+    return http
+      .onAuthSignoffRequest(user)
+      .then((response) => {
+        if (response.data.signoff) {
+          cookieJar.clearCookies();
+          setUser(null);
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
-  const fetchUserData = () => {
-    return http.fetchUserData(user);
+  const fetchUserData = async () => {
+    return http
+      .onFetchUserData(user)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
-  const getDatabaseStatus = () => {
-    return http.ping();
+  const getDatabaseStatus = async () => {
+    return http
+      .onDatabasePing()
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
-  const fetchData = () => {
-    return http.fetchData();
+  const fetchData = async () => {
+    return http
+      .onFetchData()
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
-  const pushData = (data) => {
-    return http.pushData(data);
+  const pushData = async (data) => {
+    return http
+      .onPushData(data)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
-  const removeData = (id) => {
-    return http.removeData(id);
+  const removeData = async (id) => {
+    return http
+      .onRemoveData(id)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(error.response.data);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.log("Request wrapping error:", error.message);
+        }
+      });
   };
 
   useEffect(() => {
