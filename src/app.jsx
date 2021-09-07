@@ -6,7 +6,7 @@ import SettingsMenu from "./routes/home/components/sidebar/footer/menus/settings
 import Scanner from "./routes/home/pages/shop/products/components/scanner";
 import AuthManager from "./routes/components/manager-auth";
 import ThemeProvider from "./routes/components/manager-theme";
-import ProtectedRoute from "./route-protected";
+import ProtectedRoute from "./routes/auth/route-protected";
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home/wrapper"));
 
