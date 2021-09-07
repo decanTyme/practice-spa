@@ -7,14 +7,21 @@ function useAuth() {
   const http = HttpService();
   const router = useRouter();
   const [user, setUser] = useLocalStorage("userId", null);
-  const [userInfo, setUserInfo] = useLocalStorage("userData", null);
+  const [userInfo, setUserInfo] = useLocalStorage("userData");
 
   const signIn = async (credentials) => {
     return http
       .onLoginRequest(credentials)
       .then((response) => {
         setUser(response.data.userId);
-        setUserInfo(response.data.userData);
+
+        if (
+          !userInfo ||
+          (userInfo && userInfo.firstname !== response.data.userData.firstname)
+        ) {
+          setUserInfo(response.data.userData);
+        }
+
         router.replace("/dashboard");
       })
       .catch((error) => {
@@ -40,13 +47,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          setUser(null);
-          router.replace("/login");
-          console.error(
-            "Error:",
-            error.response.status,
-            error.response.data.message
-          );
+          router.replace("/authenticate");
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -56,7 +57,7 @@ function useAuth() {
       });
   };
 
-  const onGetAuthStatus = async () => {
+  const getAuthStatus = async () => {
     return http
       .onReAuthRequest(user)
       .then((response) => {
@@ -65,15 +66,25 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           setUser(null);
-          router.replace("/login", {
-            reAuth: true,
-            message: error.response.data.message,
-          });
-          console.error(
-            "Error:",
-            error.response.status,
-            error.response.data.message
-          );
+          throw error.response.data;
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.error("Request wrapping error:", error.message);
+        }
+      });
+  };
+
+  const fetchUserData = async () => {
+    return http
+      .onReAuthRequest(user)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          router.replace("/authenticate");
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -91,16 +102,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          setUser(null);
-          router.replace("/login", {
-            reAuth: true,
-            message: error.response.data.message,
-          });
-          console.error(
-            "Error:",
-            error.response.status,
-            error.response.data.message
-          );
+          router.replace("/authenticate");
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -118,10 +120,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/login", {
-            reAuth: true,
-            message: error.response.data.message,
-          });
+          router.replace("/authenticate");
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -140,10 +139,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/login", {
-            reAuth: true,
-            message: error.response.data.message,
-          });
+          router.replace("/authenticate");
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -162,10 +158,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/login", {
-            reAuth: true,
-            message: error.response.data.message,
-          });
+          router.replace("/authenticate");
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -177,10 +170,11 @@ function useAuth() {
   };
 
   useEffect(() => {
-    if (router.pathname !== "/login") {
-      http.onReAuthRequest(user).catch(() => {
-        router.replace("/authenticate");
-      });
+    if (
+      (router.pathname !== "/login" && router.pathname !== "/authenticate") ||
+      (user !== null && router.pathname === "/login")
+    ) {
+      router.replace("/authenticate");
     }
 
     return () => {};
@@ -212,7 +206,8 @@ function useAuth() {
     userInfo,
     signIn,
     signOut,
-    onGetAuthStatus,
+    getAuthStatus,
+    fetchUserData,
     getDatabaseStatus,
     fetchData,
     pushData,

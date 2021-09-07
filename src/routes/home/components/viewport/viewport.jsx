@@ -4,9 +4,12 @@ import NotFoundPage from "../../../404";
 import Dashboard from "../../pages/dashboard/dashboard";
 import Reports from "../../pages/reports/reports";
 import Shop from "../../pages/shop/shop";
+import Toast from "../Toast/NotificationToast";
+import useNotifyService from "../../../../services/providers/notification";
 
 function Viewport() {
   const { path } = useRouteMatch();
+  const notifier = useNotifyService();
 
   return (
     <div className="viewport-wrapper">
@@ -22,6 +25,12 @@ function Viewport() {
         </Route>
         <Route component={NotFoundPage}></Route>
       </Switch>
+
+      <Toast
+        id="notifier"
+        title={notifier?.data?.title}
+        message={notifier?.data?.message}
+      />
     </div>
   );
 }

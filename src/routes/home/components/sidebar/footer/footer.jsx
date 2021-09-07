@@ -2,11 +2,19 @@ import "./footer.css";
 import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
 import useAuthManager from "../../../../../services/providers/auth";
+import useNotifyService from "../../../../../services/providers/notification";
 
 function SidebarFooter(props) {
   const auth = useAuthManager();
+  const notifier = useNotifyService();
+
   const onLogout = () => {
-    auth.signOut();
+    auth.signOut().catch((error) => {
+      notifier.notify({
+        title: "There was an error in signing out",
+        message: error.message,
+      });
+    });
   };
 
   const onSettings = () => {
