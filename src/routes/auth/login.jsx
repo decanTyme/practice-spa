@@ -36,7 +36,7 @@ function Login() {
     const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
     );
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    const tooltipList = tooltipTriggerList.map((tooltipTriggerEl) => {
       return new Tooltip(tooltipTriggerEl);
     });
 
@@ -198,10 +198,7 @@ function submitHandler(
 
     authManager
       .signIn(credentials)
-      .then((response) => {
-        if (response.error instanceof TypeError)
-          throw new Error("Please check your connection.");
-        else if (response?.error) throw new Error(response.error);
+      .then(() => {
         router.replace(location);
       })
       .catch((error) => {
