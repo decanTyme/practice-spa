@@ -9,7 +9,7 @@ function AuthenticationPage(props) {
 
   useEffect(() => {
     auth
-      .onGetAuthStatus()
+      .getAuthStatus()
       .then(() => {
         router.replace("/dashboard");
       })

@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList } from "@fortawesome/free-solid-svg-icons";
 import SidebarFooter from "./components/sidebar/footer/footer";
 import useThemeProvider from "../../services/providers/theme";
+import NotificationService from "../components/service-notification";
 import Themes from "../../themes";
 
 const onDesktopSidebarClass = "col-sm-5 col-md-4 col-lg-3 col-xl-2 ";
@@ -20,55 +21,57 @@ function Home(props) {
   const currentTheme = Themes[theme];
 
   return (
-    <div
-      className={"container-fluid w-100 m-0 p-0 home-wrapper light-mode"}
-      style={currentTheme}
-    >
-      <div className="w-100 ms-0 row">
-        {/* ----------------------------- Sidebar Wrapper -----------------------------  */}
-        <aside
-          id="sidebarMenu"
-          tabIndex="-1"
-          className={
-            (isMobile ? onMobileSidebarClass : onDesktopSidebarClass) +
-            "sidebar-wrapper mb-0"
-          }
-        >
-          <Sidebar
-            logout={props.logout}
-            hideFooter={isMobile}
-            className="offcanvas-body"
-          />
-        </aside>
-
-        {/* --------------------- Navigation Bar when in mobile ----------------------  */}
-        <nav className="fixed-bottom w-100 p-0" hidden={!isMobile}>
-          <SidebarFooter
-            logout={props.logout}
-            menuButton={
-              <Link
-                to="#open"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#sidebarMenu"
-                aria-controls="sidebarMenu"
-              >
-                <FontAwesomeIcon icon={faList} />
-              </Link>
+    <NotificationService>
+      <div
+        className={"container-fluid w-100 m-0 p-0 home-wrapper light-mode"}
+        style={currentTheme}
+      >
+        <div className="w-100 ms-0 row">
+          {/* ----------------------------- Sidebar Wrapper -----------------------------  */}
+          <aside
+            id="sidebarMenu"
+            tabIndex="-1"
+            className={
+              (isMobile ? onMobileSidebarClass : onDesktopSidebarClass) +
+              "sidebar-wrapper mb-0"
             }
-          />
-        </nav>
+          >
+            <Sidebar
+              logout={props.logout}
+              hideFooter={isMobile}
+              className="offcanvas-body"
+            />
+          </aside>
 
-        {/* ----------------------------- Viewport Wrapper ----------------------------- */}
-        <main
-          className={
-            (isMobile ? onMobileViewportClass : onDesktopViewportClass) +
-            "p-0 pb-5 pb-md-1 mt-3"
-          }
-        >
-          <Viewport />
-        </main>
+          {/* --------------------- Navigation Bar when in mobile ----------------------  */}
+          <nav className="fixed-bottom w-100 p-0" hidden={!isMobile}>
+            <SidebarFooter
+              logout={props.logout}
+              menuButton={
+                <Link
+                  to="#open"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#sidebarMenu"
+                  aria-controls="sidebarMenu"
+                >
+                  <FontAwesomeIcon icon={faList} />
+                </Link>
+              }
+            />
+          </nav>
+
+          {/* ----------------------------- Viewport Wrapper ----------------------------- */}
+          <main
+            className={
+              (isMobile ? onMobileViewportClass : onDesktopViewportClass) +
+              "p-0 pb-5 pb-md-1 mt-3"
+            }
+          >
+            <Viewport />
+          </main>
+        </div>
       </div>
-    </div>
+    </NotificationService>
   );
 }
 
