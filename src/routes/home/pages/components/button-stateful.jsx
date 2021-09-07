@@ -4,14 +4,11 @@ import Spinner from "./spinner";
 function StatefulButton(props) {
   const [isLoading, setLoadingState] = useState(false);
 
-  const btnClicked = async (e) => {
-    setLoadingState(true);
+  const btnClicked = (e) => {
     try {
-      await props?.onStatefulClick(e);
-    } catch (error) {
-      console.error(error);
-    }
-    setLoadingState(false);
+      setLoadingState(true);
+      props?.onStatefulClick(e).finally(() => setLoadingState(false));
+    } catch (error) {}
   };
 
   return (

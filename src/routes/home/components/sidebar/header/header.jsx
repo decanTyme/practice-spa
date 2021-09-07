@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 import "./header.css";
 import DP from "../../../../../assets/default_img.png";
-import HttpService from "../../../../../services/http";
 import useAuthManager from "../../../../../services/providers/auth";
 
 function SidebarHeader() {
   const auth = useAuthManager();
-  const http = HttpService();
   const [userInfo, setUserInfo] = useState(null);
   const [isDbConnected, setDbStatus] = useState(null);
 
   useEffect(() => {
-    http.ping().then((connection) => {
+    auth.getDatabaseStatus().then((connection) => {
       if (connection?.auth) setDbStatus(true);
       else setDbStatus(false);
     });
 
-    http.fetchUserData(auth?.user).then((userInfo) => {
+    auth.fetchUserData().then((userInfo) => {
       if (userInfo) setUserInfo(userInfo);
       else setUserInfo(userInfo);
     });

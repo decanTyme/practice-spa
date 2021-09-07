@@ -1,31 +1,29 @@
 import "./products.css";
 import { useEffect, useState } from "react";
-import HttpService from "../../../../../services/http";
 import AddProduct from "./components/add-product/add-product";
 import Spinner from "../../components/spinner";
 import ProductList from "./components/product-list";
 import Product from "./components/product";
+import useAuthManager from "../../../../../services/providers/auth";
 
 function Products() {
   const [products, setProducts] = useState();
   const [isProductDeleted, productDeleted] = useState();
   const [isProductAdded, productAdded] = useState();
   const [isFetchingProducts, setFetchingProducts] = useState();
-  const http = HttpService();
+  const auth = useAuthManager();
 
   useEffect(() => {
     setFetchingProducts(true);
+    productDeleted(null);
 
-    async function fetchProducts() {
-      const data = await http.fetchData();
-
+    auth.fetchData().then((data) => {
       if (data.length !== 0) {
         setProducts(data);
-        productDeleted(false);
       }
       setFetchingProducts(false);
-    }
-    fetchProducts();
+    });
+
     // eslint-disable-next-line
   }, [isProductDeleted, isProductAdded]);
 

@@ -1,18 +1,21 @@
 import { useState } from "react";
-import HttpService from "../../../../../../services/http";
+import useAuthManager from "../../../../../../services/providers/auth";
 import StatefulButton from "../../../components/button-stateful";
 
 function ProductList(props) {
   const [isDeleting, setIsDeleting] = useState();
-  const http = HttpService();
+  const auth = useAuthManager();
 
-  const onDelete = async (e) => {
+  const onDelete = (e) => {
     setIsDeleting(true);
-    const data = await http.removeData(e.target.dataset.key);
-    setIsDeleting(false);
-    if (!data.error) {
-      props.productDeleted(data);
-    }
+    auth
+      .removeData(e.target.dataset.key)
+      .then((response) => {
+        if (!response.error) {
+          props.productDeleted(response);
+        }
+      })
+      .finally(() => setIsDeleting(false));
   };
 
   const getProductList = () => {
