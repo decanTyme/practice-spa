@@ -1,0 +1,49 @@
+aside#sidebarMenu .sidebar-header {
+  padding: 20px;
+  overflow: hidden;
+}
+
+aside#sidebarMenu .sidebar-header .user-pic {
+  float: left;
+  width: 60px;
+  padding: 2px;
+  border-radius: 12px;
+  margin-right: 15px;
+  overflow: hidden;
+}
+
+aside#sidebarMenu .sidebar-header .user-pic img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+aside#sidebarMenu .sidebar-header .user-info {
+  float: left;
+}
+
+aside#sidebarMenu .sidebar-header .user-info > span {
+  display: block;
+}
+
+aside#sidebarMenu .sidebar-header .user-info .user-role {
+  font-size: 12px;
+}
+
+aside#sidebarMenu .sidebar-header .user-info .user-status {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+aside#sidebarMenu .sidebar-header .user-info .user-status i {
+  font-size: 8px;
+  margin-right: 4px;
+  color: darkorange;
+}
+
+aside#sidebarMenu .sidebar-menu .header-menu span {
+  font-weight: bold;
+  font-size: 14px;
+  padding: 15px 20px 5px 20px;
+  display: inline-block;
+}

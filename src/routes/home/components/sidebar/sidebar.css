@@ -1,0 +1,52 @@
+@import url("https://use.fontawesome.com/releases/v5.0.1/css/all.css");
+
+.offcanvas-start {
+  max-width: 300px;
+  min-width: 275px;
+  width: 25%;
+}
+
+.sidebar-wrapper ol,
+ul {
+  padding-left: 0;
+}
+
+.sidebar-wrapper ul li {
+  list-style: none;
+}
+
+.sidebar-wrapper {
+  position: fixed;
+  top: 0;
+  /* rtl:raw:
+  right: 0;
+  */
+  bottom: 0;
+  /* rtl:remove */
+  left: 0;
+  padding: 0; /* Height of asidebar */
+  background-color: #31353d;
+  color: #bdbdbd;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-wrapper a {
+  text-decoration: none;
+  color: #bdbdbd;
+}
+
+.sidebar-wrapper ul li i {
+  background: #3a3f48;
+}
+
+aside .sidebar-brand {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+}
+
+aside .sidebar-brand > a {
+  text-transform: uppercase;
+  font-weight: bold;
+  flex-grow: 1;
+}
