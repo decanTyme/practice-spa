@@ -171,7 +171,9 @@ function useAuth() {
 
   useEffect(() => {
     if (
-      (router.pathname !== "/login" && router.pathname !== "/authenticate") ||
+      (router.pathname !== "/login" &&
+        router.pathname !== "/authenticate" &&
+        user === null) ||
       (user !== null && router.pathname === "/login")
     ) {
       router.replace("/authenticate");
@@ -179,7 +181,7 @@ function useAuth() {
 
     return () => {};
     // eslint-disable-next-line
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const unsubscribe = () => {
