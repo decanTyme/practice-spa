@@ -1,4 +1,5 @@
 import { Route, Switch, useRouteMatch } from "react-router-dom";
+import NotFoundPage from "../../../404";
 import Soon from "../../../coming-soon";
 import Products from "./products/wrapper";
 
@@ -16,6 +17,7 @@ function Shop() {
       <Route path={url + "/customers"}>
         <Soon />
       </Route>
+      <Route component={NotFoundPage} />
     </Switch>
   );
 }

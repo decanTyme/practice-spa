@@ -2,29 +2,31 @@ import { useEffect, useState } from "react";
 import "./header.css";
 import DP from "../../../../../assets/default_img.png";
 import useAuthManager from "../../../../../services/providers/auth";
+import useNotifyService from "../../../../../services/providers/notification";
 
 function SidebarHeader() {
   const auth = useAuthManager();
   const [userInfo, setUserInfo] = useState(null);
   const [isDbConnected, setDbStatus] = useState(null);
+  const notifier = useNotifyService();
 
   useEffect(() => {
-    auth.getDatabaseStatus().then((connection) => {
-      if (connection?.auth) setDbStatus(true);
-      else setDbStatus(false);
-    });
+    auth
+      .getDatabaseStatus()
+      .then((connection) => {
+        if (connection?.auth) setDbStatus(true);
+      })
+      .catch(() => {
+        setDbStatus(false);
+        notifier.notify({
+          title: "Error",
+          message: "Unable to connect to the database",
+        });
+      });
 
-    auth.fetchUserData().then((userInfo) => {
-      if (userInfo) setUserInfo(userInfo);
-      else setUserInfo(userInfo);
-    });
-
-    return () => {
-      setUserInfo(null);
-      setDbStatus(null);
-    };
+    setUserInfo(auth.userInfo);
     // eslint-disable-next-line
-  }, [auth]);
+  }, []);
 
   return (
     <div className="sidebar-header">
