@@ -1,6 +1,6 @@
 import "./products.css";
 import { useEffect, useState } from "react";
-import AddProduct from "./components/add-product/add-product";
+import AddProductForm from "./components/add-product/AddProductForm";
 import Spinner from "../../components/spinner";
 import ProductList from "./components/product-list";
 import Product from "./components/product";
@@ -76,7 +76,7 @@ function Products() {
       </div>
 
       <div className="row mt-3 m-0 w-100">
-        <AddProduct updateProducts={productAdded} />
+        <AddProductForm updateProducts={productAdded} />
       </div>
     </div>
   );
