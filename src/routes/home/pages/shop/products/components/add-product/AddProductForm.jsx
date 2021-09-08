@@ -1,21 +1,31 @@
 import "./add-product.css";
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import Spinner from "../../../../components/spinner";
 import useAuthManager from "../../../../../../../services/providers/auth";
+import useNotifyService from "../../../../../../../services/providers/notification";
 
-function AddProduct(props) {
-  const [product, setProduct] = useState({
-    name: "",
-    code: "",
-    class: "",
-    category: "",
-    quantity: 0,
-    price: 0,
-    salePrice: 0,
-  });
-  const [disable, disableOn] = useState(false);
+const INIT_FORM_VAL = {
+  name: "",
+  code: "",
+  class: "",
+  category: "",
+  quantity: 0,
+  price: 0,
+  salePrice: 0,
+};
+
+const INIT_STATES_BTN = {
+  submitBtn: true,
+  resetBtn: true,
+  inputs: false,
+};
+
+function AddProductForm(props) {
+  const [product, setProduct] = useState(INIT_FORM_VAL);
+  const [disable, setDisable] = useState(INIT_STATES_BTN);
   const [isLoading, setLoadingState] = useState(false);
   const auth = useAuthManager();
+  const notifier = useNotifyService();
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -23,7 +33,7 @@ function AddProduct(props) {
 
     if (addProductForm.checkValidity()) {
       setLoadingState(true);
-      disableOn({ id: "submitBtn" });
+      setDisable({ submitBtn: true, resetBtn: true, inputs: false });
       auth
         .pushData(product)
         .then((response) => {
@@ -31,8 +41,15 @@ function AddProduct(props) {
             props.updateProducts(response.product);
           }
         })
+        .catch((error) => {
+          notifier.notify({
+            title: "An error occured during saving",
+            message: `${error.message} Trying to reauthenticate...`,
+          });
+        })
         .finally(() => {
-          disableOn(false);
+          setProduct(INIT_FORM_VAL);
+          setDisable({ submitBtn: true, resetBtn: true, inputs: false });
           setLoadingState(false);
         });
     } else {
@@ -41,8 +58,11 @@ function AddProduct(props) {
   };
 
   const handleChangeOn = (e) => {
+    setDisable({ submitBtn: false, resetBtn: false, inputs: false });
+
     const name = e.target.name,
       value = e.target.value;
+
     setProduct({
       name: name === "name" ? value : product.name,
       code: name === "code" ? value : product.code,
@@ -55,39 +75,10 @@ function AddProduct(props) {
   };
 
   const onClear = () => {
-    setTimeout(() => {
-      disableOn({ id: "resetBtn" });
-    }, 5);
-    setProduct({
-      name: "",
-      code: "",
-      class: "",
-      category: "",
-      quantity: 0,
-      price: 0,
-      salePrice: 0,
-    });
-    setTimeout(() => disableOn(false), 3000);
+    setDisable({ submitBtn: true, resetBtn: true, inputs: false });
+
+    setProduct(INIT_FORM_VAL);
   };
-
-  useLayoutEffect(() => {
-    var forms = document.querySelectorAll(".needs-validation");
-
-    forms.forEach((form) => {
-      form.addEventListener(
-        "submit",
-        (event) => {
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-
-          form.classList.add("was-validated");
-        },
-        false
-      );
-    });
-  });
 
   return (
     <div className="border border-secondary bg-white bg-opacity-25 rounded-1 shadow p-3 add-product-form">
@@ -105,8 +96,9 @@ function AddProduct(props) {
               name="name"
               className="form-control"
               placeholder="SkinBliss Facial Cream"
+              value={product.name}
               onChange={handleChangeOn}
-              disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+              disabled={disable.inputs}
               required
             />
             <div className="invalid-feedback">Cannot be empty.</div>
@@ -121,8 +113,9 @@ function AddProduct(props) {
               name="code"
               className="form-control"
               placeholder="SB123"
+              value={product.code}
               onChange={handleChangeOn}
-              disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+              disabled={disable.inputs}
               required
             />
             <div className="invalid-feedback">Cannot be empty.</div>
@@ -141,8 +134,9 @@ function AddProduct(props) {
               className="form-control"
               placeholder="Beauty Product"
               name="class"
+              value={product.class}
               onChange={handleChangeOn}
-              disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+              disabled={disable.inputs}
               required
             />
             <div className="invalid-feedback">Cannot be empty.</div>
@@ -158,8 +152,9 @@ function AddProduct(props) {
               form="addProductForm"
               className="form-select"
               aria-label="Category"
+              value={product.category}
               onChange={handleChangeOn}
-              disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+              disabled={disable.inputs}
             >
               <option defaultValue></option>
               <option value="1">One</option>
@@ -183,8 +178,9 @@ function AddProduct(props) {
                 placeholder="50"
                 name="quantity"
                 min={1}
+                value={product.quantity}
                 onChange={handleChangeOn}
-                disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+                disabled={disable.inputs}
                 required
               />
               <div className="invalid-feedback">Cannot be less than 1.</div>
@@ -202,9 +198,10 @@ function AddProduct(props) {
                 className="form-control"
                 placeholder="225"
                 name="price"
+                value={product.price}
                 min={1}
                 onChange={handleChangeOn}
-                disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+                disabled={disable.inputs}
                 required
               />
               <div className="invalid-feedback">Cannot be less than 1.</div>
@@ -223,8 +220,9 @@ function AddProduct(props) {
                 placeholder="Optional"
                 name="salePrice"
                 min={0}
+                value={product.salePrice}
                 onChange={handleChangeOn}
-                disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+                disabled={disable.inputs}
               />
               <div className="invalid-feedback">Cannot be less than 1.</div>
             </div>
@@ -248,7 +246,7 @@ function AddProduct(props) {
                 id="resetBtn"
                 type="reset"
                 className="btn btn-secondary ms-2"
-                disabled={disable?.id === "resetBtn" || disable}
+                disabled={disable.resetBtn}
                 onClick={onClear}
               >
                 Reset
@@ -259,7 +257,7 @@ function AddProduct(props) {
                 className="btn btn-success ms-2"
                 role="status"
                 onClick={onSubmit}
-                disabled={disable?.id === "submitBtn" || disable?.id === "all"}
+                disabled={disable.submitBtn}
               >
                 {isLoading ? (
                   <Spinner addClass="spinner-border-sm">Save</Spinner>
@@ -275,4 +273,4 @@ function AddProduct(props) {
   );
 }
 
-export default AddProduct;
+export default AddProductForm;

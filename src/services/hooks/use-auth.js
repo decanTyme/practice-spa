@@ -139,8 +139,10 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
-          throw new Error(error.response.data);
+          setTimeout(() => {
+            router.replace("/authenticate");
+          }, 1500);
+          throw new Error(error.response.data.message);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
