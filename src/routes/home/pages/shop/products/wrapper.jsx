@@ -17,12 +17,15 @@ function Products() {
     setFetchingProducts(true);
     productDeleted(null);
 
-    auth.fetchData().then((data) => {
-      if (data.length !== 0) {
-        setProducts(data);
-      }
-      setFetchingProducts(false);
-    });
+    auth
+      .fetchData()
+      .then((data) => {
+        if (data.length !== 0) {
+          setProducts(data);
+        }
+        setFetchingProducts(false);
+      })
+      .catch(() => {});
 
     // eslint-disable-next-line
   }, [isProductDeleted, isProductAdded]);

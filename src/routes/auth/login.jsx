@@ -11,8 +11,8 @@ import useRouter from "../../services/hooks/use-router";
  * Login page of BodyTalks.PH Inventory Management System.
  */
 function Login() {
-  const auth = useAuthManager();
   const router = useRouter();
+  const auth = useAuthManager();
 
   /* States */
   const [credentials, setCredentials] = useState(initStateCreds);
@@ -21,7 +21,7 @@ function Login() {
 
   /* Credential Managers */
   const handleInputChange = inputManager(setCredentials, credentials);
-  const onSubmit = submitHandler(auth, credentials, router, setOnSubmitStatus, [
+  const onSubmit = submitHandler(auth, credentials, setOnSubmitStatus, [
     error,
     setError,
   ]);
@@ -30,7 +30,8 @@ function Login() {
     if (router.state?.reAuth) {
       setError({ hasError: true, message: router.state?.message });
     }
-  }, [router]);
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const tooltipTriggerList = [].slice.call(
@@ -178,13 +179,12 @@ const initStateErr = { hasError: false, message: "null" };
  * @param {*} router              A router hook containing the methods for page redirection and its current state.
  * @returns                       An async submit handler function.
  *
- * @version 0.2.4
+ * @version 0.2.5
  * @since 0.0.9
  */
 function submitHandler(
   authManager,
   credentials,
-  router,
   setOnSubmitStatus,
   [error, setError]
 ) {
@@ -194,13 +194,8 @@ function submitHandler(
     setError({ hasError: false, message: error.message });
     setOnSubmitStatus(true);
 
-    const location = router.state?.from?.pathname ?? "/dashboard";
-
     authManager
       .signIn(credentials)
-      .then(() => {
-        router.replace(location);
-      })
       .catch((error) => {
         setError({ hasError: true, message: error.message });
       })

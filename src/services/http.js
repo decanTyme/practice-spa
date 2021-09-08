@@ -8,7 +8,7 @@ import axios from "axios";
 function HttpService() {
   /* Axios instance */
   const instance = axios.create({
-    baseURL: "http://localhost:8080/api",
+    baseURL: "https://polar-wave-26304.herokuapp.com/api",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     },
@@ -19,7 +19,9 @@ function HttpService() {
     responseEncoding: "utf8",
 
     transformResponse: (data) => {
-      data = JSON.parse(data);
+      try {
+        data = JSON.parse(data);
+      } catch (error) {}
       if (data?.error) data = data.error;
       return data;
     },

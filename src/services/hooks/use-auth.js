@@ -1,22 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import HttpService from "../http";
-import cookieMaster from "./use-cookie";
+import useLocalStorage from "./use-local-storage";
+import useRouter from "./use-router";
 
 function useAuth() {
   const http = HttpService();
-  const cookieJar = cookieMaster();
-  const [user, setUser] = useState(cookieJar.getCookie("userId"));
+  const router = useRouter();
+  const [user, setUser] = useLocalStorage("userId", null);
+  const [userInfo, setUserInfo] = useLocalStorage("userData", null);
 
-  console.log("User:", user);
   const signIn = async (credentials) => {
     return http
       .onLoginRequest(credentials)
       .then((response) => {
-        console.log(response.data.userId);
-        cookieJar.giveCookie("userId", response.data.userId, {
-          expiresIn: response.data.exp,
-        });
-        setUser(response);
+        setUser(response.data.userId);
+        setUserInfo(response.data.userData);
+        router.replace("/dashboard");
       })
       .catch((error) => {
         if (error.response) {
@@ -25,7 +24,7 @@ function useAuth() {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
@@ -35,36 +34,51 @@ function useAuth() {
       .onAuthSignoffRequest(user)
       .then((response) => {
         if (response.data.signoff) {
-          cookieJar.clearCookies();
           setUser(null);
+          router.replace("/login");
         }
       })
       .catch((error) => {
         if (error.response) {
-          throw new Error(error.response.data);
+          setUser(null);
+          router.replace("/login");
+          console.error(
+            "Error:",
+            error.response.status,
+            error.response.data.message
+          );
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
 
-  const fetchUserData = async () => {
+  const onGetAuthStatus = async () => {
     return http
-      .onFetchUserData(user)
+      .onReAuthRequest(user)
       .then((response) => {
         return response.data;
       })
       .catch((error) => {
         if (error.response) {
-          throw new Error(error.response.data);
+          setUser(null);
+          router.replace("/login", {
+            reAuth: true,
+            message: error.response.data.message,
+          });
+          console.error(
+            "Error:",
+            error.response.status,
+            error.response.data.message
+          );
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
@@ -77,12 +91,21 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          throw new Error(error.response.data);
+          setUser(null);
+          router.replace("/login", {
+            reAuth: true,
+            message: error.response.data.message,
+          });
+          console.error(
+            "Error:",
+            error.response.status,
+            error.response.data.message
+          );
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
@@ -95,12 +118,16 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
+          router.replace("/login", {
+            reAuth: true,
+            message: error.response.data.message,
+          });
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
@@ -113,12 +140,16 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
+          router.replace("/login", {
+            reAuth: true,
+            message: error.response.data.message,
+          });
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
@@ -131,15 +162,30 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
+          router.replace("/login", {
+            reAuth: true,
+            message: error.response.data.message,
+          });
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
         } else {
-          console.log("Request wrapping error:", error.message);
+          console.error("Request wrapping error:", error.message);
         }
       });
   };
+
+  useEffect(() => {
+    if (router.pathname !== "/login") {
+      http.onReAuthRequest(user).catch(() => {
+        router.replace("/authenticate");
+      });
+    }
+
+    return () => {};
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const unsubscribe = () => {
@@ -158,15 +204,15 @@ function useAuth() {
     };
 
     return () => unsubscribe();
-
     // eslint-disable-next-line
   }, []);
 
   return {
     user,
+    userInfo,
     signIn,
     signOut,
-    fetchUserData,
+    onGetAuthStatus,
     getDatabaseStatus,
     fetchData,
     pushData,
