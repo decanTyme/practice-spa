@@ -8,7 +8,6 @@ import AuthManager from "./routes/components/manager-auth";
 import ThemeProvider from "./routes/components/manager-theme";
 import ProtectedRoute from "./routes/auth/route-protected";
 import NotFoundPage from "./routes/404";
-import Authentication from "./routes/auth/authenticate";
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home/wrapper"));
 
@@ -19,17 +18,13 @@ function App() {
         <Switch>
           {/* -------------------------- Base Route --------------------------- */}
           <Route exact path="/">
-            <Redirect to="/dashboard" />
+            <Redirect to="/login" />
           </Route>
 
           {/* -------------------------- Login Page --------------------------- */}
-          <Route path="/login">
+          <ProtectedRoute path="/login">
             <Login />
-          </Route>
-
-          <Route path="/authenticate">
-            <Authentication />
-          </Route>
+          </ProtectedRoute>
 
           {/* --------------------------- Dashboard --------------------------- */}
           <ProtectedRoute path="/dashboard">
@@ -41,7 +36,7 @@ function App() {
               <Scanner id="addProductScannerModal" />
             </ThemeProvider>
           </ProtectedRoute>
-          <Route path="*" component={NotFoundPage} />
+          <Route component={NotFoundPage} />
         </Switch>
       </AuthManager>
     </Suspense>
