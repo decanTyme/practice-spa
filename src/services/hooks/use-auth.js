@@ -121,7 +121,7 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           router.replace("/authenticate");
-          throw new Error(error.response.data);
+          throw error.response.data;
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -160,7 +160,9 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
+          if (error.response.status === 401 || error.response.status === 418) {
+            router.replace("/authenticate");
+          }
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
