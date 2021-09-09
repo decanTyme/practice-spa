@@ -6,7 +6,6 @@ import useNotifyService from "../../../../../services/providers/notification";
 
 function SidebarHeader() {
   const auth = useAuthManager();
-  const [userInfo, setUserInfo] = useState(null);
   const [isDbConnected, setDbStatus] = useState(null);
   const notifier = useNotifyService();
 
@@ -24,7 +23,6 @@ function SidebarHeader() {
         });
       });
 
-    setUserInfo(auth.userInfo);
     // eslint-disable-next-line
   }, []);
 
@@ -35,10 +33,10 @@ function SidebarHeader() {
       </div>
       <div className="user-info">
         <span className="user-name">
-          {userInfo?.firstname ?? "null"}{" "}
-          <strong>{userInfo?.lastname ?? "null"}</strong>
+          {auth.userInfo.firstname ?? "null"}{" "}
+          <strong>{auth.userInfo.lastname ?? "null"}</strong>
         </span>
-        <span className="user-role">{userInfo?.role ?? "null"}</span>
+        <span className="user-role">{auth.userInfo.role ?? "null"}</span>
         <span className="user-status">
           <i
             style={{
