@@ -3,6 +3,7 @@ import AddProductForm from "./components/add-product/AddProductForm";
 import ProductList from "./components/product-list";
 import Product from "./components/product";
 import useDataService from "../../../../../services/providers/data";
+import ErrorBoundary from "../../../../components/ErrorBoundary";
 
 function Products() {
   const ds = useDataService();
@@ -25,20 +26,23 @@ function Products() {
 
       <div className="row g-3">
         <div className="col-sm-9">
-          <ProductList />
+          <ErrorBoundary>
+            <ProductList />
+          </ErrorBoundary>
         </div>
         <aside className="col-sm-3">
           {ds.data ? (
-            <Product
-              _id={ds.data?._id}
-              brand={ds.data?.brand}
-              name={ds.data?.name}
-              code={ds.data?.code}
-              class={ds.data?.class}
-              category={ds.data?.category}
-              price={ds.data?.price}
-              inStock={ds.data?.quantity}
-              description="Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            <ErrorBoundary>
+              <Product
+                _id={ds.data._id}
+                brand={ds.data.brand}
+                name={ds.data.name}
+                code={ds.data.code}
+                class={ds.data.class}
+                category={ds.data.category}
+                price={ds.data.price}
+                inStock={ds.data.quantity}
+                description="Lorem ipsum dolor sit amet consectetur adipisicing elit.
                 Voluptatem eius fugiat cumque sint dicta, dolorum voluptates
                 minima eos praesentium corrupti possimus optio."
               />
