@@ -1,11 +1,13 @@
 import { useCallback, useRef } from "react";
 import { useMemo, useState } from "react";
 import { isMobile } from "react-device-detect";
+import { useLocation } from "react-router";
 import useDataService from "../../../../../../services/providers/data";
 import TablePagination from "./TablePagination";
 
 function ProductList() {
   const ds = useDataService();
+  const location = useLocation();
 
   const webColumns = useMemo(
     () => [
@@ -13,7 +15,7 @@ function ProductList() {
         Header: "Product",
         columns: [
           {
-            Header: "Code",
+            Header: "S/N",
             accessor: "code",
           },
           {
@@ -48,13 +50,9 @@ function ProductList() {
         ],
       },
       {
-        // Make an expander cell
-        Header: () => null, // No header
-        id: "expander", // It needs an ID
+        Header: () => null,
+        id: "details",
         Cell: ({ row }) => (
-          // Use Cell to render an expander for each row.
-          // We can use the getToggleRowExpandedProps prop-getter
-          // to build the expander.
           <span {...row.getToggleRowExpandedProps()}>
             {row.isExpanded ? "⯆" : "⯈"}
           </span>
@@ -96,17 +94,28 @@ function ProductList() {
   const [pageCount, setPageCount] = useState(0);
   const fetchIdRef = useRef(0);
 
+  const index = isNaN(
+    parseInt(new URLSearchParams(location.search).get("page"))
+  )
+    ? 1
+    : parseInt(new URLSearchParams(location.search).get("page"));
+
   const fetchData = useCallback(
     ({ pageIndex, pageSize }) => {
       const fetchId = ++fetchIdRef.current;
 
+      if (isMobile) pageSize = 4;
       if (fetchId === fetchIdRef.current) {
         const startRow = pageSize * pageIndex;
         const endRow = startRow + pageSize;
 
         ds.fetchItems().then((data) => {
-          setProducts(data.slice(startRow, endRow));
-          setPageCount(Math.ceil(data.length / pageSize));
+          try {
+            setProducts(data.slice(startRow, endRow));
+            setPageCount(Math.ceil(data.length / pageSize));
+          } catch (e) {
+            console.error(e);
+          }
         });
       }
     },
@@ -140,6 +149,7 @@ function ProductList() {
         loading={ds.isFetching}
         pageCount={pageCount}
         renderRowSubComponent={subComp}
+        currentIndex={index}
         getRowProps={(row) => ({
           onClick: () => ds.viewDataDetails(row.original._id),
         })}

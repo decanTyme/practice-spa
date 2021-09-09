@@ -6,6 +6,7 @@ import {
   usePagination,
   useRowSelect,
   useExpanded,
+  useSortBy,
 } from "react-table";
 import Spinner from "../../../components/spinner";
 
@@ -35,6 +36,7 @@ function TablePagination({
   pageCount: controlledPageCount,
   getColumnProps = defaultPropGetter,
   getRowProps = defaultPropGetter,
+  currentIndex: controlledIndex,
 }) {
   const {
     getTableProps,
@@ -57,28 +59,30 @@ function TablePagination({
     {
       columns,
       data,
-      initialState: { pageIndex: 0 },
+      initialState: {
+        pageIndex:
+          controlledIndex > controlledPageCount ? 0 : controlledIndex - 1,
+      },
       manualPagination: true,
+      manualSortBy: false,
+      autoResetPage: false,
+      autoResetSortBy: false,
       pageCount: controlledPageCount,
     },
+    useSortBy,
     useExpanded,
     usePagination,
     useRowSelect,
 
     (hooks) => {
       hooks.visibleColumns.push((columns) => [
-        // Let's make a column for selection
         {
           id: "selection",
-          // The header can use the table's getToggleAllRowsSelectedProps method
-          // to render a checkbox
           Header: ({ getToggleAllPageRowsSelectedProps }) => (
             <div>
               <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
             </div>
           ),
-          // The cell can use the individual row's getToggleRowSelectedProps method
-          // to the render a checkbox
           Cell: ({ row }) => (
             <div>
               <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
@@ -92,11 +96,8 @@ function TablePagination({
 
   useEffect(() => {
     fetchData({ pageIndex, pageSize });
-    if (isMobile) setPageSize(4);
-    // eslint-disable-next-line
   }, [fetchData, pageIndex, pageSize]);
 
-  // Render the UI for your table
   return (
     <div className="table-responsive">
       <table {...getTableProps()} className="table table-hover rounded-top">
@@ -105,18 +106,14 @@ function TablePagination({
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((column) => (
                 <th
-                  {...column.getHeaderProps(
-                    {
-                      className: column.className,
-                      style: column.style,
-                    },
-                    [getColumnProps(column)]
-                  )}
+                  {...column.getHeaderProps([
+                    column.getSortByToggleProps(),
+                    getColumnProps(column),
+                  ])}
                   scope="col"
                   className="px-3"
                 >
                   {column.render("Header")}
-                  {/* Add a sort direction indicator */}
                   <span>
                     {column.isSorted
                       ? column.isSortedDesc
@@ -141,20 +138,9 @@ function TablePagination({
                     );
                   })}
                 </tr>
-                {/*
-                    If the row is in an expanded state, render a row with a
-                    column that fills the entire length of the table.
-                  */}
                 {row.isExpanded ? (
                   <tr>
                     <td colSpan={visibleColumns.length}>
-                      {/*
-                          Inside it, call our renderRowSubComponent function. In reality,
-                          you could pass whatever you want as props to
-                          a component like this, including the entire
-                          table instance. But for this example, we'll just
-                          pass the row
-                        */}
                       {renderRowSubComponent({ row })}
                     </td>
                   </tr>
@@ -176,10 +162,6 @@ function TablePagination({
           </tr>
         </tbody>
       </table>
-      {/* 
-        Pagination can be built however you'd like. 
-        This is just a very basic UI implementation:
-      */}
       <div>
         <div
           className={
@@ -189,7 +171,7 @@ function TablePagination({
           <ul className="pagination mx-2">
             <li className={"page-item" + (!canPreviousPage ? " disabled" : "")}>
               <Link
-                to="#prev"
+                to={`?${new URLSearchParams({ page: 1 })}`}
                 className="page-link"
                 onClick={() => gotoPage(0)}
                 aria-label="First page"
@@ -200,7 +182,7 @@ function TablePagination({
             <li className={"page-item" + (!canPreviousPage ? " disabled" : "")}>
               <Link
                 className="page-link"
-                to="#page"
+                to={`?${new URLSearchParams({ page: pageIndex })}`}
                 onClick={() => previousPage()}
                 aria-label="Previous page"
               >
@@ -215,7 +197,7 @@ function TablePagination({
             <li className={"page-item" + (!canNextPage ? " disabled" : "")}>
               <Link
                 className="page-link px-4"
-                to="#page"
+                to={`?${new URLSearchParams({ page: pageIndex + 2 })}`}
                 onClick={() => nextPage()}
                 aria-label="Next page"
               >
@@ -225,7 +207,7 @@ function TablePagination({
             <li className={"page-item" + (!canNextPage ? " disabled" : "")}>
               <Link
                 className="page-link"
-                to="#page"
+                to={`?${new URLSearchParams({ page: pageCount - 1 })}`}
                 onClick={() => gotoPage(pageCount - 1)}
                 aria-label="Last page"
               >

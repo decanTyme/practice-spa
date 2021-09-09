@@ -4,9 +4,8 @@
 }
 
 .products-list-wrapper table thead th {
-  background: #38618c;
+  background: #47709c;
   color: white;
-  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
 }
 
 .products-list-wrapper table {
