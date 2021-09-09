@@ -1,17 +1,19 @@
-.products-list-wrapper {
-  overflow-y: auto;
-  min-height: 25%;
-  max-height: 50vh;
-}
-
 .products-list-wrapper table {
   position: relative;
-  padding: 0;
+  padding: 10rem;
 }
 
 .products-list-wrapper table thead th {
-  background: #f5f5f5;
-  position: sticky;
-  top: 0;
+  background: #38618c;
+  color: white;
   box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
+.products-list-wrapper table {
+  text-align: center;
+}
+
+.products-list-wrapper select.form-select {
+  width: inherit;
+  height: 100%;
 }

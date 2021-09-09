@@ -60,7 +60,7 @@ function HttpService() {
       url: "/signoff",
       method: "POST",
 
-      data: new URLSearchParams({ userId: userId }),
+      data: new URLSearchParams(userId),
     };
     return instance(requestConfig);
   };
@@ -89,7 +89,7 @@ function HttpService() {
       url: "/user",
       method: "POST",
 
-      data: new URLSearchParams({ userId: userId }),
+      data: new URLSearchParams(userId),
     };
 
     return instance(requestConfig);
@@ -111,15 +111,7 @@ function HttpService() {
       method: "POST",
       params: { item_: "product" },
 
-      data: new URLSearchParams({
-        name: data.name,
-        code: data.code,
-        class: data.class,
-        category: data.category,
-        quantity: data.quantity,
-        price: data.price,
-        salePrice: data.salePrice,
-      }),
+      data: new URLSearchParams(data),
     };
 
     return instance(requestConfig);

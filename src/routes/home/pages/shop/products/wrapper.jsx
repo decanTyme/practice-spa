@@ -1,34 +1,11 @@
 import "./products.css";
-import { useEffect, useState } from "react";
 import AddProductForm from "./components/add-product/AddProductForm";
-import Spinner from "../../components/spinner";
 import ProductList from "./components/product-list";
 import Product from "./components/product";
-import useAuthManager from "../../../../../services/providers/auth";
+import useDataService from "../../../../../services/providers/data";
 
 function Products() {
-  const [products, setProducts] = useState();
-  const [isProductDeleted, productDeleted] = useState();
-  const [isProductAdded, productAdded] = useState();
-  const [isFetchingProducts, setFetchingProducts] = useState();
-  const auth = useAuthManager();
-
-  useEffect(() => {
-    setFetchingProducts(true);
-    productDeleted(null);
-
-    auth
-      .fetchData()
-      .then((data) => {
-        if (data.length !== 0) {
-          setProducts(data);
-        }
-        setFetchingProducts(false);
-      })
-      .catch(() => {});
-
-    // eslint-disable-next-line
-  }, [isProductDeleted, isProductAdded]);
+  const ds = useDataService();
 
   return (
     <div className="container-fluid px-3 px-md-3 products-wrapper">
@@ -47,36 +24,37 @@ function Products() {
       </div>
 
       <div className="row g-3">
-        {isFetchingProducts ? (
-          <div className="col m-5 p-5">
-            <Spinner>Loading products...</Spinner>
-          </div>
-        ) : (
-          <>
-            <div className="col-sm-9">
-              <ProductList
-                products={products}
-                productDeleted={productDeleted}
-                isDeletingProduct={isProductDeleted}
-              />
-            </div>
-            <aside className="col-sm-3">
-              <Product
-                _id="612ac4ea1f126b0023574d9a"
-                name="Product 1"
-                code="SB123"
-                price={375}
-                description="Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        <div className="col-sm-9">
+          <ProductList />
+        </div>
+        <aside className="col-sm-3">
+          {ds.data ? (
+            <Product
+              _id={ds.data?._id}
+              brand={ds.data?.brand}
+              name={ds.data?.name}
+              code={ds.data?.code}
+              class={ds.data?.class}
+              category={ds.data?.category}
+              price={ds.data?.price}
+              inStock={ds.data?.quantity}
+              description="Lorem ipsum dolor sit amet consectetur adipisicing elit.
                 Voluptatem eius fugiat cumque sint dicta, dolorum voluptates
                 minima eos praesentium corrupti possimus optio."
               />
-            </aside>
-          </>
-        )}
-      </div>
+            </ErrorBoundary>
+          ) : (
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title">Select a product to view</h5>
+              </div>
+            </div>
+          )}
 
-      <div className="row mt-3 m-0 w-100">
-        <AddProductForm updateProducts={productAdded} />
+          <div className="mt-3">
+            <AddProductForm />
+          </div>
+        </aside>
       </div>
     </div>
   );
