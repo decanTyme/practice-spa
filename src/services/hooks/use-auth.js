@@ -47,7 +47,6 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -84,7 +83,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
+          setUser(null);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -102,7 +101,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
+          setUser(null);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -120,7 +119,8 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          router.replace("/authenticate");
+          setUser(null);
+
           throw error.response.data;
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -140,7 +140,7 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           setTimeout(() => {
-            router.replace("/authenticate");
+            setUser(null);
           }, 1500);
           throw new Error(error.response.data.message);
         } else if (error.request) {
@@ -161,7 +161,7 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           if (error.response.status === 401 || error.response.status === 418) {
-            router.replace("/authenticate");
+            setUser(null);
           }
           throw new Error(error.response.data);
         } else if (error.request) {
@@ -172,20 +172,6 @@ function useAuth() {
         }
       });
   };
-
-  useEffect(() => {
-    if (
-      (router.pathname !== "/login" &&
-        router.pathname !== "/authenticate" &&
-        user === null) ||
-      (user !== null && router.pathname === "/login")
-    ) {
-      router.replace("/authenticate");
-    }
-
-    return () => {};
-    // eslint-disable-next-line
-  }, [router]);
 
   useEffect(() => {
     const unsubscribe = () => {
