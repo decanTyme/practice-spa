@@ -7,7 +7,6 @@ import Scanner from "./routes/home/pages/shop/products/components/scanner";
 import AuthManager from "./routes/components/manager-auth";
 import ThemeProvider from "./routes/components/manager-theme";
 import ProtectedRoute from "./routes/auth/route-protected";
-import NotFoundPage from "./routes/404";
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home/wrapper"));
 
@@ -36,7 +35,15 @@ function App() {
               <Scanner id="addProductScannerModal" />
             </ThemeProvider>
           </ProtectedRoute>
-          <Route component={NotFoundPage} />
+
+          {/* ------------------------- 404 Not Found ------------------------- */}
+          <Route
+            component={({ location }) => (
+              <Redirect
+                to={Object.assign({}, location, { state: { is404: true } })}
+              />
+            )}
+          />
         </Switch>
       </AuthManager>
     </Suspense>

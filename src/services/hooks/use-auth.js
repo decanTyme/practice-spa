@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import HttpService from "../http";
 import useLocalStorage from "./use-local-storage";
 import useRouter from "./use-router";
@@ -66,24 +65,6 @@ function useAuth() {
         if (error.response) {
           setUser(null);
           throw error.response.data;
-        } else if (error.request) {
-          console.error("No response received:", error.request);
-          throw new Error("Please check your connection.");
-        } else {
-          console.error("Request wrapping error:", error.message);
-        }
-      });
-  };
-
-  const fetchUserData = async () => {
-    return http
-      .onReAuthRequest(user)
-      .then((response) => {
-        return response.data;
-      })
-      .catch((error) => {
-        if (error.response) {
-          setUser(null);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -173,33 +154,12 @@ function useAuth() {
       });
   };
 
-  useEffect(() => {
-    const unsubscribe = () => {
-      http
-        .onReAuthRequest(user)
-        .then((response) => {
-          if (response) {
-            setUser(response);
-          } else {
-            setUser(null);
-          }
-        })
-        .catch(() => {
-          setUser(null);
-        });
-    };
-
-    return () => unsubscribe();
-    // eslint-disable-next-line
-  }, []);
-
   return {
     user,
     userInfo,
     signIn,
     signOut,
     getAuthStatus,
-    fetchUserData,
     getDatabaseStatus,
     fetchData,
     pushData,
