@@ -1,13 +1,20 @@
-import logo from "../../../../assets/BT Logo Round.png";
+import logo from "../../../../assets/logo_btph_bg_removed.png";
 function ToastNotify(props) {
   return (
-    <div className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 11 }}>
+    <div
+      className={
+        "position-fixed bottom-0 end-0 pb-4 mb-3 me-2 p-lg-2 m-lg-1" +
+        props.className
+      }
+      style={{ zIndex: 11 }}
+    >
       <div
         id={props.id}
         className="toast fade hide"
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
+        style={{ width: "96vw", maxWidth: 400 }}
       >
         <div className="toast-header">
           <img

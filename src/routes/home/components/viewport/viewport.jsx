@@ -1,10 +1,9 @@
 import "./viewport.css";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
-import NotFoundPage from "../../../404";
-import Dashboard from "../../pages/dashboard/dashboard";
-import Reports from "../../pages/reports/reports";
-import Shop from "../../pages/shop/shop";
-import Toast from "../Toast/NotificationToast";
+import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
+import Dashboard from "../../pages/dashboard";
+import Reports from "../../pages/reports";
+import Shop from "../../pages/shop";
+import ToastNotify from "../toast/NotificationToast";
 import useNotifyService from "../../../../services/providers/notification";
 
 function Viewport() {
@@ -23,10 +22,18 @@ function Viewport() {
         <Route path={path + "/shop"}>
           <Shop />
         </Route>
-        <Route component={NotFoundPage}></Route>
+
+        {/* ------------------------- 404 Not Found ------------------------- */}
+        <Route
+          component={({ location }) => (
+            <Redirect
+              to={Object.assign({}, location, { state: { is404: true } })}
+            />
+          )}
+        />
       </Switch>
 
-      <Toast
+      <ToastNotify
         id="notifier"
         title={notifier?.data?.title}
         message={notifier?.data?.message}

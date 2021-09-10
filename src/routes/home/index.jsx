@@ -1,13 +1,13 @@
-import "./wrapper.css";
+import "./home.css";
 import { isMobile } from "react-device-detect";
 import Viewport from "./components/viewport/viewport";
-import Sidebar from "./components/sidebar/sidebar";
+import Sidebar from "./components/sidebar/";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList } from "@fortawesome/free-solid-svg-icons";
 import SidebarFooter from "./components/sidebar/footer/footer";
 import useThemeProvider from "../../services/providers/theme";
-import NotificationService from "../components/service-notification";
+import NotificationService from "../components/NotificationService";
 import Themes from "../../themes";
 
 const onDesktopSidebarClass = "col-sm-5 col-md-4 col-lg-3 col-xl-2 ";

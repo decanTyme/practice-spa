@@ -1,4 +1,4 @@
-function Modal(props) {
+function ModalMenu(props) {
   return (
     <div
       id={props.id}
@@ -38,4 +38,4 @@ function Modal(props) {
   );
 }
 
-export default Modal;
+export default ModalMenu;

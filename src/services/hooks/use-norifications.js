@@ -13,7 +13,6 @@ function useNotification() {
     if (data)
       toastList.forEach((toast) => {
         toast.show();
-        setTimeout(() => setData(null), 6000);
       });
 
     return () =>
