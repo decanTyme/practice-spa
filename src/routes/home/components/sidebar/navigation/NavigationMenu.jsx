@@ -3,7 +3,7 @@ import { Link, NavLink, useRouteMatch } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 
 function SidebarMenu() {
-  let { path } = useRouteMatch();
+  const { url } = useRouteMatch();
   const onMobileDataBsDismiss = isMobile ? "offcanvas" : "";
 
   return (
@@ -20,7 +20,7 @@ function SidebarMenu() {
             data-bs-toggle="collapse"
             data-bs-target="#dashboardDropdown"
           >
-            <NavLink strict exact to={path}>
+            <NavLink strict exact to={url}>
               <i className="fa fa-tachometer-alt"></i>
               <span data-bs-parent="#sidebarMenu">Dashboard</span>
               <span className="badge rounded-pill bg-warning">New</span>
@@ -52,13 +52,13 @@ function SidebarMenu() {
             <div className="sidebar-submenu">
               <ul>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to={path + "/shop/products"}>Products</NavLink>
+                  <NavLink to={`${url}/shop/products`}>Products</NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to={path + "/shop/orders"}>Orders</NavLink>
+                  <NavLink to={`${url}/shop/orders`}>Orders</NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to={path + "/shop/customers"}>Customers</NavLink>
+                  <NavLink to={`${url}/shop/customers`}>Customers</NavLink>
                 </li>
               </ul>
             </div>
@@ -87,19 +87,25 @@ function SidebarMenu() {
             <div className="sidebar-submenu">
               <ul>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">General</NavLink>
+                  <NavLink strict exact to={`${url}/payments`}>
+                    General
+                  </NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Customer TBP</NavLink>
+                  <NavLink to={`${url}/payments/customer`}>
+                    Customer TBP
+                  </NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Assets</NavLink>
+                  <NavLink to={`${url}/payments/assets`}>Assets</NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Liabilities</NavLink>
+                  <NavLink to={`${url}/payments/liabilities`}>
+                    Liabilities
+                  </NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Forms</NavLink>
+                  <NavLink to={`${url}/payments/forms`}>Forms</NavLink>
                 </li>
               </ul>
             </div>
@@ -113,7 +119,7 @@ function SidebarMenu() {
             data-bs-toggle="collapse"
             data-bs-target="#reportsDropdown"
           >
-            <NavLink strict exact to={path + "/reports"}>
+            <NavLink strict exact to={`${url}/reports`}>
               <i className="fa fa-chart-line"></i>
               <span>Reports</span>
             </NavLink>
@@ -141,10 +147,12 @@ function SidebarMenu() {
             <div className="sidebar-submenu">
               <ul>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Google maps</NavLink>
+                  <NavLink to={`${url}/maps/google`}>Google maps</NavLink>
                 </li>
                 <li data-bs-dismiss={onMobileDataBsDismiss}>
-                  <NavLink to="#">Open street map</NavLink>
+                  <NavLink to={`${url}/maps/openstreet`}>
+                    Open street map
+                  </NavLink>
                 </li>
               </ul>
             </div>
@@ -153,21 +161,21 @@ function SidebarMenu() {
         <li className="header-menu">
           <span>Extra</span>
         </li>
-        <li data-bs-dismiss={onMobileDataBsDismiss}>
-          <NavLink to="#">
+        <li className="sidebar" data-bs-dismiss={onMobileDataBsDismiss}>
+          <NavLink to={`${url}/documentation/help`}>
             <i className="fa fa-book"></i>
             <span>Documentation</span>
             <span className="badge rounded-pill bg-primary">Beta</span>
           </NavLink>
         </li>
-        <li data-bs-dismiss={onMobileDataBsDismiss}>
-          <NavLink to="#">
+        <li className="sidebar" data-bs-dismiss={onMobileDataBsDismiss}>
+          <NavLink to={`${url}/calendar`}>
             <i className="fa fa-calendar"></i>
             <span>Calendar</span>
           </NavLink>
         </li>
-        <li data-bs-dismiss={onMobileDataBsDismiss}>
-          <NavLink to="#">
+        <li className="sidebar" data-bs-dismiss={onMobileDataBsDismiss}>
+          <NavLink to={`${url}/drive/google`}>
             <i className="fa fa-folder"></i>
             <span>Drive</span>
           </NavLink>
