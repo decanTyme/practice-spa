@@ -1,9 +1,9 @@
 import "./viewport.css";
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
-import Dashboard from "../../pages/dashboard/dashboard";
-import Reports from "../../pages/reports/reports";
-import Shop from "../../pages/shop/shop";
-import ToastNotify from "../Toast/NotificationToast";
+import Dashboard from "../../pages/dashboard";
+import Reports from "../../pages/reports";
+import Shop from "../../pages/shop";
+import ToastNotify from "../toast/NotificationToast";
 import useNotifyService from "../../../../services/providers/notification";
 
 function Viewport() {

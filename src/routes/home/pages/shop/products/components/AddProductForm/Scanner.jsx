@@ -1,6 +1,6 @@
-import videoPlaceholder from "../../../../../../assets/qrbar2.png";
+import videoPlaceholder from "../../../../../../../assets/qrbar2.png";
 import { useLayoutEffect, useState } from "react";
-import Modal from "../../../components/modals/modal";
+import ModalMenu from "../../../../../components/modal/ModalMenu";
 import ScannerController from "./scanner-controller";
 import { Link } from "react-router-dom";
 
@@ -12,7 +12,7 @@ function Scanner(props) {
     canRestart: false,
     hasDataFound: false,
   });
-  const [camera, setCamera] = useState({ number: 1 });
+  const [camera, setCamera] = useState({ number: 1, label: "" });
   const [controller, setController] = useState(null);
   const [title, setTitle] = useState("Scan QR/Barcode");
   const [isDisabled, setDisabled] = useState(false);
@@ -109,7 +109,7 @@ function Scanner(props) {
   };
 
   return (
-    <Modal
+    <ModalMenu
       id={props.id}
       title={title}
       fade={true}
