@@ -63,7 +63,7 @@ function useData() {
       .catch((error) => {
         notifier.notify({
           title: "An error occured during saving",
-          message: `${error.message} Trying to reauthenticate...`,
+          message: error.message,
         });
       })
       .finally(() => {
