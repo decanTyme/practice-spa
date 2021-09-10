@@ -1,6 +1,5 @@
 import "./viewport.css";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
-import NotFoundPage from "../../../404";
+import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 import Dashboard from "../../pages/dashboard/dashboard";
 import Reports from "../../pages/reports/reports";
 import Shop from "../../pages/shop/shop";
@@ -23,7 +22,15 @@ function Viewport() {
         <Route path={path + "/shop"}>
           <Shop />
         </Route>
-        <Route component={NotFoundPage}></Route>
+
+        {/* ------------------------- 404 Not Found ------------------------- */}
+        <Route
+          component={({ location }) => (
+            <Redirect
+              to={Object.assign({}, location, { state: { is404: true } })}
+            />
+          )}
+        />
       </Switch>
 
       <ToastNotify

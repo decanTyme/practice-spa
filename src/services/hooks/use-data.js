@@ -101,20 +101,18 @@ function useData() {
       isAdding: false,
     });
 
-    const fetcher = () =>
-      auth
-        .fetchData()
-        .then((data) => {
-          setStorageData(data);
-        })
-        .catch((error) => {
-          setStorageData(null);
-        })
-        .finally(() => {
-          setStatus(STATE_INIT);
-        });
+    auth
+      .fetchData()
+      .then((data) => {
+        setStorageData(data);
+      })
+      .catch((error) => {
+        setStorageData(null);
+      })
+      .finally(() => {
+        setStatus(STATE_INIT);
+      });
 
-    return () => fetcher();
     //eslint-disable-next-line
   }, [status.isAdding, status.isDeleting]);
 

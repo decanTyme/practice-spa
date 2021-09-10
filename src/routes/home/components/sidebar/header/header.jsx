@@ -23,6 +23,7 @@ function SidebarHeader() {
         });
       });
 
+    return () => setDbStatus(null);
     // eslint-disable-next-line
   }, []);
 

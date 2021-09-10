@@ -1,5 +1,4 @@
-import { Route, Switch, useRouteMatch } from "react-router-dom";
-import NotFoundPage from "../../../404";
+import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 import Soon from "../../../coming-soon";
 import DataService from "../../../components/DataService";
 import Products from "./products/wrapper";
@@ -19,7 +18,15 @@ function Shop() {
         <Route path={url + "/customers"}>
           <Soon />
         </Route>
-        <Route component={NotFoundPage} />
+
+        {/* ------------------------- 404 Not Found ------------------------- */}
+        <Route
+          component={({ location }) => (
+            <Redirect
+              to={Object.assign({}, location, { state: { is404: true } })}
+            />
+          )}
+        />
       </Switch>
     </DataService>
   );
