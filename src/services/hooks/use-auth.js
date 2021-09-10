@@ -1,3 +1,4 @@
+import { useState } from "react";
 import HttpService from "../http";
 import useLocalStorage from "./use-local-storage";
 import useRouter from "./use-router";
@@ -5,6 +6,7 @@ import useRouter from "./use-router";
 function useAuth() {
   const http = HttpService();
   const router = useRouter();
+  const [isLoggingOut, setLoggingOut] = useState(false);
   const [user, setUser] = useLocalStorage("userId", null);
   const [userInfo, setUserInfo] = useLocalStorage("userData");
 
@@ -20,8 +22,6 @@ function useAuth() {
         ) {
           setUserInfo(response.data.userData);
         }
-
-        router.replace("/dashboard");
       })
       .catch((error) => {
         if (error.response) {
@@ -36,12 +36,13 @@ function useAuth() {
   };
 
   const signOut = async () => {
+    setLoggingOut(true);
     return http
       .onAuthSignoffRequest(user)
       .then((response) => {
         if (response.data.signoff) {
           setUser(null);
-          router.replace("/login");
+          router.replace("/login", { reAuth: false });
         }
       })
       .catch((error) => {
@@ -52,7 +53,8 @@ function useAuth() {
         } else {
           console.error("Request wrapping error:", error.message);
         }
-      });
+      })
+      .finally(() => setLoggingOut(false));
   };
 
   const getAuthStatus = async () => {
@@ -157,6 +159,7 @@ function useAuth() {
   return {
     user,
     userInfo,
+    isLoggingOut,
     signIn,
     signOut,
     getAuthStatus,
