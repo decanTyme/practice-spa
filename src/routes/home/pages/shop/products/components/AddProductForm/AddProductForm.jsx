@@ -1,4 +1,4 @@
-import "./add-product.css";
+import "./add-product-form.css";
 import { useState } from "react";
 import Spinner from "../../../../components/spinner";
 import useDataService from "../../../../../../../services/providers/data";
@@ -94,7 +94,7 @@ function AddProductForm(props) {
             </div>
             <div className="col-sm-4">
               <label htmlFor="productCode" className="form-label">
-                Code
+                S/N
               </label>
               <input
                 id="productCode"

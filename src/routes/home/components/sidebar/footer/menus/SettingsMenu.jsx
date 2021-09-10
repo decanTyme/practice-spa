@@ -1,6 +1,6 @@
 import Themes from "../../../../../../themes";
 import useThemeProvider from "../../../../../../services/providers/theme";
-import Modal from "../../../../pages/components/modals/modal";
+import ModalMenu from "../../../modal/ModalMenu";
 import { Constants } from "../../../../../../constants";
 
 function SettingsMenu(props) {
@@ -15,7 +15,7 @@ function SettingsMenu(props) {
   };
 
   return (
-    <Modal
+    <ModalMenu
       id="settingsMenu"
       fade={true}
       title="Settings"

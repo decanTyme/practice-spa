@@ -1,9 +1,9 @@
 import "./products.css";
-import AddProductForm from "./components/add-product/AddProductForm";
-import ProductList from "./components/product-list";
-import Product from "./components/product";
-import useDataService from "../../../../../services/providers/data";
+import Product from "./components/ProductDetail";
+import ProductList from "./components/ProductList";
+import AddProductForm from "./components/AddProductForm/AddProductForm";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
+import useDataService from "../../../../../services/providers/data";
 
 function Products() {
   const ds = useDataService();

@@ -3,7 +3,7 @@ import SidebarHeader from "./header/header";
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import SidebarFooter from "./footer/footer";
-import SidebarMenu from "./menu/menu";
+import SidebarMenu from "./navigation/NavigationMenu";
 
 function Sidebar(props) {
   return (

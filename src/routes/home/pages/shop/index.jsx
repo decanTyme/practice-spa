@@ -1,5 +1,5 @@
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
-import Soon from "../../../coming-soon";
+import Soon from "../../../ComingSoon";
 import DataService from "../../../components/DataService";
 import Products from "./products/wrapper";
 
