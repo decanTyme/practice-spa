@@ -32,7 +32,7 @@ function useRequireAuth(redirectUrl = "/login") {
     }
 
     // eslint-disable-next-line
-  }, []);
+  }, [router.pathname]);
 
   return auth;
 }

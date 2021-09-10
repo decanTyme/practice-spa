@@ -4,18 +4,18 @@ import DataService from "../../../components/DataService";
 import Products from "./products/wrapper";
 
 function Shop() {
-  const { url } = useRouteMatch();
+  const { path } = useRouteMatch();
 
   return (
     <DataService>
       <Switch>
-        <Route path={url + "/products"}>
+        <Route path={`${path}/products`}>
           <Products />
         </Route>
-        <Route path={url + "/orders"}>
+        <Route path={`${path}/orders`}>
           <Soon />
         </Route>
-        <Route path={url + "/customers"}>
+        <Route path={`${path}/customers`}>
           <Soon />
         </Route>
 

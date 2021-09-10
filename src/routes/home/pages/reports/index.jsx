@@ -5,7 +5,6 @@ function Reports() {
     <div className="container-fluid reports-wrapper">
       <h1 className="h2">Reports</h1>
       <hr className="mb-3" />
-      {/* BUG After a redirect from another page, masonry doesn't work unless page is refreshed */}
       <div className="row">
         <Masonry options={{ columnWidth: 10 }}>
           <div className="card me-2 mb-2 w-25">
