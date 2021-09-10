@@ -9,9 +9,9 @@ function useRequireAuth(redirectUrl = "/login") {
   useEffect(() => {
     if (
       (router.pathname !== "/login" &&
-        router.pathname !== "/authenticate" &&
         router.pathname !== "/" &&
-        auth.user === null) ||
+        auth.user === null &&
+        !auth.isLoggingOut) ||
       (auth.user !== null && router.pathname === "/login")
     ) {
       auth
@@ -32,7 +32,7 @@ function useRequireAuth(redirectUrl = "/login") {
     }
 
     // eslint-disable-next-line
-  }, [router.pathname]);
+  }, [router.pathname, auth.user]);
 
   return auth;
 }
