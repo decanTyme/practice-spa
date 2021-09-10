@@ -7,11 +7,32 @@ function useRequireAuth(redirectUrl = "/login") {
   const router = useRouter();
 
   useEffect(() => {
-    if (auth.user === null) {
-      router.replace(redirectUrl);
+    if (
+      (router.pathname !== "/login" &&
+        router.pathname !== "/authenticate" &&
+        router.pathname !== "/" &&
+        auth.user === null) ||
+      (auth.user !== null && router.pathname === "/login")
+    ) {
+      auth
+        .getAuthStatus()
+        .then(() => {
+          router.replace("/dashboard");
+        })
+        .catch((error) => {
+          let message;
+          if (error.hasToken) message = "Session expired. Please log in again.";
+          else if (!error.hasToken) message = "Please log in.";
+
+          router.replace(redirectUrl, {
+            reAuth: true,
+            message,
+          });
+        });
     }
+
     // eslint-disable-next-line
-  }, [auth.user, router.pathname]);
+  }, []);
 
   return auth;
 }

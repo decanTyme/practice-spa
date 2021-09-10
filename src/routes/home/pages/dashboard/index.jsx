@@ -11,7 +11,7 @@ import laptopSignImg from "../../../../assets/sign_laptop.png";
 import cashSignImg from "../../../../assets/sign_cash.png";
 import pieSignImg from "../../../../assets/sign_pie.jpg";
 import peopleSignImg from "../../../../assets/sign_people.png";
-import CardSummary from "./components/summary-card";
+import CardSummary from "./components/SummaryCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFacebookF,

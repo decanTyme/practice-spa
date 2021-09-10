@@ -1,6 +1,6 @@
 import "./login.css";
 import { Tooltip } from "bootstrap";
-import logo from "../../assets/default_img.png";
+import logo from "../../assets/logo_btph_bg_removed.png";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Alert from "../home/pages/components/alert";
@@ -56,8 +56,8 @@ function Login() {
             src={logo}
             className="mb-4"
             alt="BodyTalks.PH Logo"
-            width="72"
-            height="72"
+            width="160"
+            height="160"
           />
           <h1 className="h3 mb-3 fw-normal">Please Log In</h1>
           <div className="form-floating">

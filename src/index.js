@@ -1,19 +1,21 @@
-import React, { lazy, Suspense } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import "./index.css";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
-import Spinner from "./routes/home/pages/components/spinner";
-const App = lazy(() => import("./app"));
+import NotFound from "./routes/404";
+import App from "./app";
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter basename="/" keyLength={15}>
-      <Suspense fallback={<Spinner />}>
-        <App />
-      </Suspense>
+      <Route
+        render={({ location }) =>
+          location.state?.is404 ? <NotFound /> : <App />
+        }
+      />
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")
