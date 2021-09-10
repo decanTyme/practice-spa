@@ -1,4 +1,4 @@
-import logo from "../../../../assets/BT Logo Round.png";
+import logo from "../../../../assets/logo_btph_bg_removed.png";
 function ToastNotify(props) {
   return (
     <div
