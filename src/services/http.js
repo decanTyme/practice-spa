@@ -39,7 +39,7 @@ function HttpService() {
    * @version 0.2.4
    * @since 0.0.9
    */
-  const onLoginRequest = async (credentials) => {
+  const onAuthLoginRequest = async (credentials) => {
     const requestConfig = {
       url: "/login",
       method: "POST",
@@ -55,22 +55,22 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onAuthSignoffRequest = async (userId) => {
+  const onAuthSignoffRequest = async (userId, refToken) => {
     const requestConfig = {
       url: "/signoff",
       method: "POST",
 
-      data: new URLSearchParams(userId),
+      data: new URLSearchParams({ userId, refToken }),
     };
     return instance(requestConfig);
   };
 
-  const onReAuthRequest = async (userId, issuedAt) => {
+  const onReAuthRequest = async (userId, refToken) => {
     const requestConfig = {
       url: "/authenticate",
       method: "POST",
 
-      data: new URLSearchParams({ userId: userId, iat: issuedAt }),
+      data: new URLSearchParams({ userId, refToken }),
     };
     return instance(requestConfig);
   };
@@ -95,7 +95,7 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onFetchData = async () => {
+  const onDataFetch = async () => {
     const requestConfig = {
       url: "/load",
       method: "GET",
@@ -105,7 +105,7 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onPushData = async (data) => {
+  const onDataPush = async (data) => {
     const requestConfig = {
       url: "/add",
       method: "POST",
@@ -117,7 +117,7 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onRemoveData = async (dataId) => {
+  const onDataRemove = async (dataId) => {
     const requestConfig = {
       url: "/del",
       method: "DELETE",
@@ -128,14 +128,14 @@ function HttpService() {
   };
 
   return {
-    onLoginRequest,
+    onAuthLoginRequest,
     onAuthSignoffRequest,
     onReAuthRequest,
     onDatabasePing,
     onFetchUserData,
-    onFetchData,
-    onPushData,
-    onRemoveData,
+    onDataFetch,
+    onDataPush,
+    onDataRemove,
   };
 }
 

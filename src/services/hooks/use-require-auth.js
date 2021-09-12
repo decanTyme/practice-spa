@@ -11,28 +11,28 @@ function useRequireAuth(redirectUrl = "/login") {
       (router.pathname !== "/login" &&
         router.pathname !== "/" &&
         auth.user === null &&
-        !auth.isLoggingOut) ||
+        !auth.isLogging) ||
+      auth.stale ||
       (auth.user !== null && router.pathname === "/login")
     ) {
       auth
         .getAuthStatus()
         .then(() => {
+          if (auth.stale) return router.history.go(0);
           router.replace("/dashboard");
         })
         .catch((error) => {
-          let message;
-          if (error.hasToken) message = "Session expired. Please log in again.";
-          else if (!error.hasToken) message = "Please log in.";
+          if (error instanceof TypeError) error.message = "Invalid session.";
 
           router.replace(redirectUrl, {
             reAuth: true,
-            message,
+            message: error.message,
           });
         });
     }
 
     // eslint-disable-next-line
-  }, [router.pathname, auth.user]);
+  }, [router.pathname, auth.user, auth.stale]);
 
   return auth;
 }
