@@ -1,5 +1,5 @@
 import { Route } from "react-router-dom";
-import useRequireAuth from "../../services/hooks/use-required-auth";
+import useRequireAuth from "../../services/hooks/use-require-auth";
 import Spinner from "../home/pages/components/spinner";
 
 function ProtectedRoute({ children, ...rest }) {

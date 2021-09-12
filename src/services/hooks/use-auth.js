@@ -6,16 +6,19 @@ import useRouter from "./use-router";
 function useAuth() {
   const http = HttpService();
   const router = useRouter();
-  const [isLoggingOut, setLoggingOut] = useState(false);
-  const [user, setUser] = useLocalStorage("userId", null);
-  const [userInfo, setUserInfo] = useLocalStorage("userData");
+  const [isLogging, setLogging] = useState(false);
+  const [stale, setStale] = useState(false);
+  const [user, setUser] = useLocalStorage("__uuid_", null);
+  const [userInfo, setUserInfo] = useLocalStorage("userInfo");
 
   const signIn = async (credentials) => {
     return http
-      .onLoginRequest(credentials)
+      .onAuthLoginRequest(credentials)
       .then((response) => {
-        setUser(response.data.userId);
-
+        setUser({
+          _id: response.data.userId,
+          t_key: response.data.refToken,
+        });
         if (
           !userInfo ||
           (userInfo && userInfo.firstname !== response.data.userData.firstname)
@@ -36,9 +39,9 @@ function useAuth() {
   };
 
   const signOut = async () => {
-    setLoggingOut(true);
+    setLogging(true);
     return http
-      .onAuthSignoffRequest(user)
+      .onAuthSignoffRequest(user._id, user.t_key)
       .then((response) => {
         if (response.data.signoff) {
           setUser(null);
@@ -54,12 +57,12 @@ function useAuth() {
           console.error("Request wrapping error:", error.message);
         }
       })
-      .finally(() => setLoggingOut(false));
+      .finally(() => setLogging(false));
   };
 
   const getAuthStatus = async () => {
     return http
-      .onReAuthRequest(user)
+      .onReAuthRequest(user._id, user.t_key)
       .then((response) => {
         return response.data;
       })
@@ -73,7 +76,8 @@ function useAuth() {
         } else {
           console.error("Request wrapping error:", error.message);
         }
-      });
+      })
+      .finally(() => setStale(false));
   };
 
   const getDatabaseStatus = async () => {
@@ -84,7 +88,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          setUser(null);
+          setStale(true);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -96,14 +100,13 @@ function useAuth() {
 
   const fetchData = async () => {
     return http
-      .onFetchData()
+      .onDataFetch()
       .then((response) => {
         return response.data;
       })
       .catch((error) => {
         if (error.response) {
-          setUser(null);
-
+          setStale(true);
           throw error.response.data;
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -116,15 +119,13 @@ function useAuth() {
 
   const pushData = async (data) => {
     return http
-      .onPushData(data)
+      .onDataPush(data)
       .then((response) => {
         return response.data;
       })
       .catch((error) => {
         if (error.response) {
-          setTimeout(() => {
-            setUser(null);
-          }, 1500);
+          setStale(true);
           throw new Error(error.response.data.message);
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -137,15 +138,13 @@ function useAuth() {
 
   const removeData = async (id) => {
     return http
-      .onRemoveData(id)
+      .onDataRemove(id)
       .then((response) => {
         return response.data;
       })
       .catch((error) => {
         if (error.response) {
-          if (error.response.status === 401 || error.response.status === 418) {
-            setUser(null);
-          }
+          setStale(true);
           throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
@@ -159,7 +158,8 @@ function useAuth() {
   return {
     user,
     userInfo,
-    isLoggingOut,
+    isLogging,
+    stale,
     signIn,
     signOut,
     getAuthStatus,
