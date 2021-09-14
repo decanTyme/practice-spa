@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import useAuthManager from "../providers/auth";
 import useNotifyService from "../providers/notification";
+import useAuth from "./use-auth";
 import useLocalStorage from "./use-local-storage";
 
 const STATE_INIT = {
@@ -13,7 +13,7 @@ function useData() {
   const [storageData, setStorageData] = useLocalStorage("data");
   const [data, setData] = useState();
   const [status, setStatus] = useState(STATE_INIT);
-  const auth = useAuthManager();
+  const auth = useAuth();
   const notifier = useNotifyService();
 
   const viewDataDetails = (itemId) => {

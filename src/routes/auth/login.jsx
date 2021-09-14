@@ -4,15 +4,15 @@ import logo from "../../assets/logo_btph_bg_removed.png";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Alert from "../home/pages/components/alert";
-import useAuthManager from "../../services/providers/auth";
 import useRouter from "../../services/hooks/use-router";
+import useAuth from "../../services/hooks/use-auth";
 
 /**
  * Login page of BodyTalks.PH Inventory Management System.
  */
 function Login() {
   const router = useRouter();
-  const auth = useAuthManager();
+  const auth = useAuth();
 
   /* States */
   const [credentials, setCredentials] = useState(initStateCreds);
@@ -27,9 +27,11 @@ function Login() {
   ]);
 
   useEffect(() => {
-    if (router.state?.reAuth) {
+    router.state &&
+      router.state.reAuth &&
       setError({ hasError: true, message: router.state?.message });
-    }
+
+    return () => setError({ hasError: false, message: null });
     // eslint-disable-next-line
   }, []);
 
@@ -166,7 +168,7 @@ const initStateCreds = {
  *
  * @version 0.0.3
  */
-const initStateErr = { hasError: false, message: "null" };
+const initStateErr = { hasError: false, message: null };
 
 /**
  * Handles the submission process during login.

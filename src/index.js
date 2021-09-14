@@ -3,21 +3,25 @@ import ReactDOM from "react-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import "./index.css";
+import { Provider } from "react-redux";
 import { BrowserRouter, Route } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
 import NotFound from "./routes/404";
 import App from "./app";
+import state from "./app/state";
 
 ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter basename="/" keyLength={15}>
-      <Route
-        render={({ location }) =>
-          location.state?.is404 ? <NotFound /> : <App />
-        }
-      />
-    </BrowserRouter>
-  </React.StrictMode>,
+  <Provider store={state}>
+    <React.StrictMode>
+      <BrowserRouter basename="/" keyLength={15}>
+        <Route
+          render={({ location }) =>
+            location.state?.is404 ? <NotFound /> : <App />
+          }
+        />
+      </BrowserRouter>
+    </React.StrictMode>
+  </Provider>,
   document.getElementById("root")
 );
 
