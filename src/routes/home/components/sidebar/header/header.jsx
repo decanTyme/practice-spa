@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import "./header.css";
 import DP from "../../../../../assets/default_img.png";
-import useAuthManager from "../../../../../services/providers/auth";
 import useNotifyService from "../../../../../services/providers/notification";
+import useAuth from "../../../../../services/hooks/use-auth";
 
 function SidebarHeader() {
-  const auth = useAuthManager();
+  const auth = useAuth();
   const [isDbConnected, setDbStatus] = useState(null);
   const notifier = useNotifyService();
+  const state = auth.state;
 
   useEffect(() => {
     auth
@@ -34,10 +35,10 @@ function SidebarHeader() {
       </div>
       <div className="user-info">
         <span className="user-name">
-          {auth.userInfo.firstname ?? "null"}{" "}
-          <strong>{auth.userInfo.lastname ?? "null"}</strong>
+          {state.userData.firstname ?? "null"}{" "}
+          <strong>{state.userData.lastname ?? "null"}</strong>
         </span>
-        <span className="user-role">{auth.userInfo.role ?? "null"}</span>
+        <span className="user-role">{state.userData.role ?? "null"}</span>
         <span className="user-status">
           <i
             style={{

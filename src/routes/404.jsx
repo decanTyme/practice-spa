@@ -5,9 +5,9 @@ import useAuth from "../services/hooks/use-auth";
 
 function NotFound() {
   const router = useRouter();
-  const auth = useAuth();
+  const { state } = useAuth();
 
-  const location = auth.user ? "/dashboard" : "/login";
+  const location = state.isLoggedIn ? "/dashboard" : "/login";
   return (
     <div className="container h-100 d-flex align-items-center">
       <div className="row mx-auto text-center">

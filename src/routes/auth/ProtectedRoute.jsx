@@ -3,9 +3,9 @@ import useRequireAuth from "../../services/hooks/use-require-auth";
 import Spinner from "../home/pages/components/spinner";
 
 function ProtectedRoute({ children, ...rest }) {
-  const auth = useRequireAuth();
+  const state = useRequireAuth();
 
-  if (!auth) return <Spinner>Authenticating...</Spinner>;
+  if (!state) return <Spinner>Authenticating...</Spinner>;
 
   return <Route {...rest}>{children}</Route>;
 }

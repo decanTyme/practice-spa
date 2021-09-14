@@ -1,40 +1,50 @@
-import { useEffect } from "react";
-import useAuthManager from "../providers/auth";
+import { useLayoutEffect } from "react";
+import useAuth from "./use-auth";
 import useRouter from "./use-router";
 
-function useRequireAuth(redirectUrl = "/login") {
-  const auth = useAuthManager();
+function useRequireAuth() {
+  const auth = useAuth();
   const router = useRouter();
+  const state = auth.state;
 
-  useEffect(() => {
-    if (
-      (router.pathname !== "/login" &&
-        router.pathname !== "/" &&
-        auth.user === null &&
-        !auth.isLogging) ||
-      auth.stale ||
-      (auth.user !== null && router.pathname === "/login")
-    ) {
+  useLayoutEffect(() => {
+    if (state.stale || (state.isLoggedIn && router.pathname === "/login")) {
       auth
-        .getAuthStatus()
+        .requestAuthToken()
         .then(() => {
-          if (auth.stale) return router.history.go(0);
-          router.replace("/dashboard");
+          if (state.stale) return router.history.go(0);
+          router.replace(router.query.callback || "/dashboard");
         })
         .catch((error) => {
-          if (error instanceof TypeError) error.message = "Invalid session.";
+          if (error instanceof TypeError) {
+            error.message = "Invalid session.";
+          }
 
-          router.replace(redirectUrl, {
-            reAuth: true,
-            message: error.message,
-          });
+          router.replace(
+            "/login?" + new URLSearchParams({ callback: router.pathname }),
+            {
+              reAuth: true,
+              message: error.message,
+            }
+          );
         });
+    } else if (
+      router.pathname !== "/login" &&
+      router.pathname !== "/" &&
+      !state.isLoggedIn
+    ) {
+      router.replace(
+        "/login?" + new URLSearchParams({ callback: router.pathname }),
+        {
+          reAuth: true,
+          message: "Please log in.",
+        }
+      );
     }
-
     // eslint-disable-next-line
-  }, [router.pathname, auth.user, auth.stale]);
+  }, [state]);
 
-  return auth;
+  return state;
 }
 
 export default useRequireAuth;

@@ -1,11 +1,11 @@
 import "./footer.css";
 import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
-import useAuthManager from "../../../../../services/providers/auth";
 import useNotifyService from "../../../../../services/providers/notification";
+import useAuth from "../../../../../services/hooks/use-auth";
 
 function SidebarFooter(props) {
-  const auth = useAuthManager();
+  const auth = useAuth();
   const notifier = useNotifyService();
 
   const onLogout = () => {
