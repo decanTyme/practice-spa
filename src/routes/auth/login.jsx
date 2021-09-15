@@ -27,11 +27,10 @@ function Login() {
   ]);
 
   useEffect(() => {
-    router.state &&
-      router.state.reAuth &&
-      setError({ hasError: true, message: router.state?.message });
+    router?.state?.reAuth &&
+      setError({ hasError: true, message: router?.state?.message });
 
-    return () => setError({ hasError: false, message: null });
+    return () => setError({ hasError: false, message: error.message });
     // eslint-disable-next-line
   }, []);
 
@@ -168,7 +167,7 @@ const initStateCreds = {
  *
  * @version 0.0.3
  */
-const initStateErr = { hasError: false, message: null };
+const initStateErr = { hasError: false, message: "null" };
 
 /**
  * Handles the submission process during login.
@@ -196,12 +195,10 @@ function submitHandler(
     setError({ hasError: false, message: error.message });
     setOnSubmitStatus(true);
 
-    authManager
-      .signIn(credentials)
-      .catch((error) => {
-        setError({ hasError: true, message: error.message });
-      })
-      .finally(() => setOnSubmitStatus(false));
+    authManager.signIn(credentials).catch((error) => {
+      setError({ hasError: true, message: error.message });
+      setOnSubmitStatus(false);
+    });
   };
 }
 

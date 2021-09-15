@@ -14,9 +14,7 @@ function App() {
     <Suspense fallback={<Spinner />}>
       <Switch>
         {/* -------------------------- Base Route --------------------------- */}
-        <Route exact path="/">
-          <Redirect to="/login" />
-        </Route>
+        <ProtectedRoute exact path="/" />
 
         {/* -------------------------- Login Page --------------------------- */}
         <ProtectedRoute path="/login">
