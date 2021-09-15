@@ -29,7 +29,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          throw new Error(error.response.data);
+          throw error.response.data;
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -39,12 +39,20 @@ function useAuth() {
       });
   };
 
-  const signOut = async () => {
+  const signOut = async (error) => {
+    const flag = Boolean(error);
+    const callback = flag
+      ? "?" + new URLSearchParams({ callback: router.pathname })
+      : "";
+
     return http
       .onAuthSignoffRequest(state._id, state.t_key)
       .then((response) => {
         if (response.data.signoff) {
-          router.replace("/login");
+          router.replace("/login" + callback, {
+            reAuth: flag,
+            message: flag ? "Session expired. Please login again." : "none",
+          });
           dispatch(signout());
         }
       })
@@ -61,35 +69,22 @@ function useAuth() {
   };
 
   const requestAuthToken = async () => {
-    if (
-      router.pathname !== "/login" &&
-      router.pathname !== "/" &&
-      state.isLoggedIn &&
-      !state.rememberUser
-    ) {
-      setTimeout(() => {
-        signOut();
-      }, 100);
-      throw new Error("Session expired. Please login again.");
-    } else {
-      return http
-        .onReAuthRequest(state.userId, state.t_key)
-        .then((response) => {
-          return response.data;
-        })
-        .catch((error) => {
-          if (error.response) {
-            dispatch(signout());
-            throw error.response.data;
-          } else if (error.request) {
-            console.error("No response received:", error.request);
-            throw new Error("Please check your connection.");
-          } else {
-            console.error("Request wrapping error:", error.message);
-          }
-        })
-        .finally(() => dispatch(setStale(false)));
-    }
+    return http
+      .onReAuthRequest(state.userId, state.t_key)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        if (error.response) {
+          throw error.response.data;
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          throw new Error("Please check your connection.");
+        } else {
+          console.error("Request wrapping error:", error.message);
+        }
+      })
+      .finally(() => dispatch(setStale(false)));
   };
 
   const getDatabaseStatus = async () => {
@@ -138,7 +133,7 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           dispatch(setStale(true));
-          throw new Error(error.response.data.message);
+          throw error.response.data.message;
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
@@ -157,7 +152,7 @@ function useAuth() {
       .catch((error) => {
         if (error.response) {
           dispatch(setStale(true));
-          throw new Error(error.response.data);
+          throw error.response.data;
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
