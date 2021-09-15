@@ -1,6 +1,6 @@
 {
   "name": "practice-spa",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -20,7 +20,6 @@
     "chart.js": "^3.5.1",
     "font-awesome": "^4.7.0",
     "formik": "^2.2.9",
-    "masonic": "^3.4.1",
     "query-string": "^7.0.1",
     "react": "^17.0.2",
     "react-chartjs-2": "^3.0.4",
