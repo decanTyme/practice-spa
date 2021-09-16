@@ -1,32 +1,35 @@
 import videoPlaceholder from "../../../../../../../assets/qrbar2.png";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ModalMenu from "../../../../../components/modal/ModalMenu";
 import ScannerController from "./scanner-controller";
 import { Link } from "react-router-dom";
+import { addCode } from "app/state/reducers/data";
+import { useDispatch } from "react-redux";
 
 const DEF_SCANNER_TEXT =
   "Please position the camera properly until a code is found.";
 
 function Scanner(props) {
-  const [scannedData, setScanData] = useState({
+  const dispatch = useDispatch();
+
+  const [scanData, setScanData] = useState({
     canRestart: false,
     hasDataFound: false,
   });
-  const [camera, setCamera] = useState({ number: 1, label: "" });
+  const [camera, setCamera] = useState({ number: 1 });
   const [controller, setController] = useState(null);
   const [title, setTitle] = useState("Scan QR/Barcode");
-  const [isDisabled, setDisabled] = useState(false);
-  const [devices, setDevices] = useState(null);
+  const [disabled, setDisabled] = useState(false);
+  const [availableDevices, setAvailableDevices] = useState();
   let currentDevice = camera;
   let currentController = controller;
 
-  // eslint-disable-next-line
-  useLayoutEffect(() => {
-    if (scannedData?.hasDataFound) setTitle("Scan Complete");
+  useEffect(() => {
+    if (scanData?.hasDataFound) setTitle("Scan Complete");
     return () => {
       setTitle("Scan QR/Barcode");
     };
-  });
+  }, [scanData]);
 
   const scannerStart = async (deviceNum) => {
     /* Starts a new scanner instance */
@@ -72,7 +75,7 @@ function Scanner(props) {
         </li>
       );
     });
-    setDevices(dropdownList);
+    setAvailableDevices(dropdownList);
   };
 
   const onChangeStream = (e) => {
@@ -86,14 +89,18 @@ function Scanner(props) {
     stopScan();
     setTimeout(() => {
       scannerStart(currentDevice.number);
-    }, 500);
+    }, 100);
     setTimeout(() => {
       setDisabled(false);
-    }, 1000);
+    }, 1500);
   };
 
   const stopScan = () => {
     currentController?.stop();
+  };
+
+  const onCodeSave = () => {
+    dispatch(addCode(scanData.text));
   };
 
   const onModalDismiss = () => {
@@ -117,19 +124,19 @@ function Scanner(props) {
       size={{ fullscreen: true, modifier: "-sm-down" }}
       headerBtn={
         currentDevice?.label ? (
-          <div className="dropdown" hidden={scannedData?.hasDataFound}>
+          <div className="dropdown" hidden={scanData?.hasDataFound}>
             <button
               className="btn btn-secondary dropdown-toggle"
               type="button"
               id="deviceIdToggle"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              disabled={isDisabled}
+              disabled={disabled}
             >
               {currentDevice?.label}
             </button>
             <ul className="dropdown-menu" aria-labelledby="deviceIdToggle">
-              {devices}
+              {availableDevices}
             </ul>
           </div>
         ) : null
@@ -137,16 +144,14 @@ function Scanner(props) {
       body={
         <>
           <div id="scannerPrev">
-            {scannedData?.hasDataFound ? (
+            {scanData?.hasDataFound ? (
               <div className="p-2">
-                <p className="">Data: {scannedData.text}</p>
-                <p>
-                  Scanned on: {new Date(scannedData.timestamp).toUTCString()}
-                </p>
+                <p className="">Data: {scanData.text}</p>
+                <p>Scanned on: {new Date(scanData.timestamp).toUTCString()}</p>
               </div>
             ) : null}
 
-            <div hidden={scannedData?.hasDataFound}>
+            <div hidden={scanData?.hasDataFound}>
               <video
                 className="w-100 h-100"
                 poster={videoPlaceholder}
@@ -159,25 +164,32 @@ function Scanner(props) {
       }
       footer={
         <>
-          {true ? (
-            <button
-              id="restartScannerBtn"
-              className="btn btn-dark"
-              onClick={onScannerRestart}
-              disabled={isDisabled}
-            >
-              {controller ? "Restart" : "Start"}
-            </button>
-          ) : (
-            ""
-          )}
           <button
-            type="reset"
+            id="restartScannerBtn"
+            className="btn btn-dark"
+            onClick={onScannerRestart}
+            disabled={disabled}
+          >
+            {controller ? "Restart" : "Start"}
+          </button>
+
+          {scanData?.hasDataFound ? (
+            <button
+              id="useCodeBtn"
+              className="btn btn-success"
+              data-bs-dismiss="modal"
+              onClick={onCodeSave}
+            >
+              Use as S/N
+            </button>
+          ) : null}
+
+          <button
             className="btn btn-primary"
             data-bs-dismiss="modal"
             onClick={onModalDismiss}
           >
-            Dismiss
+            {scanData?.hasDataFound ? "Cancel" : "Dismiss"}
           </button>
         </>
       }
