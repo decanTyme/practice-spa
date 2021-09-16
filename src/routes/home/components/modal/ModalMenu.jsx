@@ -24,6 +24,7 @@ function ModalMenu(props) {
             ) : (
               ""
             )}
+            {props?.headerBtn}
           </div>
 
           <div className="modal-body">{props.body}</div>
