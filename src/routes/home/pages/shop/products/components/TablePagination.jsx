@@ -1,5 +1,5 @@
 import { forwardRef, Fragment, useEffect, useRef } from "react";
-import { isMobile } from "react-device-detect";
+import { isDesktop, isMobile } from "react-device-detect";
 import { Link } from "react-router-dom";
 import {
   useTable,
@@ -32,6 +32,7 @@ function TablePagination({
   data,
   fetchData,
   loading,
+  onSort,
   renderRowSubComponent,
   pageCount: controlledPageCount,
   getColumnProps = defaultPropGetter,
@@ -54,7 +55,7 @@ function TablePagination({
     setPageSize,
     visibleColumns,
     selectedFlatRows,
-    state: { pageIndex, pageSize, selectedRowIds },
+    state: { pageIndex, pageSize, sortBy, selectedRowIds },
   } = useTable(
     {
       columns,
@@ -96,7 +97,8 @@ function TablePagination({
 
   useEffect(() => {
     fetchData({ pageIndex, pageSize });
-  }, [fetchData, pageIndex, pageSize]);
+    onSort({ sortBy, pageIndex, pageSize });
+  }, [fetchData, onSort, pageIndex, pageSize, sortBy]);
 
   return (
     <div className="table-responsive">
@@ -151,7 +153,7 @@ function TablePagination({
           <tr>
             {loading ? (
               <td colSpan="10000">
-                <Spinner>Loading...</Spinner>
+                <Spinner addClass="spinner-border-sm">Loading...</Spinner>
               </td>
             ) : (
               <td colSpan="10000">
@@ -215,10 +217,12 @@ function TablePagination({
               </Link>
             </li>
           </ul>
-          {Object.keys(selectedRowIds).length !== 0 ? (
-            <div className="py-2">
-              Selected items: {Object.keys(selectedRowIds).length}
-            </div>
+          {isDesktop ? (
+            Object.keys(selectedRowIds).length !== 0 ? (
+              <div className="py-2">
+                Selected items: {Object.keys(selectedRowIds).length}
+              </div>
+            ) : null
           ) : null}
 
           {isMobile ? null : (

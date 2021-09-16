@@ -50,6 +50,10 @@ const webColumns = [
         accessor: "code",
       },
       {
+        Header: "Brand",
+        accessor: "brand",
+      },
+      {
         Header: "Name",
         accessor: "name",
       },
@@ -137,7 +141,9 @@ function ProductList() {
 
   const [products, setProducts] = useState([]);
   const [pageCount, setPageCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const fetchIdRef = useRef(0);
+  const sortIdRef = useRef(0);
 
   const index = isNaN(
     parseInt(new URLSearchParams(location.search).get("page"))
@@ -149,7 +155,7 @@ function ProductList() {
     ({ pageIndex, pageSize }) => {
       const fetchId = ++fetchIdRef.current;
 
-      if (isMobile) pageSize = 4;
+      if (isMobile) pageSize = 5;
       if (fetchId === fetchIdRef.current) {
         const startRow = pageSize * pageIndex;
         const endRow = startRow + pageSize;
@@ -159,6 +165,32 @@ function ProductList() {
       }
     },
     // eslint-disable-next-line
+    [data]
+  );
+
+  const handleSort = useCallback(
+    ({ sortBy, pageIndex, pageSize }) => {
+      const sortId = ++sortIdRef.current;
+      setLoading(true);
+
+      if (isMobile) pageSize = 5;
+      if (sortId === sortIdRef.current) {
+        let sorted = data.slice();
+        sorted.sort((a, b) => {
+          for (let i = 0; i < sortBy.length; ++i) {
+            if (a[sortBy[i].id] > b[sortBy[i].id])
+              return sortBy[i].desc ? -1 : 1;
+            if (a[sortBy[i].id] < b[sortBy[i].id])
+              return sortBy[i].desc ? 1 : -1;
+          }
+          return 0;
+        });
+        const startRow = pageSize * pageIndex;
+        const endRow = startRow + pageSize;
+        setProducts(sorted.slice(startRow, endRow));
+        setLoading(false);
+      }
+    },
     [data]
   );
 
@@ -199,8 +231,10 @@ function ProductList() {
         columns={isMobile ? mobileColumns : webColumns}
         fetchData={fetchTableData}
         data={products}
+        onSort={handleSort}
         loading={
-          status === "loading" ? true : status === "success" ? false : true
+          (status === "loading" ? true : status === "success" ? false : true) ||
+          loading
         }
         pageCount={pageCount}
         renderRowSubComponent={subComp}
