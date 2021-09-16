@@ -24,7 +24,7 @@ function useAuth() {
       })
       .catch((error) => {
         if (error.response) {
-          throw error.response.data;
+          throw new Error(error.response.data);
         } else if (error.request) {
           console.error("No response received:", error.request);
           throw new Error("Please check your connection.");
