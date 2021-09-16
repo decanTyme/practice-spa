@@ -1,7 +1,14 @@
 import "./add-product-form.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Spinner from "../../../../components/spinner";
-import useDataService from "../../../../../../../services/providers/data";
+import {
+  pushData,
+  updateData,
+  selectDataInEdit,
+} from "app/state/reducers/data";
+import { useDispatch } from "react-redux";
+import { setStale } from "app/state/reducers/auth";
+import { useSelector } from "react-redux";
 
 const INIT_FORM_VAL = {
   name: "",
@@ -10,6 +17,7 @@ const INIT_FORM_VAL = {
   class: "",
   category: "",
   quantity: 0,
+  unit: "",
   price: 0,
   salePrice: 0,
 };
@@ -20,27 +28,60 @@ const INIT_STATES_BTN = {
   inputs: false,
 };
 
-function AddProductForm(props) {
+function AddProductForm() {
+  const editData = useSelector(selectDataInEdit);
   const [product, setProduct] = useState(INIT_FORM_VAL);
+  const [status, setStatus] = useState("idle");
   const [disable, setDisable] = useState(INIT_STATES_BTN);
-  const ds = useDataService();
+  const [btnText, setText] = useState("Save");
+  const dispatch = useDispatch();
 
-  const onSubmit = (e) => {
+  useEffect(() => {
+    if (editData) {
+      setProduct(editData);
+      setDisable({ submitBtn: false, resetBtn: false, inputs: false });
+      setText("Update");
+    } else {
+      setProduct(INIT_FORM_VAL);
+      setText("Save");
+    }
+  }, [editData]);
+
+  const onSubmit = async (e) => {
     e.preventDefault();
     const addProductForm = document.getElementById("addProductForm");
 
     if (addProductForm.checkValidity()) {
-      if (ds.addItem(product)) setDisable(INIT_STATES_BTN);
-      if (ds.isAdding) {
+      try {
+        setStatus("pending");
         setDisable({ submitBtn: true, resetBtn: true, inputs: true });
+        if (editData)
+          await dispatch(
+            updateData({ ...product, _id: editData._id })
+          ).unwrap();
+        else await dispatch(pushData(product)).unwrap();
+        setProduct(INIT_FORM_VAL);
+        setText("Save");
+        addProductForm.classList.remove("was-validated");
+      } catch (err) {
+        console.error("Failed to save the post: ", err);
+        dispatch(setStale(true));
+      } finally {
+        setStatus("idle");
+        setDisable({ submitBtn: false, resetBtn: false, inputs: false });
       }
     } else {
       addProductForm.classList.add("was-validated");
     }
   };
 
-  const handleChangeOn = (e) => {
-    setDisable({ submitBtn: false, resetBtn: false, inputs: false });
+  const handleChange = (e) => {
+    setDisable({
+      submitBtn: false,
+      resetBtn: false,
+      inputs: false,
+      codeInput: false,
+    });
 
     const name = e.target.name,
       value = e.target.value;
@@ -52,6 +93,7 @@ function AddProductForm(props) {
       class: name === "class" ? value : product.class,
       category: name === "category" ? value : product.category,
       quantity: name === "quantity" ? value : product.quantity,
+      unit: name === "unit" ? value : product.unit,
       price: name === "price" ? value : product.price,
       salePrice: name === "salePrice" ? value : product.salePrice,
     });
@@ -59,14 +101,14 @@ function AddProductForm(props) {
 
   const onClear = () => {
     setDisable({ submitBtn: true, resetBtn: true, inputs: false });
-
+    setText("Save");
     setProduct(INIT_FORM_VAL);
   };
 
   return (
     <div className="card border bg-white add-product-form">
       <div className="card-body">
-        <h6 className="card-title">Add a Product</h6>
+        <h6 className="card-title">{editData ? "Edit" : "Add"} Product</h6>
         <form
           id="addProductForm"
           className="card-text needs-validation"
@@ -85,7 +127,7 @@ function AddProductForm(props) {
                 className="form-control"
                 placeholder="SkinBliss Facial Cream"
                 value={product.name}
-                onChange={handleChangeOn}
+                onChange={handleChange}
                 disabled={disable.inputs}
                 required
               />
@@ -96,17 +138,29 @@ function AddProductForm(props) {
               <label htmlFor="productCode" className="form-label">
                 S/N
               </label>
-              <input
-                id="productCode"
-                type="text"
-                name="code"
-                className="form-control"
-                placeholder="SB123"
-                value={product.code}
-                onChange={handleChangeOn}
-                disabled={disable.inputs}
-                required
-              />
+              <div className="input-group">
+                <input
+                  id="productCode"
+                  type="text"
+                  name="code"
+                  className="form-control"
+                  placeholder="1234"
+                  value={product.code}
+                  onChange={handleChange}
+                  disabled={disable.inputs}
+                  required
+                />
+                <button
+                  id="qrBtn"
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addProductScannerModal"
+                >
+                  <i className="fa fa-qrcode"></i>
+                </button>
+              </div>
+
               <div className="invalid-feedback">Cannot be empty.</div>
               <div className="valid-feedback">Looks good!</div>
             </div>
@@ -126,21 +180,26 @@ function AddProductForm(props) {
                   name="brand"
                   placeholder="SkinBliss"
                   value={product.brand}
-                  onChange={handleChangeOn}
+                  onChange={handleChange}
                   disabled={disable.inputs}
+                  required
                 />
                 <datalist id="brandList">
                   <option value="" />
                   <option value="Skin Bliss" />
                   <option value="Skin Can Tell" />
-                  <option value="Toner" />
-                  <option value="Lipstick" />
                 </datalist>
                 <div className="invalid-feedback">
-                  Please select a valid category.
+                  Please select a valid brand.
                 </div>
                 <div className="valid-feedback">Looks good!</div>
               </div>
+            </div>
+          </div>
+
+          {/* ------------------------------ Row ------------------------------ */}
+          <div className="row g-2 mt-1 align-items-center">
+            <div className="col-sm-6">
               <label htmlFor="productClass" className="form-label">
                 Class
               </label>
@@ -151,26 +210,21 @@ function AddProductForm(props) {
                 name="class"
                 placeholder="Beauty Product"
                 value={product.class}
-                onChange={handleChangeOn}
+                onChange={handleChange}
                 disabled={disable.inputs}
+                required
               />
               <datalist id="productClassList">
                 <option value="" />
-                <option value="Facial Cleanser" />
-                <option value="Facial Scrub" />
-                <option value="Toner" />
-                <option value="Lipstick" />
+                <option value="Beauty Product" />
+                <option value="General Merchandise" />
               </datalist>
               <div className="invalid-feedback">
                 Please select a valid class.
               </div>
               <div className="valid-feedback">Looks good!</div>
             </div>
-          </div>
-
-          {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mt-1 align-items-center">
-            <div className="col">
+            <div className="col-sm-6">
               <label htmlFor="productCategory" className="form-label">
                 Category
               </label>
@@ -181,8 +235,9 @@ function AddProductForm(props) {
                 name="category"
                 placeholder="Facial Cleanser"
                 value={product.category}
-                onChange={handleChangeOn}
+                onChange={handleChange}
                 disabled={disable.inputs}
+                required
               />
               <datalist id="categoryList">
                 <option value="" />
@@ -196,7 +251,11 @@ function AddProductForm(props) {
               </div>
               <div className="valid-feedback">Looks good!</div>
             </div>
-            <div className="col-sm-5">
+          </div>
+
+          {/* ------------------------------ Row ------------------------------ */}
+          <div className="row g-2 mt-1 align-items-center">
+            <div className="col-sm-6">
               <label htmlFor="productQuantity" className="form-label">
                 Quantity
               </label>
@@ -208,11 +267,36 @@ function AddProductForm(props) {
                 name="quantity"
                 min={1}
                 value={product.quantity}
-                onChange={handleChangeOn}
+                onChange={handleChange}
                 disabled={disable.inputs}
                 required
               />
               <div className="invalid-feedback">Cannot be less than 1.</div>
+              <div className="valid-feedback">Looks good!</div>
+            </div>
+            <div className="col-sm-6">
+              <label htmlFor="productUnit" className="form-label">
+                Unit
+              </label>
+              <input
+                className="form-control"
+                list="unitList"
+                id="productUnit"
+                name="unit"
+                placeholder="Pack Size"
+                value={product.unit}
+                onChange={handleChange}
+                disabled={disable.inputs}
+                required
+              />
+              <datalist id="unitList">
+                <option value="" />
+                <option value="Packet" />
+                <option value="Bundle" />
+              </datalist>
+              <div className="invalid-feedback">
+                Please select a valid unit.
+              </div>
               <div className="valid-feedback">Looks good!</div>
             </div>
           </div>
@@ -233,7 +317,7 @@ function AddProductForm(props) {
                   name="price"
                   value={product.price}
                   min={1}
-                  onChange={handleChangeOn}
+                  onChange={handleChange}
                   disabled={disable.inputs}
                   required
                 />
@@ -255,7 +339,7 @@ function AddProductForm(props) {
                   name="salePrice"
                   min={0}
                   value={product.salePrice}
-                  onChange={handleChangeOn}
+                  onChange={handleChange}
                   disabled={disable.inputs}
                 />
                 <div className="invalid-feedback">Cannot be less than 1.</div>
@@ -268,15 +352,6 @@ function AddProductForm(props) {
           <div className="row mt-3 align-items-center">
             <div className="col-md-12">
               <div className="d-flex flex-row justify-content-end">
-                <button
-                  id="qrBtn"
-                  type="button"
-                  className="btn btn-secondary ms-2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#addProductScannerModal"
-                >
-                  <i className="fa fa-qrcode"></i>
-                </button>
                 <button
                   id="resetBtn"
                   type="reset"
@@ -294,10 +369,10 @@ function AddProductForm(props) {
                   onClick={onSubmit}
                   disabled={disable.submitBtn}
                 >
-                  {ds.isAdding ? (
-                    <Spinner addClass="spinner-border-sm">Save</Spinner>
+                  {status !== "idle" ? (
+                    <Spinner addClass="spinner-border-sm">{btnText}</Spinner>
                   ) : (
-                    "Save"
+                    btnText
                   )}
                 </button>
               </div>

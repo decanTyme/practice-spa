@@ -196,7 +196,7 @@ function submitHandler(
     setOnSubmitStatus(true);
 
     authManager.signIn(credentials).catch((error) => {
-      setError({ hasError: true, message: error.message });
+      setError({ hasError: true, message: error });
       setOnSubmitStatus(false);
     });
   };

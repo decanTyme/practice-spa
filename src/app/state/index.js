@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./reducers/auth";
+import rootReducer from "./reducers";
 
 const LocalStorage = {
   getItem: (key) =>
@@ -13,13 +13,15 @@ const LocalStorage = {
   removeKey: (key) => window.localStorage.removeItem(key),
 };
 
-const preloadedState = LocalStorage.getItem("__app_state_");
+const preloadedState = { root: { auth: LocalStorage.getItem("__app_state_") } };
 
 const store = configureStore({
-  reducer: { auth: authReducer },
+  reducer: { root: rootReducer },
   preloadedState,
 });
 
-store.subscribe(() => LocalStorage.setItem("__app_state_", store.getState()));
+store.subscribe(() =>
+  LocalStorage.setItem("__app_state_", store.getState().root.auth)
+);
 
 export default store;
