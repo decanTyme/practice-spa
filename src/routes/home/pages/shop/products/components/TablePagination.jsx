@@ -130,7 +130,7 @@ function TablePagination({
           {page.map((row, i) => {
             prepareRow(row);
             return (
-              <>
+              <Fragment key={page.map(() => btoa(Math.random())).pop()}>
                 <tr {...row.getRowProps(getRowProps(row))}>
                   {row.cells.map((cell) => {
                     return (
@@ -145,7 +145,7 @@ function TablePagination({
                     </td>
                   </tr>
                 ) : null}
-              </>
+              </Fragment>
             );
           })}
           <tr>
