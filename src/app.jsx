@@ -11,7 +11,7 @@ const Home = lazy(() => import("./routes/home"));
 
 function App() {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<Spinner type="grow" addClass="text-danger" />}>
       <Switch>
         {/* -------------------------- Base Route --------------------------- */}
         <ProtectedRoute exact path="/" />
