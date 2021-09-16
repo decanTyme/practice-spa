@@ -1,4 +1,5 @@
 import HttpService from "../http";
+import useRouter from "./use-router";
 import { useSelector, useDispatch } from "react-redux";
 import {
   signin,
@@ -6,7 +7,7 @@ import {
   setStale,
   authState,
 } from "../../app/state/reducers/auth";
-import useRouter from "./use-router";
+import { deleteAllData } from "app/state/reducers/data";
 
 function useAuth() {
   const http = HttpService();
@@ -18,14 +19,8 @@ function useAuth() {
     return http
       .onAuthLoginRequest(credentials)
       .then((response) => {
-        dispatch(
-          signin({
-            _id: response.data.userId,
-            t_key: response.data.refToken,
-            userData: response.data.userData,
-            rememberUser: credentials.rememberUser,
-          })
-        );
+        const { userId, refToken, userData } = response.data;
+        dispatch(signin(userId, refToken, userData, credentials.rememberUser));
       })
       .catch((error) => {
         if (error.response) {
@@ -54,6 +49,7 @@ function useAuth() {
             message: flag ? "Session expired. Please login again." : "none",
           });
           dispatch(signout());
+          dispatch(deleteAllData());
         }
       })
       .catch((error) => {

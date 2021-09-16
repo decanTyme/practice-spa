@@ -3,10 +3,11 @@ import Product from "./components/ProductDetail";
 import ProductList from "./components/ProductList";
 import AddProductForm from "./components/AddProductForm/AddProductForm";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
-import useDataService from "../../../../../services/providers/data";
+import { useSelector } from "react-redux";
+import { selectDataDetails } from "app/state/reducers/data";
 
 function Products() {
-  const ds = useDataService();
+  const dataDetails = useSelector(selectDataDetails);
 
   return (
     <div className="container-fluid px-3 px-md-3 products-wrapper">
@@ -31,21 +32,9 @@ function Products() {
           </ErrorBoundary>
         </div>
         <aside className="col-sm-3">
-          {ds.data ? (
+          {dataDetails ? (
             <ErrorBoundary>
-              <Product
-                _id={ds.data._id}
-                brand={ds.data.brand}
-                name={ds.data.name}
-                code={ds.data.code}
-                class={ds.data.class}
-                category={ds.data.category}
-                price={ds.data.price}
-                inStock={ds.data.quantity}
-                description="Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Voluptatem eius fugiat cumque sint dicta, dolorum voluptates
-                minima eos praesentium corrupti possimus optio."
-              />
+              <Product product={dataDetails} />
             </ErrorBoundary>
           ) : (
             <div className="card">
