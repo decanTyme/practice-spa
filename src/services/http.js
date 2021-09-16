@@ -117,6 +117,18 @@ function HttpService() {
     return instance(requestConfig);
   };
 
+  const onDataModify = async (data) => {
+    const requestConfig = {
+      url: "/modify",
+      method: "PATCH",
+      params: { item_: "product" },
+
+      data: new URLSearchParams(data),
+    };
+
+    return instance(requestConfig);
+  };
+
   const onDataRemove = async (dataId) => {
     const requestConfig = {
       url: "/del",
@@ -135,6 +147,7 @@ function HttpService() {
     onFetchUserData,
     onDataFetch,
     onDataPush,
+    onDataModify,
     onDataRemove,
   };
 }
