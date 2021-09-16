@@ -2,7 +2,9 @@ function Spinner(props) {
   return (
     <span className="w-100 h-100 d-flex align-items-center justify-content-center text-center bg-transparent">
       <span
-        className={"spinner-border " + props.addClass}
+        className={
+          "spinner-" + (props?.type || "border") + " " + props.addClass
+        }
         role="status"
         aria-hidden={props.ariaset?.hidden || false}
       ></span>
