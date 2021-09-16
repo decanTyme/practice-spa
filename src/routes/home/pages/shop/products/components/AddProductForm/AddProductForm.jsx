@@ -5,6 +5,7 @@ import {
   pushData,
   updateData,
   selectDataInEdit,
+  selectDataCode,
 } from "app/state/reducers/data";
 import { useDispatch } from "react-redux";
 import { setStale } from "app/state/reducers/auth";
@@ -26,10 +27,12 @@ const INIT_STATES_BTN = {
   submitBtn: true,
   resetBtn: true,
   inputs: false,
+  inputCode: false,
 };
 
 function AddProductForm() {
   const editData = useSelector(selectDataInEdit);
+  const code = useSelector(selectDataCode);
   const [product, setProduct] = useState(INIT_FORM_VAL);
   const [status, setStatus] = useState("idle");
   const [disable, setDisable] = useState(INIT_STATES_BTN);
@@ -37,14 +40,29 @@ function AddProductForm() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (code) {
+      setProduct({ ...product, code });
+    }
+    // eslint-disable-next-line
+  }, [code]);
+
+  useEffect(() => {
     if (editData) {
       setProduct(editData);
-      setDisable({ submitBtn: false, resetBtn: false, inputs: false });
+      setDisable({
+        submitBtn: false,
+        resetBtn: false,
+        inputs: false,
+        inputCode: true,
+      });
       setText("Update");
-    } else {
-      setProduct(INIT_FORM_VAL);
-      setText("Save");
     }
+
+    return () => {
+      setProduct(INIT_FORM_VAL);
+      setDisable(INIT_STATES_BTN);
+      setText("Save");
+    };
   }, [editData]);
 
   const onSubmit = async (e) => {
@@ -54,7 +72,12 @@ function AddProductForm() {
     if (addProductForm.checkValidity()) {
       try {
         setStatus("pending");
-        setDisable({ submitBtn: true, resetBtn: true, inputs: true });
+        setDisable({
+          submitBtn: true,
+          resetBtn: true,
+          inputs: true,
+          inputCode: true,
+        });
         if (editData)
           await dispatch(
             updateData({ ...product, _id: editData._id })
@@ -68,7 +91,7 @@ function AddProductForm() {
         dispatch(setStale(true));
       } finally {
         setStatus("idle");
-        setDisable({ submitBtn: false, resetBtn: false, inputs: false });
+        setDisable(INIT_STATES_BTN);
       }
     } else {
       addProductForm.classList.add("was-validated");
@@ -80,7 +103,7 @@ function AddProductForm() {
       submitBtn: false,
       resetBtn: false,
       inputs: false,
-      codeInput: false,
+      inputCode: editData ? true : false,
     });
 
     const name = e.target.name,
@@ -130,11 +153,12 @@ function AddProductForm() {
                 onChange={handleChange}
                 disabled={disable.inputs}
                 required
+                pattern="[a-zA-Z0-9- ]+"
               />
               <div className="invalid-feedback">Cannot be empty.</div>
               <div className="valid-feedback">Looks good!</div>
             </div>
-            <div className="col-sm-4">
+            <div className="col-sm-5">
               <label htmlFor="productCode" className="form-label">
                 S/N
               </label>
@@ -147,22 +171,25 @@ function AddProductForm() {
                   placeholder="1234"
                   value={product.code}
                   onChange={handleChange}
-                  disabled={disable.inputs}
+                  disabled={disable.inputs || disable.inputCode}
                   required
+                  pattern="[0-9]+"
                 />
-                <button
-                  id="qrBtn"
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#addProductScannerModal"
-                >
-                  <i className="fa fa-qrcode"></i>
-                </button>
+                {disable.inputCode ? null : (
+                  <button
+                    id="qrBtn"
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addProductScannerModal"
+                    disabled={disable.inputs}
+                  >
+                    <i className="fa fa-qrcode"></i>
+                  </button>
+                )}
+                <div className="invalid-feedback">Invalid serial number.</div>
+                <div className="valid-feedback">Looks good!</div>
               </div>
-
-              <div className="invalid-feedback">Cannot be empty.</div>
-              <div className="valid-feedback">Looks good!</div>
             </div>
           </div>
 
@@ -188,6 +215,7 @@ function AddProductForm() {
                   <option value="" />
                   <option value="Skin Bliss" />
                   <option value="Skin Can Tell" />
+                  <option value="Ryx" />
                 </datalist>
                 <div className="invalid-feedback">
                   Please select a valid brand.
@@ -291,6 +319,7 @@ function AddProductForm() {
               />
               <datalist id="unitList">
                 <option value="" />
+                <option value="Set" />
                 <option value="Packet" />
                 <option value="Bundle" />
               </datalist>
