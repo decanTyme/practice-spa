@@ -14,7 +14,7 @@ const onDesktopSidebarClass = "col-sm-5 col-md-4 col-lg-3 col-xl-2 ";
 const onMobileSidebarClass = "offcanvas offcanvas-start ";
 const onDesktopViewportClass =
   "col-sm-7 col-md-8 ms-sm-auto mb-md-3 col-lg-9 col-xl-10 ";
-const onMobileViewportClass = "";
+const onMobileViewportClass = "mb-1 ";
 
 function Home(props) {
   const { theme } = useThemeProvider();
@@ -64,7 +64,7 @@ function Home(props) {
           <main
             className={
               (isMobile ? onMobileViewportClass : onDesktopViewportClass) +
-              "p-0 pb-5 pb-md-1 mt-3"
+              "p-0 pb-5 pb-md-1 pb-lg-5 mt-3"
             }
           >
             <Viewport />

@@ -3,7 +3,7 @@ function ToastNotify(props) {
   return (
     <div
       className={
-        "position-fixed bottom-0 end-0 pb-4 mb-3 me-2 p-lg-2 m-lg-1" +
+        "position-fixed bottom-0 end-0 pb-4 mb-4 me-2 p-lg-2 m-lg-1 mb-lg-3" +
         props.className
       }
       style={{ zIndex: 11 }}
