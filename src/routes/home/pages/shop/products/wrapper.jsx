@@ -1,13 +1,17 @@
-import "./products.css";
 import Product from "./components/ProductDetail";
 import ProductList from "./components/ProductList";
 import AddProductForm from "./components/AddProductForm/AddProductForm";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { useSelector } from "react-redux";
-import { selectDataDetails } from "app/state/reducers/data";
+import {
+  selectDataDetails,
+  selectDataInSelection,
+} from "app/state/reducers/data";
+import SelectedProductOptions from "./components/Options";
 
 function Products() {
   const dataDetails = useSelector(selectDataDetails);
+  const dataInSelect = useSelector(selectDataInSelection);
 
   return (
     <div className="container-fluid px-3 px-md-3 products-wrapper">
@@ -43,6 +47,8 @@ function Products() {
               </div>
             </div>
           )}
+
+          {dataInSelect ? <SelectedProductOptions /> : null}
 
           <div className="mt-3">
             <AddProductForm />
