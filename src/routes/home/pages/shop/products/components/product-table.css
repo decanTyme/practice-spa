@@ -1,0 +1,14 @@
+.product-table-wrapper table {
+  position: relative;
+  padding: 10rem;
+}
+
+.product-table-wrapper table thead th {
+  background: #47709c;
+  color: white;
+}
+
+.product-table-wrapper select.form-select {
+  width: inherit;
+  height: 100%;
+}

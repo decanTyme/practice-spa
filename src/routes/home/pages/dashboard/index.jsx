@@ -108,36 +108,42 @@ function Dashboard() {
               <div className="card-title" id="pokeName">
                 Monthly Sales
               </div>
-              <Line data={myLineChart} height={isMobile ? null : 118} />
+              <Line data={myLineChart} />
             </div>
           </div>
         </div>
 
         {/* --------------------------- Average Data --------------------------- */}
         <div className="col-lg-2">
-          <div className="row row-cols-md-2 row-cols-lg-1 g-0">
-            <div className="card mb-2">
-              <div className="card-body">
-                <p className="card-title mb-0" id="pokeName">
-                  Sales
-                </p>
-                <h5 className="card-text">{generateRandomData(10000)}+</h5>
+          <div className="row row-cols-1 g-3 row-cols-md-2 row-cols-lg-1">
+            <div className="col">
+              <div className="card">
+                <div className="card-body">
+                  <p className="card-title mb-0" id="pokeName">
+                    Sales
+                  </p>
+                  <h5 className="card-text">{generateRandomData(10000)}+</h5>
+                </div>
               </div>
             </div>
-            <div className="card mb-2">
-              <div className="card-body">
-                <p className="card-title mb-0" id="pokeName">
-                  Reviews
-                </p>
-                <h5 className="card-text">{generateRandomData(10000)}+</h5>
+            <div className="col">
+              <div className="card">
+                <div className="card-body">
+                  <p className="card-title mb-0" id="pokeName">
+                    Reviews
+                  </p>
+                  <h5 className="card-text">{generateRandomData(10000)}+</h5>
+                </div>
               </div>
             </div>
-            <div className="card">
-              <div className="card-body">
-                <p className="card-title mb-0" id="pokeName">
-                  Visitors/Customers
-                </p>
-                <h5 className="card-text">{generateRandomData(10000)}+</h5>
+            <div className="col">
+              <div className="card">
+                <div className="card-body">
+                  <p className="card-title mb-0" id="pokeName">
+                    Visitors/Customers
+                  </p>
+                  <h5 className="card-text">{generateRandomData(10000)}+</h5>
+                </div>
               </div>
             </div>
           </div>
