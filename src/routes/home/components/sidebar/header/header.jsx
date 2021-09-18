@@ -1,32 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "./header.css";
 import DP from "../../../../../assets/default_img.png";
-import useNotifyService from "../../../../../services/providers/notification";
-import useAuth from "../../../../../services/hooks/use-auth";
+import { useSelector, useDispatch } from "react-redux";
+import useRouter from "../../../../../services/hooks/use-router";
+import {
+  Constants,
+  getDatabaseStatus,
+  selectAuthDatabaseStatus,
+  selectAuthStatus,
+  selectAuthUserData,
+} from "app/state/reducers/auth";
 
 function SidebarHeader() {
-  const auth = useAuth();
-  const [isDbConnected, setDbStatus] = useState(null);
-  const notifier = useNotifyService();
-  const state = auth.state;
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const isLoggedIn = useSelector(selectAuthStatus);
+  const userData = useSelector(selectAuthUserData);
+  const database = useSelector(selectAuthDatabaseStatus);
 
   useEffect(() => {
-    auth
-      .getDatabaseStatus()
-      .then((connection) => {
-        if (connection?.auth) setDbStatus(true);
-      })
-      .catch(() => {
-        setDbStatus(false);
-        notifier.notify({
-          title: "Error",
-          message: "Unable to connect to the database",
-        });
-      });
-
-    return () => setDbStatus(null);
+    if (database.status === Constants.IDLE && isLoggedIn)
+      dispatch(getDatabaseStatus());
     // eslint-disable-next-line
-  }, []);
+  }, [dispatch, router]);
+
+  let dbStatus, dbStatusColor;
+  if (database.status === "CONNECTING" && !database.connected) {
+    dbStatus = "Connecting to database";
+    dbStatusColor = "darkorange";
+  } else if (database.connected) {
+    dbStatus = "Database connected";
+    dbStatusColor = "#5cb85c";
+  } else if (!database.connected) {
+    dbStatus = "Cannot connect to database";
+    dbStatusColor = "red";
+  }
 
   return (
     <div className="sidebar-header">
@@ -35,28 +44,18 @@ function SidebarHeader() {
       </div>
       <div className="user-info">
         <span className="user-name">
-          {state.userData.firstname ?? "null"}{" "}
-          <strong>{state.userData.lastname ?? "null"}</strong>
+          {userData.firstname ?? "null"}{" "}
+          <strong>{userData.lastname ?? "null"}</strong>
         </span>
-        <span className="user-role">{state.userData.role ?? "null"}</span>
+        <span className="user-role">{userData.role ?? "null"}</span>
         <span className="user-status">
           <i
             style={{
-              color: !!isDbConnected
-                ? isDbConnected
-                  ? "#5cb85c"
-                  : "red"
-                : "darkorange",
+              color: dbStatusColor,
             }}
             className="fa fa-circle"
           ></i>
-          <span>
-            {!!isDbConnected
-              ? isDbConnected
-                ? "Database connected"
-                : "Cannot connect to database"
-              : "Connecting to database"}
-          </span>
+          <span>{dbStatus}</span>
         </span>
       </div>
     </div>

@@ -82,7 +82,7 @@ export const requestAuthToken = createAsyncThunk(
 );
 
 const slice = createSlice({
-  name: "auth",
+  name: "authManager",
   initialState: {
     isLoggedIn: false,
     rememberUser: false,
@@ -90,30 +90,33 @@ const slice = createSlice({
     t_key: null,
     userData: { firstname: null, lastname: null, role: null },
     stale: false,
+    database: { connected: false, status: Constants.IDLE },
+    status: Constants.IDLE,
+    error: null,
   },
   reducers: {
-    signin: (state, action) => {
-      state.isLoggedIn = true;
-      state.userId = action.payload._id;
-      state.t_key = action.payload.t_key;
-      state.rememberUser = action.payload.rememberUser;
+    forceSignOff: (state) => {
+      state.status = Constants.Auth.SIGNED_OFF_WITH_ERROR;
 
-      if (
-        !state.userData ||
-        (state.userData &&
-          state.userData.firstname !== action.payload.userData.firstname)
-      ) {
-        state.userData.firstname = action.payload.userData.firstname;
-        state.userData.lastname = action.payload.userData.lastname;
-        state.userData.role = action.payload.userData.role;
-      }
-    },
-
-    signout: (state) => {
       state.isLoggedIn = false;
+      state.rememberUser = false;
       state.userId = null;
       state.t_key = null;
+      state.userData = { firstname: null, lastname: null, role: null };
       state.stale = false;
+      state.database = { connected: false, status: Constants.IDLE };
+    },
+
+    setRememberUser: (state, action) => {
+      state.rememberUser = action.payload;
+    },
+
+    setStatus: (state, action) => {
+      state.status = action.payload;
+    },
+
+    setAuthError: (state, action) => {
+      state.error = action.payload;
     },
 
     setStale: (state, action) => {
@@ -215,7 +218,13 @@ const slice = createSlice({
   },
 });
 
-export const { signin, signout, setStale } = slice.actions;
+export const {
+  setStale,
+  setRememberUser,
+  setAuthError,
+  setStatus,
+  forceSignOff,
+} = slice.actions;
 
 export const selectAuthCurrentState = (state) => state.root.auth;
 export const selectAuthStatus = (state) => state.root.auth.isLoggedIn;
