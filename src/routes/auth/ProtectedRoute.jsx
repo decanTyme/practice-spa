@@ -1,11 +1,11 @@
 import { Route } from "react-router-dom";
-import useRequireAuth from "../../services/hooks/use-require-auth";
+import AuthManagerRouter from "../../services/router-auth";
 import Spinner from "../home/pages/components/spinner";
 
 function ProtectedRoute({ children, ...rest }) {
-  const state = useRequireAuth();
+  const stale = AuthManagerRouter().run();
 
-  if (!state) return <Spinner>Authenticating...</Spinner>;
+  if (stale) return <Spinner>Authenticating...</Spinner>;
 
   return <Route {...rest}>{children}</Route>;
 }
