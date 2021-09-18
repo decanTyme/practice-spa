@@ -56,7 +56,7 @@ function Product(props) {
           </div>
         </li>
       </ul>
-      <div className="btn-group" role="group" aria-label="Basic example">
+      <div className="btn-group" role="group" aria-label="Mini options">
         <button
           type="button"
           className="btn btn-secondary rounded-0"
