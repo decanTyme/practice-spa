@@ -1,13 +1,14 @@
 import img404 from "../assets/404_error_message.png";
 import { Link } from "react-router-dom";
 import useRouter from "../services/hooks/use-router";
-import useAuth from "../services/hooks/use-auth";
+import { useSelector } from "react-redux";
+import { selectAuthCurrentState } from "app/state/reducers/auth";
 
 function NotFound() {
   const router = useRouter();
-  const { state } = useAuth();
-
+  const state = useSelector(selectAuthCurrentState);
   const location = state.isLoggedIn ? "/dashboard" : "/login";
+
   return (
     <div className="container h-100 d-flex align-items-center">
       <div className="row mx-auto text-center">

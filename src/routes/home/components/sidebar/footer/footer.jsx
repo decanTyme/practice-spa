@@ -1,20 +1,15 @@
 import "./footer.css";
 import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
-import useNotifyService from "../../../../../services/providers/notification";
-import useAuth from "../../../../../services/hooks/use-auth";
+import { signOut } from "app/state/reducers/auth";
+import { isMobile } from "react-device-detect";
+import { useDispatch } from "react-redux";
 
 function SidebarFooter(props) {
-  const auth = useAuth();
-  const notifier = useNotifyService();
+  const dispatch = useDispatch();
 
   const onLogout = () => {
-    auth.signOut().catch((error) => {
-      notifier.notify({
-        title: "There was an error in signing out",
-        message: error.message,
-      });
-    });
+    dispatch(signOut());
   };
 
   const onSettings = () => {
@@ -27,7 +22,10 @@ function SidebarFooter(props) {
   };
 
   return (
-    <div className="sidebar-footer">
+    <div
+      className="sidebar-footer"
+      style={{ padding: isMobile ? "0.15rem 0" : null }}
+    >
       <Link to="#">
         <i className="fa fa-bell"></i>
         <span className="badge rounded-pill bg-warning notification">3</span>

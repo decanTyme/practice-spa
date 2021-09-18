@@ -1,38 +1,35 @@
 import "./login.css";
-import { Tooltip } from "bootstrap";
 import logo from "../../assets/logo_btph_bg_removed.png";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { Tooltip } from "bootstrap";
 import Alert from "../home/pages/components/alert";
-import useRouter from "../../services/hooks/use-router";
-import useAuth from "../../services/hooks/use-auth";
+import {
+  Constants,
+  selectAuthCurrentState,
+  setStatus,
+  signIn,
+} from "../../app/state/reducers/auth";
 
 /**
  * Login page of BodyTalks.PH Inventory Management System.
  */
 function Login() {
-  const router = useRouter();
-  const auth = useAuth();
+  const dispatch = useDispatch();
+
+  const state = useSelector(selectAuthCurrentState);
 
   /* States */
-  const [credentials, setCredentials] = useState(initStateCreds);
-  const [error, setError] = useState(initStateErr);
-  const [isSubmitting, setOnSubmitStatus] = useState(false);
+  const [credentials, setCredentials] = useState(INIT_STATE_CREDENTIALS);
 
   /* Credential Managers */
   const handleInputChange = inputManager(setCredentials, credentials);
-  const onSubmit = submitHandler(auth, credentials, setOnSubmitStatus, [
-    error,
-    setError,
-  ]);
+  const handleSubmit = submitHandler(signIn, credentials, dispatch);
 
   useEffect(() => {
-    router?.state?.reAuth &&
-      setError({ hasError: true, message: router?.state?.message });
-
-    return () => setError({ hasError: false, message: error.message });
-    // eslint-disable-next-line
-  }, []);
+    dispatch(setStatus(Constants.IDLE));
+  }, [dispatch]);
 
   useEffect(() => {
     const tooltipTriggerList = [].slice.call(
@@ -52,7 +49,7 @@ function Login() {
   return (
     <div className="h-100 d-flex">
       <div className="text-center form-signin">
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleSubmit}>
           <img
             src={logo}
             className="mb-4"
@@ -72,7 +69,7 @@ function Login() {
               className="form-control"
               value={credentials.username}
               onChange={handleInputChange}
-              disabled={isSubmitting}
+              disabled={state.status === Constants.Auth.SIGNING_IN}
               autoComplete="username"
             />
             <label htmlFor="usernameInput">Username</label>
@@ -88,7 +85,7 @@ function Login() {
               className="form-control"
               value={credentials.password}
               onChange={handleInputChange}
-              disabled={isSubmitting}
+              disabled={state.status === Constants.Auth.SIGNING_IN}
               autoComplete="current-password"
             />
             <label htmlFor="passwordInput">Password</label>
@@ -106,7 +103,7 @@ function Login() {
                 name="rememberUser"
                 checked={credentials.rememberUser}
                 onChange={handleInputChange}
-                disabled={isSubmitting}
+                disabled={state.status === Constants.Auth.SIGNING_IN}
               />
               Remember me
             </label>
@@ -115,7 +112,7 @@ function Login() {
           <button
             type="submit"
             className="w-100 mb-1 btn btn-lg btn-secondary"
-            disabled={isSubmitting}
+            disabled={state.status === Constants.Auth.SIGNING_IN}
           >
             Submit
           </button>
@@ -124,7 +121,7 @@ function Login() {
           <Link
             to={
               "/forgot?" +
-              new URLSearchParams({ cslid: null, tag: "UNDER_DEVELOPMENT" })
+              new URLSearchParams({ clsid: null, tag: "UNDER_DEVELOPMENT" })
             }
             className="text-decoration-none link-secondary"
           >
@@ -133,11 +130,9 @@ function Login() {
 
           {/* ---------------- Alert the user if there is an error ----------------- */}
           <div
-            className={
-              "fade " + (error.hasError ? "show visible" : "invisible")
-            }
+            className={"fade " + (state.error ? "show visible" : "invisible")}
           >
-            <Alert message={error.message} />
+            <Alert message={state.error} />
           </div>
 
           <p className="mt-5 pt-3 text-muted">
@@ -156,49 +151,28 @@ export default Login;
  *
  * @version 0.0.4
  */
-const initStateCreds = {
+const INIT_STATE_CREDENTIALS = {
   username: "",
   password: "",
   rememberUser: false,
 };
 
 /**
- * Initial error values.
- *
- * @version 0.0.3
- */
-const initStateErr = { hasError: false, message: "null" };
-
-/**
  * Handles the submission process during login.
  *
- * @param {*} authManager         An Authentication Manager used to get the authentication status from server.
- * @param {*} credentials         The set of credentials that are to be sent to the server for authentication.
- * @param {*} setOnSubmitStatus   A state hook to set the current submit status.
- * @param {*} error               The values from a state hook that contains the errors received from server.
- * @param {*} setError            A state hook to set errors received from the server.
- * @param {*} router              A router hook containing the methods for page redirection and its current state.
- * @returns                       An async submit handler function.
+ * @param {*} signIn        An Authentication Manager action creator used to get the authentication status from server.
+ * @param {*} credentials   The set of credentials that are to be sent to the server for authentication.
+ * @param {*} dispatch      A Redux store dispatch function.
+ * @returns                 A submit handler function.
  *
- * @version 0.2.5
+ * @version 0.2.7
  * @since 0.0.9
  */
-function submitHandler(
-  authManager,
-  credentials,
-  setOnSubmitStatus,
-  [error, setError]
-) {
+function submitHandler(signIn, credentials, dispatch) {
   return async (e) => {
     e.preventDefault();
 
-    setError({ hasError: false, message: error.message });
-    setOnSubmitStatus(true);
-
-    authManager.signIn(credentials).catch((error) => {
-      setError({ hasError: true, message: error.message });
-      setOnSubmitStatus(false);
-    });
+    dispatch(signIn(credentials));
   };
 }
 

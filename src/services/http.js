@@ -27,7 +27,7 @@ function HttpService() {
     },
 
     validateStatus: (status) => {
-      return status >= 200 && status < 300;
+      return status >= 200;
     },
   });
 
@@ -129,11 +129,13 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataRemove = async (dataId) => {
+  const onDataRemove = async (data) => {
     const requestConfig = {
       url: "/del",
       method: "DELETE",
-      params: { item_: "product", _id: dataId },
+      params: { _type: "product" },
+
+      data: new URLSearchParams(data),
     };
 
     return instance(requestConfig);
