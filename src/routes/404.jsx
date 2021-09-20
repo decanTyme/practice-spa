@@ -2,7 +2,7 @@ import img404 from "../assets/404_error_message.png";
 import { Link } from "react-router-dom";
 import useRouter from "../services/hooks/use-router";
 import { useSelector } from "react-redux";
-import { selectAuthCurrentState } from "app/state/reducers/auth";
+import { selectAuthCurrentState } from "../app/state/reducers/auth";
 
 function NotFound() {
   const router = useRouter();

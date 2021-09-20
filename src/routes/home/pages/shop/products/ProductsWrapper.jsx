@@ -8,7 +8,7 @@ import { useLocation } from "react-router";
 import {
   selectAuthStaleStatus,
   selectAuthStatus,
-} from "app/state/reducers/auth";
+} from "../../../../../app/state/reducers/auth";
 import {
   fetchData,
   modifyData,
@@ -20,7 +20,7 @@ import {
   addToSelection,
   viewData,
   selectDataInSelection,
-} from "app/state/reducers/data";
+} from "../../../../../app/state/reducers/data";
 import ProductOptions from "./components/Options";
 import {
   useTable,
