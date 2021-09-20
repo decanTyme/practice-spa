@@ -1,4 +1,4 @@
-import { selectDataInSelection } from "app/state/reducers/data";
+import { selectDataInSelection } from "../../../../../../app/state/reducers/data";
 import { Fragment } from "react";
 import { isDesktop } from "react-device-detect";
 import { useSelector } from "react-redux";
