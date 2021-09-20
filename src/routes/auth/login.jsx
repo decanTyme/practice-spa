@@ -54,8 +54,8 @@ function Login() {
             src={logo}
             className="mb-4"
             alt="BodyTalks.PH Logo"
-            width="160"
-            height="160"
+            width="192"
+            height="192"
           />
           <h1 className="h3 mb-3 fw-normal">Please Log In</h1>
           <div className="form-floating">

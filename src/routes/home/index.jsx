@@ -16,7 +16,7 @@ const onDesktopViewportClass =
   "col-sm-7 col-md-8 ms-sm-auto mb-md-3 col-lg-9 col-xl-10 ";
 const onMobileViewportClass = "mb-1 ";
 
-function Home(props) {
+function Home() {
   const { theme } = useThemeProvider();
   const currentTheme = Themes[theme];
 
@@ -36,17 +36,12 @@ function Home(props) {
               "sidebar-wrapper mb-0"
             }
           >
-            <Sidebar
-              logout={props.logout}
-              hideFooter={isMobile}
-              className="offcanvas-body"
-            />
+            <Sidebar hideFooter={isMobile} className="offcanvas-body" />
           </aside>
 
           {/* --------------------- Navigation Bar when in mobile ----------------------  */}
           <nav className="fixed-bottom w-100 p-0" hidden={!isMobile}>
             <SidebarFooter
-              logout={props.logout}
               menuButton={
                 <Link
                   to="#open"

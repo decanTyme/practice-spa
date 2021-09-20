@@ -5,7 +5,7 @@ import { isMobile } from "react-device-detect";
 import SidebarFooter from "./footer/footer";
 import SidebarMenu from "./navigation/NavigationMenu";
 
-function Sidebar(props) {
+function Sidebar() {
   return (
     <div className="sidebar-content">
       <div className="d-flex justify-content-center sidebar-brand">
@@ -28,11 +28,11 @@ function Sidebar(props) {
       {/* User Information */}
       <SidebarHeader />
 
-      {/* Links */}
+      {/* Menu Links */}
       <SidebarMenu />
 
       {/* Footer */}
-      {isMobile ? null : <SidebarFooter logout={props.logout} />}
+      {isMobile ? null : <SidebarFooter />}
     </div>
   );
 }
