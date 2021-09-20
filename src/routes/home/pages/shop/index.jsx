@@ -1,6 +1,6 @@
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 import Soon from "../../../ComingSoon";
-import Products from "./products/wrapper";
+import Products from "./products/ProductsWrapper";
 
 function Shop() {
   const { path } = useRouteMatch();
