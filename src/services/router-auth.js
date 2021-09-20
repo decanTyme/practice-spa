@@ -3,7 +3,7 @@ import {
   requestAuthToken,
   selectAuthCurrentState,
   setAuthError,
-} from "app/state/reducers/auth";
+} from "../app/state/reducers/auth";
 import { useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useRouter from "./hooks/use-router";

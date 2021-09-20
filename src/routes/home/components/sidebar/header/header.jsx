@@ -9,7 +9,7 @@ import {
   selectAuthDatabaseStatus,
   selectAuthStatus,
   selectAuthUserData,
-} from "app/state/reducers/auth";
+} from "../../../../../app/state/reducers/auth";
 
 function SidebarHeader() {
   const router = useRouter();

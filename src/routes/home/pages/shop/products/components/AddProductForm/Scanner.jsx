@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ModalMenu from "../../../../../components/modal/ModalMenu";
 import ScannerController from "./scanner-controller";
 import { Link } from "react-router-dom";
-import { addCode } from "app/state/reducers/data";
+import { addScannedCode } from "../../../../../../../app/state/reducers/data";
 import { useDispatch } from "react-redux";
 
 const DEF_SCANNER_TEXT =
@@ -100,7 +100,7 @@ function Scanner(props) {
   };
 
   const onCodeSave = () => {
-    dispatch(addCode(scanData.text));
+    dispatch(addScannedCode(scanData.text));
   };
 
   const onModalDismiss = () => {

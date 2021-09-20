@@ -1,6 +1,9 @@
-import { modifyData, removeData } from "app/state/reducers/data";
+import {
+  modifyData,
+  removeData,
+} from "../../../../../../app/state/reducers/data";
 import { useDispatch, useSelector } from "react-redux";
-import { selectDataInEdit } from "app/state/reducers/data";
+import { selectDataInEdit } from "../../../../../../app/state/reducers/data";
 
 function Product(props) {
   const dispatch = useDispatch();
