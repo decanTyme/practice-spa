@@ -1,7 +1,7 @@
 import "./footer.css";
 import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
-import { signOut } from "app/state/reducers/auth";
+import { signOut } from "../../../../../app/state/reducers/auth";
 import { isMobile } from "react-device-detect";
 import { useDispatch } from "react-redux";
 
