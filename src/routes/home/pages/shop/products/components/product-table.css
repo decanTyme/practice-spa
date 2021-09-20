@@ -6,6 +6,7 @@
 .product-table-wrapper table thead th {
   background: #47709c;
   color: white;
+  text-align: center;
 }
 
 .product-table-wrapper select.form-select {
