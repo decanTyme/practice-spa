@@ -152,7 +152,7 @@ const slice = createSlice({
       state.dataDetails = null;
       state.sn = null;
       state.currentlyModifying = null;
-      state.currentlySelected = null;
+      state.currentlySelected = [];
     },
   },
 
