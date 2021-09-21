@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
 import {
   selectAuthStaleStatus,
-  selectAuthStatus,
-} from "../../../../../app/state/reducers/auth";
+  selectAuthState,
+} from "../../../../../app/state/slices/auth";
 import {
   fetchData,
   modifyData,
@@ -20,7 +20,7 @@ import {
   addToSelection,
   viewData,
   selectDataInSelection,
-} from "../../../../../app/state/reducers/data";
+} from "../../../../../app/state/slices/data";
 import ProductOptions from "./components/Options";
 import {
   useTable,
@@ -101,6 +101,7 @@ const webColumns = [
       {
         Header: "Category",
         accessor: "category",
+        width: "12%",
         Filter: SelectColumnFilter,
         filter: "includes",
       },
@@ -149,7 +150,7 @@ function ProductsWrapper() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const isLoggedIn = useSelector(selectAuthStatus);
+  const isLoggedIn = useSelector(selectAuthState);
   const stale = useSelector(selectAuthStaleStatus);
 
   const data = useSelector(selectAllData);
@@ -161,12 +162,13 @@ function ProductsWrapper() {
 
   useEffect(() => {
     if (
-      dataFetchStatus === "idle" ||
-      (dataFetchStatus === "failed" && isLoggedIn && !stale)
+      (dataFetchStatus === "idle" || dataFetchStatus === "failed") &&
+      isLoggedIn &&
+      !stale
     ) {
       dispatch(fetchData());
     }
-  }, [dataFetchStatus, dispatch, error, isLoggedIn, stale]);
+  }, [dispatch, dataFetchStatus, error, isLoggedIn, stale]);
 
   const viewDataDetails = useCallback(
     (itemId) => {

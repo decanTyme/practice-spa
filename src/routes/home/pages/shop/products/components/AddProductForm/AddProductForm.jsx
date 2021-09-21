@@ -6,9 +6,9 @@ import {
   updateData,
   selectDataInEdit,
   selectDataCode,
-} from "../../../../../../../app/state/reducers/data";
+} from "../../../../../../../app/state/slices/data";
 import { useDispatch } from "react-redux";
-import { setStale } from "../../../../../../../app/state/reducers/auth";
+import { setStale } from "../../../../../../../app/state/slices/auth";
 import { useSelector } from "react-redux";
 
 const INIT_FORM_VAL = {
