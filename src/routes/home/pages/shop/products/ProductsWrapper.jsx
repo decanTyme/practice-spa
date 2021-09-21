@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
 import {
   selectAuthStaleStatus,
-  selectAuthStatus,
+  selectAuthState,
 } from "../../../../../app/state/slices/auth";
 import {
   fetchData,
@@ -150,7 +150,7 @@ function ProductsWrapper() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const isLoggedIn = useSelector(selectAuthStatus);
+  const isLoggedIn = useSelector(selectAuthState);
   const stale = useSelector(selectAuthStaleStatus);
 
   const data = useSelector(selectAllData);
@@ -162,12 +162,13 @@ function ProductsWrapper() {
 
   useEffect(() => {
     if (
-      dataFetchStatus === "idle" ||
-      (dataFetchStatus === "failed" && isLoggedIn && !stale)
+      (dataFetchStatus === "idle" || dataFetchStatus === "failed") &&
+      isLoggedIn &&
+      !stale
     ) {
       dispatch(fetchData());
     }
-  }, [dataFetchStatus, dispatch, error, isLoggedIn, stale]);
+  }, [dispatch, dataFetchStatus, error, isLoggedIn, stale]);
 
   const viewDataDetails = useCallback(
     (itemId) => {

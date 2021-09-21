@@ -7,7 +7,7 @@ import {
   Constants,
   getDatabaseStatus,
   selectAuthDatabaseStatus,
-  selectAuthStatus,
+  selectAuthState,
   selectAuthUserData,
 } from "../../../../../app/state/slices/auth";
 
@@ -15,7 +15,7 @@ function SidebarHeader() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const isLoggedIn = useSelector(selectAuthStatus);
+  const isLoggedIn = useSelector(selectAuthState);
   const userData = useSelector(selectAuthUserData);
   const database = useSelector(selectAuthDatabaseStatus);
 
