@@ -66,11 +66,13 @@ function HttpService() {
   };
 
   const onReAuthRequest = async (userId, refToken) => {
+    const data = refToken ? { userId, refToken } : { userId };
+
     const requestConfig = {
       url: "/authenticate",
       method: "POST",
 
-      data: new URLSearchParams({ userId, refToken }),
+      data: new URLSearchParams(data),
     };
     return instance(requestConfig);
   };

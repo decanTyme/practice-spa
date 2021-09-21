@@ -1,4 +1,4 @@
-import { selectDataInSelection } from "../../../../../../app/state/reducers/data";
+import { selectDataInSelection } from "../../../../../../app/state/slices/data";
 import { Fragment } from "react";
 import { isDesktop } from "react-device-detect";
 import { useSelector } from "react-redux";
@@ -50,7 +50,7 @@ function ProductOptions({
       <div className="card-body">
         {isDesktop ? (
           <>
-            <h6 className="card-title mb-1">Toggle Columns</h6>
+            <h6 className="card-title mb-2">Toggle Columns</h6>
             <div className="row row-cols-2 px-3 pb-2">
               {toggleColumns.map((column) => (
                 <div key={column.id} className="col form-check">

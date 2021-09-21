@@ -3,7 +3,7 @@ import {
   requestAuthToken,
   selectAuthCurrentState,
   setAuthError,
-} from "../app/state/reducers/auth";
+} from "../app/state/slices/auth";
 import { useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useRouter from "./hooks/use-router";
@@ -53,12 +53,6 @@ function AuthManagerRouter() {
         // (e.g. by signing off)
         if (stale && status === Constants.IDLE) {
           dispatch(requestAuthToken());
-        }
-
-        // If all is going well and there was no error after
-        // a token refresh, reload page
-        if (!error && status === Constants.Auth.Token.REFRESH_SUCCESS) {
-          router.history.go(0);
         }
 
         return;
