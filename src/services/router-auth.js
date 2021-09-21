@@ -55,12 +55,6 @@ function AuthManagerRouter() {
           dispatch(requestAuthToken());
         }
 
-        // If all is going well and there was no error after
-        // a token refresh, reload page
-        if (!error && status === Constants.Auth.Token.REFRESH_SUCCESS) {
-          router.history.go(0);
-        }
-
         return;
       }
 
