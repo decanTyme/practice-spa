@@ -10,7 +10,7 @@ import {
   selectAuthCurrentState,
   setStatus,
   signIn,
-} from "../../app/state/reducers/auth";
+} from "../../app/state/slices/auth";
 
 /**
  * Login page of BodyTalks.PH Inventory Management System.
@@ -132,7 +132,7 @@ function Login() {
           <div
             className={"fade " + (state.error ? "show visible" : "invisible")}
           >
-            <Alert message={state.error} />
+            <Alert message={state.error || "ERROR_NONE"} />
           </div>
 
           <p className="mt-5 pt-3 text-muted">
