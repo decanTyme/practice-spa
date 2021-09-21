@@ -8,7 +8,7 @@ import { useLocation } from "react-router";
 import {
   selectAuthStaleStatus,
   selectAuthStatus,
-} from "../../../../../app/state/reducers/auth";
+} from "../../../../../app/state/slices/auth";
 import {
   fetchData,
   modifyData,
@@ -20,7 +20,7 @@ import {
   addToSelection,
   viewData,
   selectDataInSelection,
-} from "../../../../../app/state/reducers/data";
+} from "../../../../../app/state/slices/data";
 import ProductOptions from "./components/Options";
 import {
   useTable,
@@ -101,6 +101,7 @@ const webColumns = [
       {
         Header: "Category",
         accessor: "category",
+        width: "12%",
         Filter: SelectColumnFilter,
         filter: "includes",
       },
