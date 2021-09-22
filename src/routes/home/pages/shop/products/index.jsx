@@ -37,6 +37,7 @@ import IndeterminateCheckbox from "./components/IndeterminateCheckbox";
 import SliderColumnFilter from "./components/SliderColumnFilter";
 import SelectColumnFilter from "./components/SelectColumnFilter";
 import DefaultColumnFilter from "./components/DefaultColumnFilter";
+import Wrapper from "../common/Wrapper";
 
 const mobileColumns = [
   {
@@ -112,12 +113,12 @@ const webColumns = [
     columns: [
       {
         Header: "Quantity",
-        accessor: "quantity",
+        accessor: "stock.quantity",
         Filter: "",
       },
       {
         Header: "Unit",
-        accessor: "unit",
+        accessor: "stock.unit",
         width: "7%",
         Filter: "",
       },
@@ -126,11 +127,6 @@ const webColumns = [
         accessor: "price",
         Filter: SliderColumnFilter,
         filter: filterGreaterThan,
-      },
-      {
-        Header: "Sale",
-        accessor: "salePrice",
-        Filter: "",
       },
     ],
   },
@@ -174,6 +170,7 @@ function ProductsWrapper() {
     (itemId) => {
       data.forEach((item) => {
         if (item._id === itemId && dataDetails?._id !== itemId) {
+          console.log(item);
           dispatch(viewData(item));
         }
       });
@@ -317,22 +314,8 @@ function ProductsWrapper() {
   }, [selectData, selectedFlatRows, selectedRowIds]);
 
   return (
-    <div className="container-fluid px-3 products-wrapper">
-      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h1 className="h2">Products</h1>
-        <div className="btn-toolbar mb-2 mb-md-0">
-          <div className="btn-group me-2">
-            <button type="button" className="btn btn-sm btn-outline-secondary">
-              Share
-            </button>
-            <button type="button" className="btn btn-sm btn-outline-secondary">
-              Export
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="row g-3">
+    <Wrapper pageTitle="Products">
+      <section className="row g-3">
         <div className="col-sm-9">
           <ErrorBoundary>
             <ProductTable
@@ -371,8 +354,8 @@ function ProductsWrapper() {
             <AddProductForm />
           </div>
         </aside>
-      </div>
-    </div>
+      </section>
+    </Wrapper>
   );
 }
 
