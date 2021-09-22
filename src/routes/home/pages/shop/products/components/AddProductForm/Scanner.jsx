@@ -1,6 +1,6 @@
 import videoPlaceholder from "../../../../../../../assets/qrbar2.png";
 import { useEffect, useState } from "react";
-import ModalMenu from "../../../../../components/modal/ModalMenu";
+import ModalMenu from "../../../../../common/menus/ModalMenu";
 import ScannerController from "./scanner-controller";
 import { Link } from "react-router-dom";
 import { addScannedCode } from "../../../../../../../app/state/slices/data";

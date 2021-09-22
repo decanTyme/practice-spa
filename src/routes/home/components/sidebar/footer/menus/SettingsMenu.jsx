@@ -1,6 +1,6 @@
 import Themes from "../../../../../../themes";
 import useThemeProvider from "../../../../../../services/providers/theme";
-import ModalMenu from "../../../modal/ModalMenu";
+import ModalMenu from "../../../../common/menus/ModalMenu";
 import { Constants } from "../../../../../../constants";
 
 function SettingsMenu(props) {
