@@ -19,7 +19,6 @@ import {
   selectProductDetails,
   selectCurrentlySelectedProducts,
   selectProductImportedCSV,
-  selectProductError,
 } from "../../../../../app/state/slices/data/product/selectors";
 import {
   useTable,
@@ -54,14 +53,15 @@ function ProductsWrapper() {
   const stale = useSelector(selectAuthStaleStatus);
 
   const data = useSelector(selectAllProducts);
-  const dataDetails = useSelector(selectProductDetails);
+  const productDetails = useSelector(selectProductDetails);
   const dataInSelection = useSelector(selectCurrentlySelectedProducts);
   const importedCSV = useSelector(selectProductImportedCSV);
 
   const dataFetchStatus = useSelector(selectProductFetchStatus);
-  const error = useSelector(selectProductError);
 
   useEffect(() => {
+    // Only fetch if either the user is logged in, not stale, or
+    // Data Service is idle or has a previously failed attempt
     if (
       (dataFetchStatus === Constants.IDLE ||
         dataFetchStatus === Constants.FAILED) &&
@@ -70,16 +70,16 @@ function ProductsWrapper() {
     ) {
       dispatch(fetchProducts("stocks"));
     }
-  }, [dispatch, dataFetchStatus, error, isLoggedIn, stale]);
+  }, [dispatch, dataFetchStatus, isLoggedIn, stale]);
 
   const viewDataDetails = useCallback(
     (itemId) => {
       data.forEach((item) => {
-        if (item._id === itemId && dataDetails?._id !== itemId)
+        if (item._id === itemId && productDetails?._id !== itemId)
           dispatch(viewProductDetail(item));
       });
     },
-    [data, dataDetails, dispatch]
+    [data, productDetails, dispatch]
   );
 
   const onRemoveProduct = useCallback(
@@ -189,23 +189,30 @@ function ProductsWrapper() {
                   onClick: () =>
                     isMobile ? viewDataDetails(row.original._id) : null,
                 })}
+                getCellProps={(cellInfo) => ({
+                  style: {
+                    textAlign:
+                      typeof cellInfo.value === "number" ? "center" : null,
+                  },
+                })}
               />
             </div>
           </ErrorBoundary>
           {importedCSV ? (
             <Card title="Imported CSV (Preview)" className="mt-3">
+              <table></table>
               {importedCSV.map((data) => (
                 <div key={data.code}>
-                  {`[${data.code}] ${data.brand} - ${data.name} (${data.price}) ${data.class} ${data.category} > ${data.stock.quantity} ${data.stock.unit}`}
+                  {`[${data.code}] ${data.brand} - ${data.name} (${data.price}) ${data.class} ${data.category} > ${data.stock.quantity.inbound} ${data.stock.quantity.warehouse} ${data.stock.quantity.shipped} ${data.stock.unit}`}
                 </div>
               ))}
             </Card>
           ) : null}
         </div>
         <aside className="col-sm-3">
-          {dataDetails ? (
+          {productDetails ? (
             <ErrorBoundary>
-              <ProductDetailsCard product={dataDetails} />
+              <ProductDetailsCard product={productDetails} />
             </ErrorBoundary>
           ) : (
             <Card title="Select a product to view" />
