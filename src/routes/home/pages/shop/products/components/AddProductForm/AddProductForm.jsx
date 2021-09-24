@@ -83,7 +83,7 @@ function AddProductForm() {
     };
   }, [productInEdit]);
 
-  const onSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const addProductForm = document.getElementById("addProductForm");
 
@@ -197,7 +197,7 @@ function AddProductForm() {
     <div className="card border add-product-form">
       <div className="card-body">
         <h6 className="card-title">{productInEdit ? "Edit" : "Add"} Product</h6>
-        <form id="addProductForm" className="card-text needs-validation">
+        <form id="addProductForm" className="needs-validation">
           {/* ------------------------------ Row ------------------------------ */}
           <div className="row g-2 mt-1 align-items-center">
             <div className="col">
@@ -464,7 +464,7 @@ function AddProductForm() {
                   type="submit"
                   className="btn btn-success ms-2"
                   role="status"
-                  onClick={onSubmit}
+                  onClick={handleSubmit}
                   disabled={disable.submitBtn}
                 >
                   {saveStatus !== "IDLE" ? (
