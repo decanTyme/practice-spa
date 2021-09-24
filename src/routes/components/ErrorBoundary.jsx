@@ -20,7 +20,7 @@ class ErrorBoundary extends Component {
         <div className="card text-center">
           <div className="card-body">
             <div className="card-title">Sorry!</div>
-            <div className="card-text">Something went wrong.</div>
+            <div className="card-text mb-2">Something went wrong.</div>
             <button
               to="#"
               className="btn btn-primary"
