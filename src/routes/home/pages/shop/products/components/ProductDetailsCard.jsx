@@ -1,17 +1,17 @@
 import {
-  modifyData,
-  removeData,
-} from "../../../../../../app/state/slices/data";
+  modifyProduct,
+  removeProduct,
+} from "../../../../../../app/state/slices/data/product";
 import { useDispatch, useSelector } from "react-redux";
-import { selectDataInEdit } from "../../../../../../app/state/slices/data";
+import { selectProductInEdit } from "../../../../../../app/state/slices/data/product/selectors";
 
-function Product(props) {
+function ProductDetailsCard(props) {
   const dispatch = useDispatch();
-  const editData = useSelector(selectDataInEdit);
+  const editData = useSelector(selectProductInEdit);
 
   const onEditProduct = (e) => {
     if (editData?._id !== props?.product?._id)
-      dispatch(modifyData(props.product));
+      dispatch(modifyProduct(props.product));
   };
 
   const onRemoveProduct = () => {
@@ -20,7 +20,7 @@ function Product(props) {
     );
 
     if (ans !== null && ans === props.product.name)
-      dispatch(removeData(props?.product?._id));
+      dispatch(removeProduct(props?.product?._id));
   };
 
   return (
@@ -29,7 +29,7 @@ function Product(props) {
         <div className="card-title">
           <div className="d-flex justify-content-between align-items-center">
             <h5 className="mb-1">{props.product.name}</h5>
-            <p className="fst-italic me-1 mb-1 text-success fw-lighter">
+            <p className="fst-italic me-1 mb-1 text-success">
               #{props.product.code}
             </p>
           </div>
@@ -53,12 +53,28 @@ function Product(props) {
               <div className="fw-bolder">{props.product.price}</div>
             </div>
             <div className="col-6 d-inline-flex justify-content-between">
-              <div>In Stock</div>
-              <div className="fw-bolder">{props.product.quantity}</div>
+              <div>Sale Price</div>
+              <div className="fw-bolder">123</div>
             </div>
           </div>
         </li>
       </ul>
+      <div className="container-fluid">
+        <div className="row py-2 text-center">
+          <div className="col-4">
+            <div>Inbound</div>
+            <div className="fw-bold">50</div>
+          </div>
+          <div className="col-4 border-end border-start">
+            <div>Warehouse</div>
+            <div className="fw-bold">25</div>
+          </div>
+          <div className="col-4">
+            <div>Shipped</div>
+            <div className="fw-bold">10</div>
+          </div>
+        </div>
+      </div>
       <div className="btn-group" role="group" aria-label="Mini options">
         <button
           type="button"
@@ -75,9 +91,10 @@ function Product(props) {
           Delete
         </button>
       </div>
+
       <div className="card-footer text-muted">Item ID: {props.product._id}</div>
     </div>
   );
 }
 
-export default Product;
+export default ProductDetailsCard;
