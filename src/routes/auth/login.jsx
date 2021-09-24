@@ -5,12 +5,9 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Tooltip } from "bootstrap";
 import Alert from "../home/pages/components/alert";
-import {
-  Constants,
-  selectAuthCurrentState,
-  setStatus,
-  signIn,
-} from "../../app/state/slices/auth";
+import { setStatus, signIn } from "../../app/state/slices/auth";
+import { selectAuthCurrentState } from "../../app/state/slices/auth/selectors";
+import Constants from "../../app/state/slices/constants";
 
 /**
  * Login page of BodyTalks.PH Inventory Management System.
@@ -69,7 +66,7 @@ function Login() {
               className="form-control"
               value={credentials.username}
               onChange={handleInputChange}
-              disabled={state.status === Constants.Auth.SIGNING_IN}
+              disabled={state.status === Constants.AuthManager.Sign.SIGNING_IN}
               autoComplete="username"
             />
             <label htmlFor="usernameInput">Username</label>
@@ -85,7 +82,7 @@ function Login() {
               className="form-control"
               value={credentials.password}
               onChange={handleInputChange}
-              disabled={state.status === Constants.Auth.SIGNING_IN}
+              disabled={state.status === Constants.AuthManager.Sign.SIGNING_IN}
               autoComplete="current-password"
             />
             <label htmlFor="passwordInput">Password</label>
@@ -103,7 +100,9 @@ function Login() {
                 name="rememberUser"
                 checked={credentials.rememberUser}
                 onChange={handleInputChange}
-                disabled={state.status === Constants.Auth.SIGNING_IN}
+                disabled={
+                  state.status === Constants.AuthManager.Sign.SIGNING_IN
+                }
               />
               Remember me
             </label>
@@ -112,7 +111,7 @@ function Login() {
           <button
             type="submit"
             className="w-100 mb-1 btn btn-lg btn-secondary"
-            disabled={state.status === Constants.Auth.SIGNING_IN}
+            disabled={state.status === Constants.AuthManager.Sign.SIGNING_IN}
           >
             Submit
           </button>

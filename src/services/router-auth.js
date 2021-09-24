@@ -1,12 +1,9 @@
-import {
-  Constants,
-  requestAuthToken,
-  selectAuthCurrentState,
-  setAuthError,
-} from "../app/state/slices/auth";
 import { useLayoutEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import useRouter from "./hooks/use-router";
+import { useDispatch, useSelector } from "react-redux";
+import { requestAuthToken, setAuthError } from "../app/state/slices/auth";
+import { selectAuthCurrentState } from "../app/state/slices/auth/selectors";
+import Constants from "../app/state/slices/constants";
 
 /**
  * A hook that checks and handles all authentication routing.
@@ -67,7 +64,10 @@ function AuthManagerRouter() {
         // the same page (in case the session expired), check again to see if it
         // was not deliberate by making sure the user didn't do it themselves!
         // (e.g. by signing off)
-        if (error || status === Constants.Auth.SIGNED_OFF_WITH_ERROR) {
+        if (
+          error ||
+          status === Constants.AuthManager.Sign.SIGNED_OFF_WITH_ERROR
+        ) {
           callback =
             "?" +
             new URLSearchParams({
@@ -81,7 +81,7 @@ function AuthManagerRouter() {
         // tried to sign in recently, therefore notify the user to sign in first.
         // Also check to see if this was not deliberate by making sure the
         // user didn't do it themselves! (e.g. by signing off)
-        if (!error && status !== Constants.Auth.SIGNING_OFF) {
+        if (!error && status !== Constants.AuthManager.Sign.SIGNING_OFF) {
           callback =
             "?" +
             new URLSearchParams({

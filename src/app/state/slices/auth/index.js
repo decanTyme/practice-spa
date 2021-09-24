@@ -1,32 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import HttpService from "../../../../services/http";
-import { deleteAllData } from "../data";
+import Constants from "../constants";
+import { resetAllCachedCustomerData } from "../data/customer";
+import { resetAllCachedProductData } from "../data/product";
+import { selectAuthRefToken, selectAuthUserId } from "./selectors";
 
 const http = HttpService();
 
-export const Constants = {
-  IDLE: "IDLE",
-  Auth: {
-    SIGNING_IN: "SIGNING_IN",
-    SIGNING_OFF: "SIGNING_OFF",
-    SIGNED_OFF: "SIGNED_OFF",
-    SIGNED_OFF_WITH_ERROR: "SIGNED_OFF_FORCED",
-    ERROR: "ERROR",
-    Token: {
-      REFRESHING: "TOKEN_REFRESHING",
-      REFRESH_SUCCESS: "TOKEN_REFRESH_SUCCESS",
-      REFRESH_FAIL: "TOKEN_REFRESH_FAIL",
-    },
-  },
-  Database: {
-    CONNECTING: "CONNECTING",
-    CONNECTED: "CONNECTED",
-    ERROR: "FAILED",
-  },
+const hardReset = (dispatch) => {
+  dispatch(resetAllCachedProductData());
+  dispatch(resetAllCachedCustomerData());
 };
 
 export const signIn = createAsyncThunk(
-  "authManager/signin",
+  "AuthManager/signin",
   async (credentials) => {
     const response = await http.onAuthLoginRequest(credentials);
 
@@ -37,19 +24,21 @@ export const signIn = createAsyncThunk(
 );
 
 export const signOut = createAsyncThunk(
-  "authManager/signout",
-  async (_, { getState }) => {
+  "AuthManager/signout",
+  async (_, { dispatch, getState }) => {
     const userId = selectAuthUserId(getState());
     const refToken = selectAuthRefToken(getState());
 
     const response = await http.onAuthSignoffRequest(userId, refToken);
+
+    hardReset(dispatch);
 
     return response.data;
   }
 );
 
 export const getDatabaseStatus = createAsyncThunk(
-  "authManager/getDatabaseStatus",
+  "AuthManager/getDatabaseStatus",
   async () => {
     const response = await http.onDatabasePing();
 
@@ -62,7 +51,7 @@ export const getDatabaseStatus = createAsyncThunk(
 );
 
 export const requestAuthToken = createAsyncThunk(
-  "authManager/requestToken",
+  "AuthManager/requestToken",
   async (_, { dispatch, getState }) => {
     const refToken = selectAuthRefToken(getState());
     const userId = selectAuthUserId(getState());
@@ -70,18 +59,18 @@ export const requestAuthToken = createAsyncThunk(
     const response = await http.onReAuthRequest(userId, refToken);
 
     if (!response.data.auth) {
-      dispatch(deleteAllData());
+      hardReset(dispatch);
       throw new Error(response.data.message);
     }
 
-    dispatch(setStatus(Constants.Auth.Token.REFRESH_SUCCESS));
+    dispatch(setStatus(Constants.AuthManager.Sign.Token.REFRESH_SUCCESS));
 
     return response.data;
   }
 );
 
 const slice = createSlice({
-  name: "authManager",
+  name: "AuthManager",
   initialState: {
     isLoggedIn: false,
     rememberUser: false,
@@ -95,7 +84,7 @@ const slice = createSlice({
   },
   reducers: {
     forceSignOff: (state) => {
-      state.status = Constants.Auth.SIGNED_OFF_WITH_ERROR;
+      state.status = Constants.AuthManager.Sign.SIGNED_OFF_WITH_ERROR;
 
       state.isLoggedIn = false;
       state.rememberUser = false;
@@ -126,7 +115,7 @@ const slice = createSlice({
     /* Signin */
     builder
       .addCase(signIn.pending, (state, action) => {
-        state.status = Constants.Auth.SIGNING_IN;
+        state.status = Constants.AuthManager.Sign.SIGNING_IN;
         state.error = null;
 
         state.database = { connected: false, status: Constants.IDLE };
@@ -156,14 +145,14 @@ const slice = createSlice({
         }
       })
       .addCase(signIn.rejected, (state, action) => {
-        state.status = Constants.Auth.ERROR;
+        state.status = Constants.AuthManager.Sign.ERROR;
         state.error = action.error.message;
       });
 
     /* Signoff */
     builder
       .addCase(signOut.pending, (state) => {
-        state.status = Constants.Auth.SIGNING_OFF;
+        state.status = Constants.AuthManager.Sign.SIGNING_OFF;
 
         state.isLoggedIn = false;
         state.rememberUser = false;
@@ -172,7 +161,7 @@ const slice = createSlice({
         state.database = { connected: false, status: Constants.IDLE };
       })
       .addCase(signOut.fulfilled, (state) => {
-        state.status = Constants.Auth.SIGNED_OFF;
+        state.status = Constants.AuthManager.Sign.SIGNED_OFF;
 
         state.userId = null;
         state.t_key = null;
@@ -181,7 +170,7 @@ const slice = createSlice({
     /* Database */
     builder
       .addCase(getDatabaseStatus.pending, (state) => {
-        state.database.status = Constants.Database.CONNECTING;
+        state.database.status = Constants.AuthManager.Database.CONNECTING;
       })
       .addCase(getDatabaseStatus.fulfilled, (state) => {
         state.database.status = Constants.IDLE;
@@ -189,7 +178,7 @@ const slice = createSlice({
         state.database.connected = true;
       })
       .addCase(getDatabaseStatus.rejected, (state) => {
-        state.database.status = Constants.Database.ERROR;
+        state.database.status = Constants.AuthManager.Database.ERROR;
 
         state.stale = true;
         state.database.connected = false;
@@ -198,7 +187,7 @@ const slice = createSlice({
     /* Auth token request */
     builder
       .addCase(requestAuthToken.pending, (state) => {
-        state.status = Constants.Auth.Token.REFRESHING;
+        state.status = Constants.AuthManager.Sign.Token.REFRESHING;
         state.error = null;
       })
       .addCase(requestAuthToken.fulfilled, (state) => {
@@ -209,7 +198,7 @@ const slice = createSlice({
         state.database = { connected: false, status: Constants.IDLE };
       })
       .addCase(requestAuthToken.rejected, (state, action) => {
-        state.status = Constants.Auth.Token.REFRESH_FAIL;
+        state.status = Constants.AuthManager.Sign.Token.REFRESH_FAIL;
         state.error = action.error.message;
 
         state.isLoggedIn = false;
@@ -230,15 +219,5 @@ export const {
   setStatus,
   forceSignOff,
 } = slice.actions;
-
-export const selectAuthCurrentState = (state) => state.root.auth;
-export const selectAuthState = (state) => state.root.auth.isLoggedIn;
-export const selectAuthStatus = (state) => state.root.auth.status;
-export const selectAuthRefToken = (state) => state.root.auth.t_key;
-export const selectAuthUserId = (state) => state.root.auth.userId;
-export const selectAuthUserData = (state) => state.root.auth.userData;
-export const selectAuthRememberUser = (state) => state.root.auth.rememberUser;
-export const selectAuthDatabaseStatus = (state) => state.root.auth.database;
-export const selectAuthStaleStatus = (state) => state.root.auth.stale;
 
 export default slice.reducer;

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ModalMenu from "../../../../../common/menus/ModalMenu";
 import ScannerController from "./scanner-controller";
 import { Link } from "react-router-dom";
-import { addScannedCode } from "../../../../../../../app/state/slices/data";
+import { addScannedCode } from "../../../../../../../app/state/slices/data/product/index";
 import { useDispatch } from "react-redux";
 
 const DEF_SCANNER_TEXT =
