@@ -1,15 +1,22 @@
 import "./add-product-form.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Papa from "papaparse";
 import Spinner from "../../../../components/spinner";
 import {
-  pushData,
-  updateData,
-  selectDataInEdit,
-  selectDataCode,
-} from "../../../../../../../app/state/slices/data";
-import { useDispatch } from "react-redux";
-import { setStale } from "../../../../../../../app/state/slices/auth";
-import { useSelector } from "react-redux";
+  pushProduct,
+  updateProduct,
+  resetAllProductModification,
+  addImportedCSV,
+  abortCSVImport,
+} from "../../../../../../../app/state/slices/data/product";
+import {
+  selectProductInEdit,
+  selectProductScannedCode,
+  selectProductPushStatus,
+  selectProductImportedCSV,
+} from "../../../../../../../app/state/slices/data/product/selectors";
+import Constants from "../../../../../../../app/state/slices/constants";
 
 const INIT_FORM_VAL = {
   name: "",
@@ -17,82 +24,83 @@ const INIT_FORM_VAL = {
   brand: "",
   class: "",
   category: "",
-  quantity: 0,
-  unit: "",
+  stock: { quantity: 1, unit: "Set" },
   price: 0,
   salePrice: 0,
 };
 
-const INIT_STATES_BTN = {
+const INIT_BTN_STATE = {
   submitBtn: true,
   resetBtn: true,
   inputs: false,
   inputCode: false,
 };
 
+const INIT_BTN_TEXT = {
+  saveBtn: "Save",
+  resetBtn: "Reset",
+};
+
 function AddProductForm() {
-  const editData = useSelector(selectDataInEdit);
-  const code = useSelector(selectDataCode);
+  const productInEdit = useSelector(selectProductInEdit);
+  const scannedCode = useSelector(selectProductScannedCode);
+  const importedCSV = useSelector(selectProductImportedCSV);
+
+  const saveStatus = useSelector(selectProductPushStatus);
+
   const [product, setProduct] = useState(INIT_FORM_VAL);
-  const [status, setStatus] = useState("idle");
-  const [disable, setDisable] = useState(INIT_STATES_BTN);
-  const [btnText, setText] = useState("Save");
+  const [addStock, setAddStock] = useState(false);
+  const [disable, setDisable] = useState(INIT_BTN_STATE);
+  const [text, setText] = useState(INIT_BTN_TEXT);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (code) {
-      setProduct({ ...product, code });
+    if (scannedCode) {
+      setProduct({ ...product, code: scannedCode });
     }
     // eslint-disable-next-line
-  }, [code]);
+  }, [scannedCode]);
 
   useEffect(() => {
-    if (editData) {
-      setProduct(editData);
+    if (productInEdit) {
+      setProduct(productInEdit);
       setDisable({
         submitBtn: false,
         resetBtn: false,
         inputs: false,
         inputCode: true,
       });
-      setText("Update");
+      setText({
+        saveBtn: "Update",
+        resetBtn: "Cancel",
+      });
     }
 
     return () => {
       setProduct(INIT_FORM_VAL);
-      setDisable(INIT_STATES_BTN);
-      setText("Save");
+      setDisable(INIT_BTN_STATE);
+      setText(INIT_BTN_TEXT);
     };
-  }, [editData]);
+  }, [productInEdit]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     const addProductForm = document.getElementById("addProductForm");
 
     if (addProductForm.checkValidity()) {
-      try {
-        setStatus("pending");
-        setDisable({
-          submitBtn: true,
-          resetBtn: true,
-          inputs: true,
-          inputCode: true,
-        });
-        if (editData)
-          await dispatch(
-            updateData({ ...product, _id: editData._id })
-          ).unwrap();
-        else await dispatch(pushData(product)).unwrap();
-        setProduct(INIT_FORM_VAL);
-        setText("Save");
-        addProductForm.classList.remove("was-validated");
-      } catch (err) {
-        console.error("Failed to save the post: ", err);
-        dispatch(setStale(true));
-      } finally {
-        setStatus("idle");
-        setDisable(INIT_STATES_BTN);
-      }
+      setDisable({
+        submitBtn: true,
+        resetBtn: true,
+        inputs: true,
+        inputCode: true,
+      });
+
+      if (productInEdit)
+        dispatch(updateProduct({ ...product, _id: productInEdit._id }));
+      else if (importedCSV) dispatch(pushProduct(importedCSV));
+      else dispatch(pushProduct(product));
+
+      addProductForm.classList.remove("was-validated");
     } else {
       addProductForm.classList.add("was-validated");
     }
@@ -103,42 +111,95 @@ function AddProductForm() {
       submitBtn: false,
       resetBtn: false,
       inputs: false,
-      inputCode: editData ? true : false,
+      inputCode: productInEdit ? true : false,
     });
 
     const name = e.target.name,
       value = e.target.value;
 
     setProduct({
-      name: name === "name" ? value : product.name,
       code: name === "code" ? value : product.code,
       brand: name === "brand" ? value : product.brand,
+      name: name === "name" ? value : product.name,
       class: name === "class" ? value : product.class,
       category: name === "category" ? value : product.category,
-      quantity: name === "quantity" ? value : product.quantity,
-      unit: name === "unit" ? value : product.unit,
       price: name === "price" ? value : product.price,
-      salePrice: name === "salePrice" ? value : product.salePrice,
+      stock: {
+        quantity: name === "quantity" ? value : product.stock.quantity,
+        unit: name === "unit" ? value : product.stock.unit,
+      },
     });
   };
 
-  const onClear = () => {
-    setDisable({ submitBtn: true, resetBtn: true, inputs: false });
-    setText("Save");
-    setProduct(INIT_FORM_VAL);
+  const importCSV = (e) => {
+    const csvFiles = e.target.files;
+
+    setDisable({
+      submitBtn: false,
+      resetBtn: false,
+      inputs: true,
+      inputCode: false,
+    });
+
+    setText({
+      saveBtn: "Save",
+      resetBtn: "Cancel",
+    });
+
+    if (!!importedCSV) dispatch(abortCSVImport());
+
+    Papa.parse(csvFiles[0], {
+      header: true,
+      dynamicTyping: true,
+      complete: (results) => {
+        const transformedResults = results.data
+          .map((datum) => {
+            return {
+              code: datum["S/N"],
+              brand: datum.BRAND,
+              name: datum.PRODUCT_NAME,
+              class: datum.CLASS,
+              category: datum.CATEGORY,
+              price: datum.PRICE,
+              stock: { quantity: datum.QUANTITY, unit: datum.UNIT },
+            };
+          })
+          .filter(({ code }) => code !== null);
+        dispatch(addImportedCSV(transformedResults));
+      },
+    });
   };
 
+  const resetAll = useCallback(() => {
+    // Revert all states to INIT
+    setDisable(INIT_BTN_STATE);
+    setText(INIT_BTN_TEXT);
+    setProduct(INIT_FORM_VAL);
+
+    // Make sure to reset only if there is a product currently in edit
+    if (!!productInEdit) dispatch(resetAllProductModification());
+
+    // Make sure to clear CSV imports only if there is a CSV currently imported
+    if (!!importedCSV) {
+      dispatch(abortCSVImport());
+      document.getElementById("csvImport").value = "";
+    }
+  }, [dispatch, importedCSV, productInEdit]);
+
+  useEffect(() => {
+    // If every save action is a success, reset everyting to defaults
+    if (saveStatus === Constants.SUCCESS) resetAll();
+    // Otherwise, only reset the button state so the user has a chance to re-edit
+    else if (saveStatus === Constants.FAILED) setDisable(INIT_BTN_STATE);
+  }, [resetAll, saveStatus]);
+
   return (
-    <div className="card border bg-white add-product-form">
+    <div className="card border add-product-form">
       <div className="card-body">
-        <h6 className="card-title">{editData ? "Edit" : "Add"} Product</h6>
-        <form
-          id="addProductForm"
-          className="card-text needs-validation"
-          noValidate
-        >
+        <h6 className="card-title">{productInEdit ? "Edit" : "Add"} Product</h6>
+        <form id="addProductForm" className="card-text needs-validation">
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mt-3 align-items-center">
+          <div className="row g-2 mt-1 align-items-center">
             <div className="col">
               <label htmlFor="productName" className="form-label">
                 Product Name
@@ -183,6 +244,7 @@ function AddProductForm() {
                     data-bs-toggle="modal"
                     data-bs-target="#addProductScannerModal"
                     disabled={disable.inputs}
+                    aria-label="Scan QR code"
                   >
                     <i className="fa fa-qrcode"></i>
                   </button>
@@ -283,56 +345,7 @@ function AddProductForm() {
 
           {/* ------------------------------ Row ------------------------------ */}
           <div className="row g-2 mt-1 align-items-center">
-            <div className="col-sm-6">
-              <label htmlFor="productQuantity" className="form-label">
-                Quantity
-              </label>
-              <input
-                id="productQuantity"
-                type="number"
-                className="form-control"
-                placeholder="50"
-                name="quantity"
-                min={1}
-                value={product.quantity}
-                onChange={handleChange}
-                disabled={disable.inputs}
-                required
-              />
-              <div className="invalid-feedback">Cannot be less than 1.</div>
-              <div className="valid-feedback">Looks good!</div>
-            </div>
-            <div className="col-sm-6">
-              <label htmlFor="productUnit" className="form-label">
-                Unit
-              </label>
-              <input
-                className="form-control"
-                list="unitList"
-                id="productUnit"
-                name="unit"
-                placeholder="Pack Size"
-                value={product.unit}
-                onChange={handleChange}
-                disabled={disable.inputs}
-                required
-              />
-              <datalist id="unitList">
-                <option value="" />
-                <option value="Set" />
-                <option value="Packet" />
-                <option value="Bundle" />
-              </datalist>
-              <div className="invalid-feedback">
-                Please select a valid unit.
-              </div>
-              <div className="valid-feedback">Looks good!</div>
-            </div>
-          </div>
-
-          {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mt-1 align-items-center">
-            <div className="col-sm-6">
+            <div className="col">
               <label htmlFor="productPrice" className="form-label">
                 Price
               </label>
@@ -354,41 +367,97 @@ function AddProductForm() {
                 <div className="valid-feedback">Looks good!</div>
               </div>
             </div>
-            <div className="col-sm-6">
-              <label htmlFor="productSalePrice" className="form-label">
-                Sale Price
-              </label>
-              <div className="input-group">
-                <span className="input-group-text">Php</span>
+          </div>
+
+          {/* ------------------------------ Row ------------------------------ */}
+          <div className="row g-2 mt-3 align-items-center d-flex align-items-center">
+            <div className="col">
+              <div className="form-check m-0">
                 <input
-                  id="productSalePrice"
-                  type="number"
-                  className="form-control"
-                  placeholder="Optional"
-                  name="salePrice"
-                  min={0}
-                  value={product.salePrice}
-                  onChange={handleChange}
+                  id="addStockCheckbox"
+                  className="form-check-input"
+                  type="checkbox"
+                  value={addStock}
+                  onChange={(e) => setAddStock(e.target.checked)}
                   disabled={disable.inputs}
                 />
-                <div className="invalid-feedback">Cannot be less than 1.</div>
-                <div className="valid-feedback">Looks good!</div>
+                <label className="form-check-label" htmlFor="addStockCheckbox">
+                  {productInEdit ? "Edit" : "Add"} Stock
+                </label>
               </div>
+            </div>
+            <div className="col form-floating">
+              <input
+                id="productQuantity"
+                type="number"
+                className="form-control"
+                placeholder="50"
+                name="quantity"
+                min={1}
+                value={product.stock.quantity}
+                onChange={handleChange}
+                disabled={disable.inputs || !addStock}
+                required
+              />
+              <label htmlFor="productQuantity" className="form-label">
+                Quantity
+              </label>
+              <div className="invalid-feedback">Cannot be less than 1.</div>
+              <div className="valid-feedback">Looks good!</div>
+            </div>
+            <div className="col form-floating">
+              <input
+                className="form-control"
+                list="unitList"
+                id="productUnit"
+                name="unit"
+                placeholder="Pack Size"
+                value={product.stock.unit}
+                onChange={handleChange}
+                disabled={disable.inputs || !addStock}
+                required
+              />
+              <label htmlFor="productUnit" className="form-label">
+                Unit
+              </label>
+              <datalist id="unitList">
+                <option value="Set" />
+                <option value="Packet" />
+                <option value="Bundle" />
+              </datalist>
+              <div className="invalid-feedback">
+                Please select a valid unit.
+              </div>
+              <div className="valid-feedback">Looks good!</div>
             </div>
           </div>
 
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row mt-3 align-items-center">
+          <div className="row mt-4 align-items-center">
             <div className="col-md-12">
               <div className="d-flex flex-row justify-content-end">
+                <label
+                  htmlFor="csvImport"
+                  className="bt-file-upload btn btn-primary"
+                >
+                  Import CSV
+                </label>
+                <input
+                  id="csvImport"
+                  type="file"
+                  accept=".csv"
+                  className="form-control form-control-sm"
+                  onChange={importCSV}
+                />
+
                 <button
                   id="resetBtn"
                   type="reset"
                   className="btn btn-secondary ms-2"
                   disabled={disable.resetBtn}
-                  onClick={onClear}
+                  onClick={resetAll}
                 >
-                  Reset
+                  {text.resetBtn}
                 </button>
                 <button
                   id="submitBtn"
@@ -398,10 +467,12 @@ function AddProductForm() {
                   onClick={onSubmit}
                   disabled={disable.submitBtn}
                 >
-                  {status !== "idle" ? (
-                    <Spinner addClass="spinner-border-sm">{btnText}</Spinner>
+                  {saveStatus !== "IDLE" ? (
+                    <Spinner addClass="spinner-border-sm">
+                      {text.saveBtn}
+                    </Spinner>
                   ) : (
-                    btnText
+                    text.saveBtn
                   )}
                 </button>
               </div>

@@ -10,6 +10,9 @@ export const selectProductInEdit = (state) =>
 export const selectProductScannedCode = (state) =>
   state.root.DataService.products.sn;
 
+export const selectProductImportedCSV = (state) =>
+  state.root.DataService.products.importedCSV;
+
 export const selectCurrentlySelectedProducts = (state) =>
   state.root.DataService.products.currentlySelected;
 
