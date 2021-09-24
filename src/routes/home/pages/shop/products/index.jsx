@@ -1,27 +1,26 @@
-import { useCallback, useEffect, useMemo } from "react";
-import Product from "./components/ProductDetail";
-import ProductTable from "./components/ProductTable";
+import "./products-wrapper.css";
+import { useCallback, useEffect } from "react";
+import ProductDetailsCard from "./components/ProductDetailsCard";
+import PaginationTable from "../common/table/PaginationTable";
 import AddProductForm from "./components/AddProductForm/AddProductForm";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
 import {
-  selectAuthStaleStatus,
-  selectAuthState,
-} from "../../../../../app/state/slices/auth";
+  fetchProducts,
+  modifyProduct,
+  removeProduct,
+  addToProductSelection,
+  viewProductDetail,
+} from "../../../../../app/state/slices/data/product";
 import {
-  fetchData,
-  modifyData,
-  removeData,
-  selectAllData,
-  selectDataDetails,
-  selectDataError,
-  selectDataFetchStatus,
-  addToSelection,
-  viewData,
-  selectDataInSelection,
-} from "../../../../../app/state/slices/data";
-import ProductOptions from "./components/Options";
+  selectProductFetchStatus,
+  selectAllProducts,
+  selectProductDetails,
+  selectCurrentlySelectedProducts,
+  selectProductImportedCSV,
+  selectProductError,
+} from "../../../../../app/state/slices/data/product/selectors";
 import {
   useTable,
   usePagination,
@@ -31,116 +30,21 @@ import {
   useGlobalFilter,
   useFilters,
 } from "react-table";
-import { matchSorter } from "match-sorter";
 import { isMobile } from "react-device-detect";
-import IndeterminateCheckbox from "./components/IndeterminateCheckbox";
-import SliderColumnFilter from "./components/SliderColumnFilter";
-import SelectColumnFilter from "./components/SelectColumnFilter";
-import DefaultColumnFilter from "./components/DefaultColumnFilter";
 import Wrapper from "../common/Wrapper";
-
-const mobileColumns = [
-  {
-    Header: "Product",
-    columns: [
-      {
-        Header: "Name",
-        accessor: "name",
-        width: "52%",
-        Filter: "",
-      },
-    ],
-  },
-  {
-    Header: "Stock Information",
-    columns: [
-      {
-        Header: "Quantity",
-        accessor: "quantity",
-        Filter: "",
-      },
-      {
-        Header: "Price",
-        accessor: "price",
-        Filter: SliderColumnFilter,
-        filter: filterGreaterThan,
-      },
-    ],
-  },
-];
-
-const webColumns = [
-  {
-    Header: "Product",
-    columns: [
-      {
-        Header: "S/N",
-        accessor: "code",
-        width: "10%",
-        Filter: "",
-      },
-      {
-        Header: "Brand",
-        accessor: "brand",
-        width: "12%",
-        Filter: SelectColumnFilter,
-        filter: "includes",
-      },
-      {
-        Header: "Name",
-        accessor: "name",
-        width: "30%",
-        Filter: "",
-      },
-      {
-        Header: "Class",
-        accessor: "class",
-        width: "12%",
-        Filter: SelectColumnFilter,
-        filter: "includes",
-      },
-      {
-        Header: "Category",
-        accessor: "category",
-        width: "12%",
-        Filter: SelectColumnFilter,
-        filter: "includes",
-      },
-    ],
-  },
-  {
-    Header: "Stock Information",
-    columns: [
-      {
-        Header: "Quantity",
-        accessor: "stock.quantity",
-        Filter: "",
-      },
-      {
-        Header: "Unit",
-        accessor: "stock.unit",
-        width: "7%",
-        Filter: "",
-      },
-      {
-        Header: "Price",
-        accessor: "price",
-        Filter: SliderColumnFilter,
-        filter: filterGreaterThan,
-      },
-    ],
-  },
-  {
-    Header: () => <div className="text-center">Actions</div>,
-    id: "details",
-    Cell: ({ row }) => (
-      <div {...row.getToggleRowExpandedProps()} className="text-center mx-auto">
-        {row.isExpanded ? "⯆" : "⯈"}
-      </div>
-    ),
-    Filter: "",
-  },
-];
+import FilterOptionsCard from "../common/table/TableFilterOptionsCard";
+import Card from "../../../common/Card";
+import {
+  DefaultColumn,
+  FilterTypes,
+  rowSelectPlugin,
+} from "../common/table/utils";
+import {
+  selectAuthStaleStatus,
+  selectAuthState,
+} from "../../../../../app/state/slices/auth/selectors";
+import { mobileColumns, webColumns } from "./data-columns";
+import Constants from "../../../../../app/state/slices/constants";
 
 function ProductsWrapper() {
   const location = useLocation();
@@ -149,43 +53,43 @@ function ProductsWrapper() {
   const isLoggedIn = useSelector(selectAuthState);
   const stale = useSelector(selectAuthStaleStatus);
 
-  const data = useSelector(selectAllData);
-  const dataDetails = useSelector(selectDataDetails);
-  const dataInSelection = useSelector(selectDataInSelection);
+  const data = useSelector(selectAllProducts);
+  const dataDetails = useSelector(selectProductDetails);
+  const dataInSelection = useSelector(selectCurrentlySelectedProducts);
+  const importedCSV = useSelector(selectProductImportedCSV);
 
-  const dataFetchStatus = useSelector(selectDataFetchStatus);
-  const error = useSelector(selectDataError);
+  const dataFetchStatus = useSelector(selectProductFetchStatus);
+  const error = useSelector(selectProductError);
 
   useEffect(() => {
     if (
-      (dataFetchStatus === "idle" || dataFetchStatus === "failed") &&
+      (dataFetchStatus === Constants.IDLE ||
+        dataFetchStatus === Constants.FAILED) &&
       isLoggedIn &&
       !stale
     ) {
-      dispatch(fetchData());
+      dispatch(fetchProducts("stocks"));
     }
   }, [dispatch, dataFetchStatus, error, isLoggedIn, stale]);
 
   const viewDataDetails = useCallback(
     (itemId) => {
       data.forEach((item) => {
-        if (item._id === itemId && dataDetails?._id !== itemId) {
-          console.log(item);
-          dispatch(viewData(item));
-        }
+        if (item._id === itemId && dataDetails?._id !== itemId)
+          dispatch(viewProductDetail(item));
       });
     },
     [data, dataDetails, dispatch]
   );
 
-  const removeProduct = useCallback(
+  const onRemoveProduct = useCallback(
     (product) => {
       const ans = prompt(
         `Are you sure you want to delete "${product.name}"? \n\nType the the product name below to confirm.`
       );
 
       if (ans !== null && ans === product.name)
-        dispatch(removeData(product._id));
+        dispatch(removeProduct(product._id));
     },
     [dispatch]
   );
@@ -197,30 +101,6 @@ function ProductsWrapper() {
     ? 1
     : idx;
 
-  const defaultColumn = useMemo(
-    () => ({
-      Filter: DefaultColumnFilter,
-    }),
-    []
-  );
-
-  const filterTypes = useMemo(
-    () => ({
-      fuzzyText: fuzzyTextFilterFn,
-      text: (rows, id, filterValue) => {
-        return rows.filter((row) => {
-          const rowValue = row.values[id];
-          return rowValue !== undefined
-            ? String(rowValue)
-                .toLowerCase()
-                .startsWith(String(filterValue).toLowerCase())
-            : true;
-        });
-      },
-    }),
-    []
-  );
-
   const table = useTable(
     {
       columns: isMobile ? mobileColumns : webColumns,
@@ -228,8 +108,8 @@ function ProductsWrapper() {
       initialState: {
         pageIndex: index - 1,
       },
-      defaultColumn,
-      filterTypes,
+      DefaultColumn,
+      FilterTypes,
     },
     useFilters,
     useGlobalFilter,
@@ -237,26 +117,7 @@ function ProductsWrapper() {
     useExpanded,
     usePagination,
     useRowSelect,
-
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => [
-        {
-          id: "selection",
-          Header: ({ getToggleAllPageRowsSelectedProps }) => (
-            <div className="text-center">
-              <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
-            </div>
-          ),
-          Cell: ({ row }) => (
-            <div className="text-center">
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          ),
-          Filter: "",
-        },
-        ...columns,
-      ]);
-    }
+    rowSelectPlugin
   );
 
   const {
@@ -283,28 +144,28 @@ function ProductsWrapper() {
             className="btn btn-success float-end mx-1"
             onClick={() => {
               viewDataDetails(row.original._id);
-              dispatch(modifyData(row.original));
+              dispatch(modifyProduct(row.original));
             }}
           >
             Quick Edit
           </button>
           <button
             className="btn btn-danger float-end mx-1"
-            onClick={() => removeProduct(row.original)}
+            onClick={() => onRemoveProduct(row.original)}
           >
             Quick Delete
           </button>
         </div>
       );
     },
-    [dispatch, removeProduct, viewDataDetails]
+    [dispatch, onRemoveProduct, viewDataDetails]
   );
 
   const selectData = useCallback(
     (data) => {
       const items = data.map((item) => item.original);
       if (dataInSelection.length !== items.length)
-        dispatch(addToSelection(items));
+        dispatch(addToProductSelection(items));
     },
     [dataInSelection.length, dispatch]
   );
@@ -318,66 +179,65 @@ function ProductsWrapper() {
       <section className="row g-3">
         <div className="col-sm-9">
           <ErrorBoundary>
-            <ProductTable
-              dataLength={data.length}
-              tableProps={table}
-              renderRowSubComponent={tableActionsDropdown}
-              getRowProps={(row) => ({
-                onClick: () =>
-                  isMobile ? viewDataDetails(row.original._id) : null,
-              })}
-            />
+            <div className="product-table-wrapper">
+              <PaginationTable
+                loading={dataFetchStatus === Constants.LOADING}
+                dataLength={data.length}
+                tableProps={table}
+                renderRowSubComponent={tableActionsDropdown}
+                getRowProps={(row) => ({
+                  onClick: () =>
+                    isMobile ? viewDataDetails(row.original._id) : null,
+                })}
+              />
+            </div>
           </ErrorBoundary>
+          {importedCSV ? (
+            <Card title="Imported CSV (Preview)" className="mt-3">
+              {importedCSV.map((data) => (
+                <div key={data.code}>
+                  {`[${data.code}] ${data.brand} - ${data.name} (${data.price}) ${data.class} ${data.category} > ${data.stock.quantity} ${data.stock.unit}`}
+                </div>
+              ))}
+            </Card>
+          ) : null}
         </div>
         <aside className="col-sm-3">
           {dataDetails ? (
             <ErrorBoundary>
-              <Product product={dataDetails} />
+              <ProductDetailsCard product={dataDetails} />
             </ErrorBoundary>
           ) : (
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title">Select a product to view</h5>
-              </div>
-            </div>
+            <Card title="Select a product to view" />
           )}
-
-          <ProductOptions
-            allColumns={allColumns}
-            getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
-            preGlobalFilteredRows={preGlobalFilteredRows}
-            setGlobalFilter={setGlobalFilter}
-            globalFilter={globalFilter}
-          />
+          <ErrorBoundary>
+            <FilterOptionsCard
+              className="mt-3"
+              getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
+              preGlobalFilteredRows={preGlobalFilteredRows}
+              setGlobalFilter={setGlobalFilter}
+              globalFilter={globalFilter}
+              toggleColumns={allColumns.filter(
+                ({ id }) =>
+                  id !== "details" &&
+                  id !== "selection" &&
+                  id !== "price" &&
+                  id !== "name" &&
+                  id !== "quantity"
+              )}
+              filterColumns={allColumns.filter(({ Filter }) => Filter !== "")}
+            />
+          </ErrorBoundary>
 
           <div className="mt-3">
-            <AddProductForm />
+            <ErrorBoundary>
+              <AddProductForm />
+            </ErrorBoundary>
           </div>
         </aside>
       </section>
     </Wrapper>
   );
 }
-
-function fuzzyTextFilterFn(rows, id, filterValue) {
-  return matchSorter(rows, filterValue, { keys: [(row) => row.values[id]] });
-}
-
-// Let the table remove the filter if the string is empty
-fuzzyTextFilterFn.autoRemove = (val) => !val;
-
-// Custom filter function
-function filterGreaterThan(rows, id, filterValue) {
-  return rows.filter((row) => {
-    const rowValue = row.values[id];
-    return rowValue >= filterValue;
-  });
-}
-
-// This is an autoRemove method on the filter function that
-// when given the new filter value and returns true, the filter
-// will be automatically removed. Normally this is just an undefined
-// check, but here, we want to remove the filter if it's not a number
-filterGreaterThan.autoRemove = (val) => typeof val !== "number";
 
 export default ProductsWrapper;

@@ -4,13 +4,11 @@ import { setStale } from "../../auth";
 import Constants from "../../constants";
 import { dynamicSort } from "../sort";
 
-const http = HttpService();
-
 /* Async thunks */
 export const fetchProducts = createAsyncThunk(
   "products/fetch",
   async (type, { dispatch }) => {
-    const response = await http.onDataFetch(type, { populated: true });
+    const response = await HttpService().onDataFetch(type, { populated: true });
 
     if (response.status !== 200) {
       dispatch(setStale(true));
@@ -29,13 +27,12 @@ export const fetchProducts = createAsyncThunk(
 export const pushProduct = createAsyncThunk(
   "products/push",
   async (data, { dispatch }) => {
-    const response = await HttpService().onDataPush(data);
+    const response = await HttpService().onDataPush(data, "stocks");
 
-    if (response.status >= 400) {
+    if (response.status >= 400 && response.status < 500) {
       dispatch(setStale(true));
       throw new Error();
     }
-
     dispatch(setProductStatus({ type: "push", status: Constants.SUCCESS }));
 
     return response.data;
@@ -89,6 +86,7 @@ const slice = createSlice({
     sn: null,
     currentlyModifying: null,
     currentlySelected: [],
+    importedCSV: null,
   },
   reducers: {
     setIdle: (state, action) => {
@@ -125,6 +123,14 @@ const slice = createSlice({
 
     addScannedCode: (state, action) => {
       state.sn = action.payload;
+    },
+
+    addImportedCSV: (state, action) => {
+      state.importedCSV = action.payload;
+    },
+
+    abortCSVImport: (state, action) => {
+      state.importedCSV = null;
     },
 
     addToProductSelection: (state, action) => {
@@ -180,13 +186,22 @@ const slice = createSlice({
       .addCase(pushProduct.fulfilled, (state, action) => {
         state.status.push = Constants.IDLE;
 
-        const product = {
-          ...action.payload.product,
-          ...action.payload.stock,
-        };
+        if (!!action.payload.products) {
+          action.payload.products.forEach((item) => {
+            const transformedItem = {
+              ...item.product,
+              stock: {
+                quantity: item.stock.quantity,
+                unit: item.stock.unit,
+              },
+            };
+            state.data.push(transformedItem);
+          });
+        } else {
+          state.data.push(action.payload);
+        }
 
-        // Push to the datastore
-        state.data.push(product);
+        // Sort datastore
         state.data.sort(dynamicSort("name"));
 
         state.sn = null;
@@ -242,6 +257,8 @@ export const {
   modifyProduct,
   resetAllProductModification,
   addScannedCode,
+  addImportedCSV,
+  abortCSVImport,
   addToProductSelection,
   resetAllCachedProductData,
 } = slice.actions;
