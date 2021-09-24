@@ -13,7 +13,9 @@ const LocalStorage = {
   removeKey: (key) => window.localStorage.removeItem(key),
 };
 
-const preloadedState = { root: { auth: LocalStorage.getItem("__app_state_") } };
+const preloadedState = {
+  root: { AuthManager: LocalStorage.getItem("__app_state_") },
+};
 
 const store = configureStore({
   reducer: { root: rootReducer },
@@ -21,7 +23,7 @@ const store = configureStore({
 });
 
 store.subscribe(() =>
-  LocalStorage.setItem("__app_state_", store.getState().root.auth)
+  LocalStorage.setItem("__app_state_", store.getState().root.AuthManager)
 );
 
 export default store;

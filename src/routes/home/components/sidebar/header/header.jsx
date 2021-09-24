@@ -3,13 +3,13 @@ import "./header.css";
 import DP from "../../../../../assets/default_img.png";
 import { useSelector, useDispatch } from "react-redux";
 import useRouter from "../../../../../services/hooks/use-router";
+import { getDatabaseStatus } from "../../../../../app/state/slices/auth";
+import Constants from "../../../../../app/state/slices/constants";
 import {
-  Constants,
-  getDatabaseStatus,
   selectAuthDatabaseStatus,
   selectAuthState,
   selectAuthUserData,
-} from "../../../../../app/state/slices/auth";
+} from "../../../../../app/state/slices/auth/selectors";
 
 function SidebarHeader() {
   const router = useRouter();
