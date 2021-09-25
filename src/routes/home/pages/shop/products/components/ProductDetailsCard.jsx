@@ -59,22 +59,30 @@ function ProductDetailsCard(props) {
           </div>
         </li>
       </ul>
+      {/* -------------- Stock Details -------------- */}
       <div className="container-fluid">
         <div className="row py-2 text-center">
           <div className="col-4">
             <div>Inbound</div>
-            <div className="fw-bold">50</div>
+            <div className="fw-bold">
+              {props.product.stock.quantity.inbound}
+            </div>
           </div>
           <div className="col-4 border-end border-start">
             <div>Warehouse</div>
-            <div className="fw-bold">25</div>
+            <div className="fw-bold">
+              {props.product.stock.quantity.warehouse}
+            </div>
           </div>
           <div className="col-4">
             <div>Shipped</div>
-            <div className="fw-bold">10</div>
+            <div className="fw-bold">
+              {props.product.stock.quantity.shipped}
+            </div>
           </div>
         </div>
       </div>
+      {/* ------------------------------------------- */}
       <div className="btn-group" role="group" aria-label="Mini options">
         <button
           type="button"
