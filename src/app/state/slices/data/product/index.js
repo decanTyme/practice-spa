@@ -15,19 +15,14 @@ export const fetchProducts = createAsyncThunk(
       throw new Error();
     }
 
-    const data = response.data.map((datum) => ({
-      ...datum.product,
-      stock: { quantity: datum.quantity, unit: datum.unit },
-    }));
-
-    return data.sort(dynamicSort("name"));
+    return response.data;
   }
 );
 
 export const pushProduct = createAsyncThunk(
   "products/push",
   async (data, { dispatch }) => {
-    const response = await HttpService().onDataPush(data, "stocks");
+    const response = await HttpService().onDataPush("stocks", data);
 
     if (response.status >= 400 && response.status < 500) {
       dispatch(setStale(true));
@@ -42,9 +37,9 @@ export const pushProduct = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
   "products/modify",
   async (modifiedData, { dispatch }) => {
-    const response = await HttpService().onDataModify(modifiedData);
+    const response = await HttpService().onDataModify("stocks", modifiedData);
 
-    if (response.status !== 200) {
+    if (response.status >= 400 && response.status < 500) {
       dispatch(setStale(true));
       throw new Error();
     }
@@ -57,7 +52,7 @@ export const removeProduct = createAsyncThunk(
   async (id, { dispatch }) => {
     const response = await HttpService().onDataRemove(id);
 
-    if (response.status !== 200) {
+    if (response.status >= 400 && response.status < 500) {
       dispatch(setStale(true));
       throw new Error();
     }
@@ -69,7 +64,13 @@ export const removeProduct = createAsyncThunk(
 const slice = createSlice({
   name: "products",
   initialState: {
-    data: [],
+    data: {
+      all: [],
+      brands: [],
+      classes: [],
+      categories: [],
+      units: [],
+    },
     status: {
       fetch: Constants.IDLE,
       push: Constants.IDLE,
@@ -90,7 +91,7 @@ const slice = createSlice({
   },
   reducers: {
     setIdle: (state, action) => {
-      action.payload === "ALL"
+      action.payload === Constants.DataService.ALL
         ? (state.status = {
             fetch: Constants.IDLE,
             push: Constants.IDLE,
@@ -125,7 +126,7 @@ const slice = createSlice({
       state.sn = action.payload;
     },
 
-    addImportedCSV: (state, action) => {
+    importCSV: (state, action) => {
       state.importedCSV = action.payload;
     },
 
@@ -139,7 +140,13 @@ const slice = createSlice({
 
     resetAllCachedProductData: (state) => {
       // Empty datastore
-      state.data = [];
+      state.data = {
+        all: [],
+        brands: [],
+        classes: [],
+        categories: [],
+        units: [],
+      };
 
       // Reset everything to defaults
       state.status = {
@@ -170,7 +177,44 @@ const slice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status.fetch = Constants.SUCCESS;
 
-        state.data = action.payload;
+        const payload = action.payload;
+
+        // Transform the received data first so that it can be consumed properly
+        // by the
+        const transformedPayload = payload.map((item) => {
+          const { inbound, warehouse, shipped } = item.quantity;
+          const totalQuantity = inbound + warehouse + shipped;
+
+          const transformedItem = {
+            ...item.product,
+            stock: { ...item, totalQuantity },
+          };
+
+          delete transformedItem.stock.product;
+
+          return transformedItem;
+        });
+
+        // Sort first, then store transformed data
+        state.data.all = transformedPayload.sort(dynamicSort("name"));
+
+        // Get all needed subdata, ensure there is no duplication,
+        // then finally sort
+        state.data.brands = [
+          ...new Set(transformedPayload.map(({ brand }) => brand)),
+        ].sort();
+
+        state.data.classes = [
+          ...new Set(transformedPayload.map((item) => item.class)),
+        ].sort();
+
+        state.data.units = [
+          ...new Set(transformedPayload.map(({ stock: { unit } }) => unit)),
+        ].sort();
+
+        state.data.categories = [
+          ...new Set(transformedPayload.map(({ category }) => category)),
+        ].sort();
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status.fetch = Constants.FAILED;
@@ -184,25 +228,31 @@ const slice = createSlice({
         state.status.push = Constants.LOADING;
       })
       .addCase(pushProduct.fulfilled, (state, action) => {
+        const payload = action.payload;
+
         state.status.push = Constants.IDLE;
 
+        // If the user used CSV (bulk) import, the data will be an array
+        // Transform each item first before storing to the datastore
         if (!!action.payload.products) {
-          action.payload.products.forEach((item) => {
+          payload.products.forEach((item) => {
+            const { inbound, warehouse, shipped } = item.stock.quantity;
+            const totalQuantity = inbound + warehouse + shipped;
+
+            // Final transformed item
             const transformedItem = {
               ...item.product,
-              stock: {
-                quantity: item.stock.quantity,
-                unit: item.stock.unit,
-              },
+              stock: { ...item.stock, totalQuantity },
             };
-            state.data.push(transformedItem);
+
+            state.data.all.push(transformedItem);
           });
         } else {
-          state.data.push(action.payload);
+          state.data.all.push(action.payload);
         }
 
         // Sort datastore
-        state.data.sort(dynamicSort("name"));
+        state.data.all.sort(dynamicSort("name"));
 
         state.sn = null;
       })
@@ -217,11 +267,27 @@ const slice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.status.modify = Constants.SUCCESS;
 
+        const payload = action.payload;
+
+        state.error.modify = action.payload;
+
         // Remove the old product, push the approved change to the datastore,
         // then re-sort everything in the datastore
-        state.data = state.data.filter(({ _id }) => _id !== action.payload._id);
-        state.data.push(action.payload);
-        state.data.sort(dynamicSort("name"));
+        state.data.all = state.data.all.filter(
+          ({ _id }) => _id !== action.payload._id
+        );
+
+        const { inbound, warehouse, shipped } = payload.stock.quantity;
+        const totalQuantity = inbound + warehouse + shipped;
+
+        // Final transformed item
+        const transformedPayload = {
+          ...payload,
+          stock: { ...payload.stock, totalQuantity },
+        };
+
+        state.data.all.push(transformedPayload);
+        state.data.all.sort(dynamicSort("name"));
 
         // Data details should be updated with the latest approved change
         state.details = action.payload;
@@ -240,8 +306,8 @@ const slice = createSlice({
 
       // After removing the aprroved deleted data, remove from datastore
       // and re-sort
-      state.data = state.data.filter(({ _id }) => _id !== action.payload);
-      state.data.sort(dynamicSort("name"));
+      state.data = state.data.all.filter(({ _id }) => _id !== action.payload);
+      state.data.all.sort(dynamicSort("name"));
 
       state.sn = null;
       state.currentlyModifying = null;
@@ -257,7 +323,7 @@ export const {
   modifyProduct,
   resetAllProductModification,
   addScannedCode,
-  addImportedCSV,
+  importCSV,
   abortCSVImport,
   addToProductSelection,
   resetAllCachedProductData,
