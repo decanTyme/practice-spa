@@ -9,6 +9,7 @@ import {
   resetAllProductModification,
   importCSV,
   abortCSVImport,
+  setIdle,
 } from "../../../../../../../app/state/slices/data/product";
 import {
   selectProductInEdit,
@@ -29,7 +30,7 @@ const INIT_FORM_VAL = {
   brand: "",
   class: "",
   category: "",
-  stock: { quantity: 1, unit: "Set" },
+  stock: { quantity: { inbound: 0, warehouse: 1, shipped: 0 }, unit: "Set" },
   price: 0,
   salePrice: 0,
 };
@@ -57,6 +58,7 @@ function AddProductForm() {
   const units = useSelector(selectAllUnits);
 
   const saveStatus = useSelector(selectProductPushStatus);
+  const modifyStatus = useSelector(selectProductModifyStatus);
 
   const [product, setProduct] = useState(INIT_FORM_VAL);
   const [addStock, setAddStock] = useState(false);
@@ -74,12 +76,14 @@ function AddProductForm() {
   useEffect(() => {
     if (productInEdit) {
       setProduct(productInEdit);
+
       setDisable({
         submitBtn: false,
         resetBtn: false,
         inputs: false,
         inputCode: true,
       });
+
       setText({
         saveBtn: "Update",
         resetBtn: "Cancel",
@@ -106,7 +110,13 @@ function AddProductForm() {
       });
 
       if (productInEdit)
-        dispatch(updateProduct({ ...product, _id: productInEdit._id }));
+        dispatch(
+          updateProduct({
+            ...product,
+            _id: productInEdit._id,
+            stock: { ...product.stock, _id: productInEdit.stock._id },
+          })
+        );
       else if (importedCSV) dispatch(pushProduct(importedCSV));
       else dispatch(pushProduct(product));
 
@@ -133,17 +143,24 @@ function AddProductForm() {
       name: name === "name" ? value : product.name,
       class: name === "class" ? value : product.class,
       category: name === "category" ? value : product.category,
-      price: name === "price" ? value : product.price,
+      price: name === "price" ? parseInt(value) : parseInt(product.price),
       stock: {
-        quantity: name === "quantity" ? value : product.stock.quantity,
+        quantity: {
+          ...product.stock.quantity,
+          warehouse:
+            name === "quantity"
+              ? parseInt(value)
+              : parseInt(product.stock.quantity.warehouse),
+        },
         unit: name === "unit" ? value : product.stock.unit,
       },
     });
   };
 
-  const importCSV = (e) => {
+  const onImportCSV = (e) => {
     const csvFiles = e.target.files;
 
+    // Set some UI states
     setDisable({
       submitBtn: false,
       resetBtn: false,
@@ -156,8 +173,10 @@ function AddProductForm() {
       resetBtn: "Cancel",
     });
 
+    // If there was a previously imported CSV, clear that first
     if (!!importedCSV) dispatch(abortCSVImport());
 
+    // Finally, parse CSV and import to datastore
     Papa.parse(csvFiles[0], {
       header: true,
       dynamicTyping: true,
@@ -171,11 +190,18 @@ function AddProductForm() {
               class: datum.CLASS,
               category: datum.CATEGORY,
               price: datum.PRICE,
-              stock: { quantity: datum.QUANTITY, unit: datum.UNIT },
+              stock: {
+                quantity: {
+                  inbound: datum.INBOUND,
+                  warehouse: datum.WAREHOUSE,
+                  shipped: datum.SHIPPED,
+                },
+                unit: datum.UNIT,
+              },
             };
           })
           .filter(({ code }) => code !== null);
-        dispatch(addImportedCSV(transformedResults));
+        dispatch(importCSV(transformedResults));
       },
     });
   };
@@ -189,15 +215,34 @@ function AddProductForm() {
     // Make sure to reset only if there is a product currently in edit
     if (!!productInEdit) dispatch(resetAllProductModification());
 
-    // Make sure to clear CSV imports only if there is a CSV currently imported
+    // Make sure to clear CSV imports only if there is a
+    // CSV currently imported
     if (!!importedCSV) {
       dispatch(abortCSVImport());
-      document.getElementById("csvImport").value = "";
+      document.getElementById("csvImportBtn").value = "";
     }
   }, [dispatch, importedCSV, productInEdit]);
 
   useEffect(() => {
-    // If every save action is a success, reset everyting to defaults
+    if (
+      saveStatus === Constants.SUCCESS ||
+      modifyStatus === Constants.SUCCESS
+    ) {
+      // If a save action is a success, always
+      // reset everyting to defaults
+      resetAll();
+      dispatch(setIdle("push"));
+      dispatch(setIdle("modify"));
+    } else if (
+      saveStatus === Constants.FAILED ||
+      modifyStatus === Constants.FAILED
+    ) {
+      // Otherwise, only reset the button state
+      // so the user has a chance to re-edit
+      setDisable(INIT_BTN_STATE);
+    }
+  }, [dispatch, resetAll, saveStatus, modifyStatus]);
+
   const codePlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
   }, []);
@@ -400,7 +445,7 @@ function AddProductForm() {
                 placeholder="50"
                 name="quantity"
                 min={1}
-                value={product.stock.quantity}
+                value={product.stock.quantity.warehouse}
                 onChange={handleChange}
                 disabled={disable.inputs || !addStock}
                 required
@@ -443,7 +488,7 @@ function AddProductForm() {
             <div className="col-md-12">
               <div className="d-flex flex-row justify-content-end">
                 <label
-                  htmlFor="csvImport"
+                  htmlFor="csvImportBtn"
                   className="bt-file-upload btn btn-primary"
                 >
                   Import CSV
@@ -453,7 +498,7 @@ function AddProductForm() {
                   type="file"
                   accept=".csv"
                   className="form-control form-control-sm"
-                  onChange={importCSV}
+                  onChange={onImportCSV}
                 />
 
                 <button
@@ -473,7 +518,8 @@ function AddProductForm() {
                   onClick={handleSubmit}
                   disabled={disable.submitBtn}
                 >
-                  {saveStatus !== "IDLE" ? (
+                  {saveStatus !== Constants.IDLE ||
+                  modifyStatus !== Constants.IDLE ? (
                     <Spinner addClass="spinner-border-sm">
                       {text.saveBtn}
                     </Spinner>
