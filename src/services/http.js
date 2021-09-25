@@ -10,7 +10,7 @@ function HttpService() {
   const instance = axios.create({
     baseURL: "https://polar-wave-26304.herokuapp.com/api",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      "Content-Type": "application/json; charset=UTF-8",
     },
 
     withCredentials: true,
@@ -41,15 +41,15 @@ function HttpService() {
    */
   const onAuthLoginRequest = async (credentials) => {
     const requestConfig = {
-      url: "/login",
+      url: "/auth/login",
       method: "POST",
 
-      data: new URLSearchParams({
+      data: {
         username: credentials.username,
         password: credentials.password,
         grant_type: "password",
         rememberUser: credentials.rememberUser,
-      }),
+      },
     };
 
     return instance(requestConfig);
@@ -57,10 +57,10 @@ function HttpService() {
 
   const onAuthSignoffRequest = async (userId, refToken) => {
     const requestConfig = {
-      url: "/signoff",
+      url: "/auth/signoff",
       method: "POST",
 
-      data: new URLSearchParams({ userId, refToken }),
+      data: { userId, refToken },
     };
     return instance(requestConfig);
   };
@@ -69,17 +69,17 @@ function HttpService() {
     const data = refToken ? { userId, refToken } : { userId };
 
     const requestConfig = {
-      url: "/authenticate",
+      url: "/auth/authenticate",
       method: "POST",
 
-      data: new URLSearchParams(data),
+      data,
     };
     return instance(requestConfig);
   };
 
   const onDatabasePing = async () => {
     const requestConfig = {
-      url: "/ping",
+      url: "/auth/ping",
       method: "GET",
     };
 
@@ -91,53 +91,55 @@ function HttpService() {
       url: "/user",
       method: "POST",
 
-      data: new URLSearchParams(userId),
+      data: userId,
     };
 
     return instance(requestConfig);
   };
 
-  const onDataFetch = async () => {
+  const onDataFetch = async (type, { populated }) => {
     const requestConfig = {
-      url: "/load",
+      url: `/${type}`,
       method: "GET",
-      params: { item_: "products" },
+      params: { populated },
     };
 
     return instance(requestConfig);
   };
 
-  const onDataPush = async (data) => {
+  const onDataPush = async (type, data) => {
+    const params = { _item: "product" };
+
+    if (Array.isArray(data)) params.isArray = true;
+
     const requestConfig = {
-      url: "/add",
+      url: `/${type}/add`,
       method: "POST",
-      params: { item_: "product" },
+      params,
 
-      data: new URLSearchParams(data),
+      data,
     };
 
     return instance(requestConfig);
   };
 
-  const onDataModify = async (data) => {
+  const onDataModify = async (type, data) => {
     const requestConfig = {
-      url: "/modify",
+      url: `/${type}/modify`,
       method: "PATCH",
-      params: { item_: "product" },
 
-      data: new URLSearchParams(data),
+      data,
     };
 
     return instance(requestConfig);
   };
 
-  const onDataRemove = async (data) => {
+  const onDataRemove = async (type, data) => {
     const requestConfig = {
-      url: "/del",
+      url: `/${type}/del`,
       method: "DELETE",
-      params: { _type: "product" },
 
-      data: new URLSearchParams(data),
+      data,
     };
 
     return instance(requestConfig);
