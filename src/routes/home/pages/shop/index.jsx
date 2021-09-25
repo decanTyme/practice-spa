@@ -1,6 +1,6 @@
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
+import Customers from "./customers";
 import Soon from "../../../ComingSoon";
-import Orders from "./orders";
 import Products from "./products";
 
 function Shop() {
@@ -12,10 +12,10 @@ function Shop() {
         <Products />
       </Route>
       <Route path={`${path}/orders`}>
-        <Orders />
+        <Soon />
       </Route>
       <Route path={`${path}/customers`}>
-        <Soon />
+        <Customers />
       </Route>
 
       {/* ------------------------- 404 Not Found ------------------------- */}
