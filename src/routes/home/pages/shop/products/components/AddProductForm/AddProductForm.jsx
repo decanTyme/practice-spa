@@ -1,5 +1,5 @@
 import "./add-product-form.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Papa from "papaparse";
 import Spinner from "../../../../components/spinner";
@@ -7,7 +7,7 @@ import {
   pushProduct,
   updateProduct,
   resetAllProductModification,
-  addImportedCSV,
+  importCSV,
   abortCSVImport,
 } from "../../../../../../../app/state/slices/data/product";
 import {
@@ -15,6 +15,11 @@ import {
   selectProductScannedCode,
   selectProductPushStatus,
   selectProductImportedCSV,
+  selectAllBrands,
+  selectAllClasses,
+  selectAllCategories,
+  selectAllUnits,
+  selectProductModifyStatus,
 } from "../../../../../../../app/state/slices/data/product/selectors";
 import Constants from "../../../../../../../app/state/slices/constants";
 
@@ -45,6 +50,11 @@ function AddProductForm() {
   const productInEdit = useSelector(selectProductInEdit);
   const scannedCode = useSelector(selectProductScannedCode);
   const importedCSV = useSelector(selectProductImportedCSV);
+
+  const brands = useSelector(selectAllBrands);
+  const classes = useSelector(selectAllClasses);
+  const categories = useSelector(selectAllCategories);
+  const units = useSelector(selectAllUnits);
 
   const saveStatus = useSelector(selectProductPushStatus);
 
@@ -188,10 +198,9 @@ function AddProductForm() {
 
   useEffect(() => {
     // If every save action is a success, reset everyting to defaults
-    if (saveStatus === Constants.SUCCESS) resetAll();
-    // Otherwise, only reset the button state so the user has a chance to re-edit
-    else if (saveStatus === Constants.FAILED) setDisable(INIT_BTN_STATE);
-  }, [resetAll, saveStatus]);
+  const codePlaceholder = useMemo(() => {
+    return Math.ceil(Math.random() * 100000000);
+  }, []);
 
   return (
     <div className="card border add-product-form">
@@ -209,7 +218,7 @@ function AddProductForm() {
                 type="text"
                 name="name"
                 className="form-control"
-                placeholder="SkinBliss Facial Cream"
+                placeholder="Facial Cream"
                 value={product.name}
                 onChange={handleChange}
                 disabled={disable.inputs}
@@ -229,7 +238,7 @@ function AddProductForm() {
                   type="text"
                   name="code"
                   className="form-control"
-                  placeholder="1234"
+                  placeholder={codePlaceholder}
                   value={product.code}
                   onChange={handleChange}
                   disabled={disable.inputs || disable.inputCode}
@@ -267,17 +276,16 @@ function AddProductForm() {
                   list="brandList"
                   id="productBrand"
                   name="brand"
-                  placeholder="SkinBliss"
+                  placeholder={brands[0]}
                   value={product.brand}
                   onChange={handleChange}
                   disabled={disable.inputs}
                   required
                 />
                 <datalist id="brandList">
-                  <option value="" />
-                  <option value="Skin Bliss" />
-                  <option value="Skin Can Tell" />
-                  <option value="Ryx" />
+                  {brands.map((brand) => (
+                    <option key={brand} value={brand} />
+                  ))}
                 </datalist>
                 <div className="invalid-feedback">
                   Please select a valid brand.
@@ -298,16 +306,16 @@ function AddProductForm() {
                 list="productClassList"
                 id="productClass"
                 name="class"
-                placeholder="Beauty Product"
+                placeholder={classes[0]}
                 value={product.class}
                 onChange={handleChange}
                 disabled={disable.inputs}
                 required
               />
               <datalist id="productClassList">
-                <option value="" />
-                <option value="Beauty Product" />
-                <option value="General Merchandise" />
+                {classes.map((_class) => (
+                  <option key={_class} value={_class} />
+                ))}
               </datalist>
               <div className="invalid-feedback">
                 Please select a valid class.
@@ -323,18 +331,16 @@ function AddProductForm() {
                 list="categoryList"
                 id="productCategory"
                 name="category"
-                placeholder="Facial Cleanser"
+                placeholder={categories[0]}
                 value={product.category}
                 onChange={handleChange}
                 disabled={disable.inputs}
                 required
               />
               <datalist id="categoryList">
-                <option value="" />
-                <option value="Facial Cleanser" />
-                <option value="Facial Scrub" />
-                <option value="Toner" />
-                <option value="Lipstick" />
+                {categories.map((category) => (
+                  <option key={category} value={category} />
+                ))}
               </datalist>
               <div className="invalid-feedback">
                 Please select a valid category.
@@ -411,7 +417,7 @@ function AddProductForm() {
                 list="unitList"
                 id="productUnit"
                 name="unit"
-                placeholder="Pack Size"
+                placeholder={units[0]}
                 value={product.stock.unit}
                 onChange={handleChange}
                 disabled={disable.inputs || !addStock}
@@ -421,9 +427,9 @@ function AddProductForm() {
                 Unit
               </label>
               <datalist id="unitList">
-                <option value="Set" />
-                <option value="Packet" />
-                <option value="Bundle" />
+                {units.map((unit) => (
+                  <option key={unit} value={unit} />
+                ))}
               </datalist>
               <div className="invalid-feedback">
                 Please select a valid unit.
