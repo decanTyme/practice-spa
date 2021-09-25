@@ -22,7 +22,13 @@ const Constants = {
       ERROR: "DB_CONNECT_FAILED",
     },
   },
-  DataService: {},
+  DataService: {
+    ALL: "all",
+    FETCH: "fetch",
+    PUSH: "push",
+    MODIFY: "modify",
+    REMOVE: "delete",
+  },
 };
 
 export default Constants;
