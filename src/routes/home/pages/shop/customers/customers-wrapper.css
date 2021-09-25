@@ -1,0 +1,15 @@
+.customer-table-wrapper table {
+  position: relative;
+  padding: 10rem;
+}
+
+.customer-table-wrapper table thead th {
+  background: #47709c;
+  color: white;
+  text-align: center;
+}
+
+.customer-table-wrapper select.form-select {
+  width: inherit;
+  height: 100%;
+}
