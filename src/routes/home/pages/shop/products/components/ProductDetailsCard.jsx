@@ -1,3 +1,4 @@
+import defaultProductImg from "../../../../../../assets/placeholder_product_image.png";
 import {
   modifyProduct,
   removeProduct,
@@ -25,6 +26,11 @@ function ProductDetailsCard(props) {
 
   return (
     <div className="card">
+      <img
+        src={defaultProductImg}
+        className="card-img-top"
+        alt={props.product.name}
+      />
       <div className="card-body">
         <div className="card-title">
           <div className="d-flex justify-content-between align-items-center">
