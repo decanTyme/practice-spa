@@ -1,11 +1,11 @@
 import { Route } from "react-router-dom";
 import AuthManagerRouter from "../../services/router-auth";
-import Spinner from "../home/pages/components/spinner";
 
-function ProtectedRoute({ children, ...rest }) {
-  const stale = AuthManagerRouter().run();
+function ProtectedRoute({ location, children, ...rest }) {
+  AuthManagerRouter().run();
 
-  if (stale) return <Spinner>Authenticating...</Spinner>;
+  // if (status === Constants.IDLE && stale)
+  //   return <Spinner>Authenticating...</Spinner>;
 
   return <Route {...rest}>{children}</Route>;
 }

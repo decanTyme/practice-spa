@@ -117,7 +117,7 @@ function Scanner(props) {
 
   return (
     <ModalMenu
-      id={props.id}
+      id="addProductScannerModal"
       title={title}
       fade={true}
       static={true}

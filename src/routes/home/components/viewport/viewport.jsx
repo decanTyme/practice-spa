@@ -3,17 +3,15 @@ import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 import Dashboard from "../../pages/dashboard";
 import Reports from "../../pages/reports";
 import Shop from "../../pages/shop";
-import ToastNotify from "../notification/Toast";
-import useNotifyService from "../../../../services/providers/notification";
 import Payments from "../../pages/payments";
 import Documentation from "../../pages/documentation";
 import Maps from "../../pages/maps";
 import Drive from "../../pages/drive";
 import Calendar from "../../pages/calendar";
+import Toaster from "../notification/ToastWrapper";
 
 function Viewport() {
   const { path } = useRouteMatch();
-  const notifier = useNotifyService();
 
   return (
     <div className="viewport-wrapper">
@@ -60,11 +58,7 @@ function Viewport() {
         />
       </Switch>
 
-      <ToastNotify
-        id="notifier"
-        title={notifier?.data?.title}
-        message={notifier?.data?.message}
-      />
+      <Toaster />
     </div>
   );
 }
