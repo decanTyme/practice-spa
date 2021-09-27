@@ -2,11 +2,13 @@ import "./footer.css";
 import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { signOut } from "../../../../../app/state/slices/auth";
+import { selectNotifyUnreadCount } from "../../../../../app/state/slices/notification/selectors";
 import { isMobile } from "react-device-detect";
-import { useDispatch } from "react-redux";
 
-function SidebarFooter(props) {
+function SidebarFooter({ menuButton }) {
   const dispatch = useDispatch();
+
+  const notificationsUnreadCount = useSelector(selectNotifyUnreadCount);
 
   const onLogout = () => {
     dispatch(signOut());
@@ -24,18 +26,22 @@ function SidebarFooter(props) {
   return (
     <div
       className="sidebar-footer"
-      style={{ padding: isMobile ? "0.15rem 0" : null }}
+      style={{ padding: isMobile ? "0.2rem 0" : null }}
     >
       <Link to="#">
         <i className="fa fa-bell"></i>
-        <span className="badge rounded-pill bg-warning notification">3</span>
+        {notificationsUnreadCount !== 0 ? (
+          <span className="badge rounded-pill bg-warning notification">
+            {notificationsUnreadCount}
+          </span>
+        ) : null}
       </Link>
       <Link to="#">
         <i className="fa fa-envelope"></i>
         <span className="badge rounded-pill bg-success notification">7</span>
       </Link>
-      {props.menuButton}
-      <Link to="#" onClick={onSettings}>
+      {menuButton}
+      <Link to="#settings" onClick={onSettings}>
         <i className="fa fa-cog"></i>
         <span className="badge-sonar"></span>
         <span className="visually-hidden">Settings</span>

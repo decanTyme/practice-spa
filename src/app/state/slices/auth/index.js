@@ -1,15 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import HttpService from "../../../../services/http";
 import Constants from "../constants";
+import {
+  selectAuthRefToken,
+  selectAuthUserId,
+  selectAuthRememberUser,
+} from "./selectors";
 import { resetAllCachedCustomerData } from "../data/customer";
 import { resetAllCachedProductData } from "../data/product";
-import { selectAuthRefToken, selectAuthUserId } from "./selectors";
+import { clearAllNotifications, notify } from "../notification";
 
 const http = HttpService();
 
 const hardReset = (dispatch) => {
   dispatch(resetAllCachedProductData());
   dispatch(resetAllCachedCustomerData());
+  dispatch(clearAllNotifications());
 };
 
 export const signIn = createAsyncThunk(
@@ -39,11 +45,22 @@ export const signOut = createAsyncThunk(
 
 export const getDatabaseStatus = createAsyncThunk(
   "AuthManager/getDatabaseStatus",
-  async () => {
+  async (_, { dispatch, getState }) => {
+    const rememberUser = selectAuthRememberUser(getState());
+
     const response = await http.onDatabasePing();
 
     if (response.status !== 200) {
-      throw new Error();
+      dispatch(
+        notify(
+          Constants.NotifyService.ERROR,
+          "Database Connect Error",
+          rememberUser
+            ? "Just a moment! Refreshing some infromation..."
+            : response.data.message
+        )
+      );
+      throw new Error(response.data.message);
     }
 
     return response.data;
