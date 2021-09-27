@@ -14,7 +14,10 @@ const LocalStorage = {
 };
 
 const preloadedState = {
-  root: { AuthManager: LocalStorage.getItem("__app_state_") },
+  root: {
+    AuthManager: LocalStorage.getItem("__app_state_"),
+    NotifyService: LocalStorage.getItem("u_notifications"),
+  },
 };
 
 const store = configureStore({
@@ -22,8 +25,9 @@ const store = configureStore({
   preloadedState,
 });
 
-store.subscribe(() =>
-  LocalStorage.setItem("__app_state_", store.getState().root.AuthManager)
-);
+store.subscribe(() => {
+  LocalStorage.setItem("__app_state_", store.getState().root.AuthManager);
+  LocalStorage.setItem("u_notifications", store.getState().root.NotifyService);
+});
 
 export default store;

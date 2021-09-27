@@ -28,7 +28,7 @@ function App() {
 
             {/* ----------------  Modals ---------------- */}
             <SettingsMenu />
-            <Scanner id="addProductScannerModal" />
+            <Scanner />
           </ThemeProvider>
         </ProtectedRoute>
 
