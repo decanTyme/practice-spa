@@ -8,6 +8,7 @@ import Constants from "../../../../../app/state/slices/constants";
 import {
   selectAuthDatabaseStatus,
   selectAuthState,
+  selectAuthStatus,
   selectAuthUserData,
 } from "../../../../../app/state/slices/auth/selectors";
 
@@ -16,14 +17,19 @@ function SidebarHeader() {
   const dispatch = useDispatch();
 
   const isLoggedIn = useSelector(selectAuthState);
+  const authStatus = useSelector(selectAuthStatus);
   const userData = useSelector(selectAuthUserData);
   const database = useSelector(selectAuthDatabaseStatus);
 
   useEffect(() => {
-    if (database.status === Constants.IDLE && isLoggedIn)
+    if (
+      database.status === Constants.IDLE &&
+      authStatus === Constants.IDLE &&
+      isLoggedIn
+    )
       dispatch(getDatabaseStatus());
     // eslint-disable-next-line
-  }, [dispatch, router]);
+  }, [dispatch, router, authStatus, isLoggedIn]);
 
   let dbStatus, dbStatusColor;
   if (database.status === "CONNECTING" && !database.connected) {
