@@ -29,6 +29,13 @@ const Constants = {
     MODIFY: "modify",
     REMOVE: "delete",
   },
+
+  NotifyService: {
+    WORKING: "HAS_PENDING_NOTIFICATIONS",
+    INFO: "INFO",
+    ALERT: "ALERT",
+    ERROR: "ERROR",
+  },
 };
 
 export default Constants;
