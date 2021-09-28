@@ -9,6 +9,7 @@ function ModalMenu(props) {
         (props?.scrollable ? " modal-dialog-scrollable" : " ")
       }
       tabIndex="-1"
+      ref={props?.reference}
     >
       <div className="modal-dialog">
         <div className="modal-content" style={props?.themeMode}>

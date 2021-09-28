@@ -6,6 +6,7 @@ import SettingsMenu from "./routes/home/components/sidebar/footer/menus/Settings
 import Scanner from "./routes/home/pages/shop/products/components/AddProductForm/Scanner";
 import ThemeProvider from "./routes/components/ThemeManager";
 import ProtectedRoute from "./routes/auth/ProtectedRoute";
+import NotificationsMenu from "./routes/home/components/sidebar/footer/menus/NotificationsMenu";
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home"));
 
@@ -29,6 +30,7 @@ function App() {
             {/* ----------------  Modals ---------------- */}
             <SettingsMenu />
             <Scanner />
+            <NotificationsMenu />
           </ThemeProvider>
         </ProtectedRoute>
 
