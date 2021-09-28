@@ -8,6 +8,7 @@ const slice = createSlice({
     queue: [],
     archive: [],
     hasPendingNotifications: false,
+    readCount: 0,
     autoDisable: true,
     status: Constants.IDLE,
     error: null,
@@ -28,21 +29,23 @@ const slice = createSlice({
             type,
             title,
             message,
+            read: false,
           },
         };
       },
       reducer: (state, action) => {
-        state.hasPendingNotifications = true;
         state.status = Constants.NotifyService.WORKING;
+
         state.queue.push(action.payload);
+        state.hasPendingNotifications = true;
       },
     },
 
-    seen: (state, action) => {
-      let notif;
+    seen: (state) => {
+      let notification;
 
-      if ((notif = state.queue.shift())) {
-        state.archive.push(notif);
+      if ((notification = state.queue.shift())) {
+        state.archive.push(notification);
       }
 
       if (state.queue.length === 0) {
@@ -79,7 +82,7 @@ const slice = createSlice({
   },
 });
 
-export const { notify, seen, setNotifyStatus, clearAllNotifications } =
+export const { notify, seen, read, setNotifyStatus, clearAllNotifications } =
   slice.actions;
 
 export default slice.reducer;

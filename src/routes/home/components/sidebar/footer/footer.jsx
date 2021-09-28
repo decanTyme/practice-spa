@@ -1,5 +1,6 @@
 import "./footer.css";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Modal } from "bootstrap";
 import { signOut } from "../../../../../app/state/slices/auth";
 import { selectNotifyUnreadCount } from "../../../../../app/state/slices/notification/selectors";
@@ -14,13 +15,19 @@ function SidebarFooter({ menuButton }) {
     dispatch(signOut());
   };
 
+  const onNotifications = () => {
+    Modal.getOrCreateInstance(document.getElementById("notificationsMenu"), {
+      keyboard: true,
+      focus: true,
+    }).show();
+  };
+
   const onSettings = () => {
-    const myModal = new Modal(document.getElementById("settingsMenu"), {
+    Modal.getOrCreateInstance(document.getElementById("settingsMenu"), {
       keyboard: true,
       backdrop: "static",
       focus: true,
-    });
-    myModal.toggle();
+    }).show();
   };
 
   return (
@@ -28,7 +35,7 @@ function SidebarFooter({ menuButton }) {
       className="sidebar-footer"
       style={{ padding: isMobile ? "0.2rem 0" : null }}
     >
-      <Link to="#">
+      <Link to="#notifications" onClick={onNotifications}>
         <i className="fa fa-bell"></i>
         {notificationsUnreadCount !== 0 ? (
           <span className="badge rounded-pill bg-warning notification">
