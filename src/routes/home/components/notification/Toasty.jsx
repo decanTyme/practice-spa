@@ -26,7 +26,7 @@ function Toasty({
       setTimeout(() => {
         thisToast?.dispose();
         dispatch(seen());
-      }, 200);
+      }, 250);
     }, timeout);
 
     return () => clearTimeout(__timeout);
@@ -42,25 +42,39 @@ function Toasty({
       style={{ width: "92vw", maxWidth: 420 }}
       ref={toastRef}
     >
-      {noHeader ? null : (
-        <div className="toast-header">
-          <img
-            src={logo}
-            height={32}
-            className="rounded me-2"
-            alt="BTPH Logo"
-          />
-          <strong className="me-auto">{title}</strong>
-          <small>{formatDistanceToNow(parseISO(date))} ago</small>
+      {noHeader ? (
+        <div className="d-flex">
+          <div className="toast-body">{title}</div>
           <button
             type="button"
-            className={"btn-close " + determineDismissBtnStyle(type)}
+            className={
+              "btn-close me-2 m-auto " + determineDismissBtnStyle(type)
+            }
             data-bs-dismiss="toast"
             aria-label="Close"
           ></button>
         </div>
+      ) : (
+        <>
+          <div className="toast-header">
+            <img
+              src={logo}
+              height={32}
+              className="rounded me-2"
+              alt="BTPH Logo"
+            />
+            <strong className="me-auto">{title}</strong>
+            <small>{formatDistanceToNow(parseISO(date))} ago</small>
+            <button
+              type="button"
+              className={"btn-close " + determineDismissBtnStyle(type)}
+              data-bs-dismiss="toast"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div className="toast-body">{message}</div>
+        </>
       )}
-      <div className="toast-body">{noHeader ? title : message}</div>
     </div>
   );
 }

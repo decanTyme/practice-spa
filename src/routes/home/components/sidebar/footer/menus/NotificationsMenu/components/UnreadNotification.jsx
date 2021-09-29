@@ -7,7 +7,7 @@ import { determineMargin, toastStyle } from "../utils";
 
 function UnreadNotification({
   unfilteredLength,
-  data: { id, date, type, title, message },
+  data: { id, date, type, title, message, noHeader },
   index: i,
 }) {
   const dispatch = useDispatch();
@@ -40,10 +40,15 @@ function UnreadNotification({
           </p>
           <p className={"me-1 mb-1 " + toastStyle(type)}>{type}</p>
         </div>
-        <p className="card-subtitle mb-2 text-muted fst-italic">
+        <p
+          className={
+            "card-subtitle text-muted fst-italic " +
+            (noHeader ? "mb-1" : "mb-2 ")
+          }
+        >
           {formatDistanceToNow(parseISO(date))} ago
         </p>
-        <p className="card-text">{message}</p>
+        {noHeader ? null : <p className="card-text mb-1">{message}</p>}
       </div>
     </div>
   );

@@ -2,6 +2,9 @@ import Constants from "../../../../app/state/slices/constants";
 
 export const determineToastStyle = (type) => {
   switch (type) {
+    case Constants.SUCCESS:
+      return "bg-success border-success text-white";
+
     case Constants.NotifyService.INFO:
       return "";
 
@@ -18,6 +21,9 @@ export const determineToastStyle = (type) => {
 
 export const determineDismissBtnStyle = (type) => {
   switch (type) {
+    case Constants.SUCCESS:
+      return "btn-close-white";
+
     case Constants.NotifyService.INFO:
       return "";
 

@@ -2,8 +2,11 @@ import Constants from "../../../../../../../app/state/slices/constants";
 
 export const toastStyle = (type) => {
   switch (type) {
+    case Constants.SUCCESS:
+      return "text-success";
+
     case Constants.NotifyService.INFO:
-      return "";
+      return "text-info";
 
     case Constants.NotifyService.ALERT:
       return "text-warning";
