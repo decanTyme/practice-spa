@@ -9,7 +9,7 @@ import { dynamicSort } from "../sort";
 export const fetchProducts = createAsyncThunk(
   "products/fetch",
   async (_, { dispatch }) => {
-    const response = await HttpService().onDataFetch("stocks", {
+    const response = await HttpService().onDataFetch("products", {
       populated: true,
     });
 
@@ -32,7 +32,7 @@ export const fetchProducts = createAsyncThunk(
 export const pushProduct = createAsyncThunk(
   "products/push",
   async (data, { dispatch }) => {
-    const response = await HttpService().onDataPush("stocks", data);
+    const response = await HttpService().onDataPush("products", data);
 
     switch (response.status) {
       case 200:
@@ -67,7 +67,7 @@ export const pushProduct = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
   "products/modify",
   async (modifiedData, { dispatch }) => {
-    const response = await HttpService().onDataModify("stocks", modifiedData);
+    const response = await HttpService().onDataModify("products", modifiedData);
 
     switch (response.status) {
       case 200:
@@ -102,7 +102,7 @@ export const updateProduct = createAsyncThunk(
 export const removeProduct = createAsyncThunk(
   "products/delete",
   async (id, { dispatch }) => {
-    const response = await HttpService().onDataRemove(id);
+    const response = await HttpService().onDataRemove("products", id);
 
     switch (response.status) {
       case 200:
@@ -250,43 +250,67 @@ const slice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status.fetch = Constants.SUCCESS;
 
-        const payload = action.payload;
+        // Modify some structure before pushing to the datastore
+        action.payload.forEach((item) => {
+          const images = [];
+          let total = 0;
 
-        // Transform the received data first so that it can be consumed properly
-        // by the
-        const transformedPayload = payload.map((item) => {
-          const { inbound, warehouse, shipped } = item.quantity;
-          const totalQuantity = inbound + warehouse + shipped;
+          item.variants.forEach((variant) => {
+            const inbound = variant.stocks
+              .filter(({ _type }) => _type === "inbound")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
 
-          const transformedItem = {
-            ...item.product,
-            stock: { ...item, totalQuantity },
-          };
+            const warehouse = variant.stocks
+              .filter(({ _type }) => _type === "warehouse")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
 
-          delete transformedItem.stock.product;
+            const shipped = variant.stocks
+              .filter(({ _type }) => _type === "shipped")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
 
-          return transformedItem;
+            images.push(...variant.images);
+
+            // Calculate the sum of all stock quantities on a given product
+            total += inbound.length + warehouse.length + shipped.length;
+
+            // Rewrite the stock field with the filtered stock types
+            variant.stocks = { inbound, warehouse, shipped };
+
+            // Delete some unnecessary fields
+            delete variant.id;
+            delete variant.product;
+          });
+
+          // Append the newly calculated values to the original data
+          item.stock = { total };
+          item.images = [...item.images, ...images];
+
+          // Finally, push the data to the datastore
+          state.data.push(item);
         });
 
-        // Sort first, then store transformed data
-        state.data.all = transformedPayload.sort(dynamicSort("name"));
+        // Sort the fetched data
+        state.data.all.sort(dynamicSort("name"));
 
         // Get all needed subdata, ensure there is no duplication,
         // then finally sort
         state.data.brands = [
-          ...new Set(transformedPayload.map(({ brand }) => brand)),
+          ...new Set(action.payload.map(({ brand }) => brand)),
         ].sort();
 
         state.data.classes = [
-          ...new Set(transformedPayload.map((item) => item.class)),
+          ...new Set(action.payload.map(({ _class }) => _class)),
         ].sort();
 
         state.data.units = [
-          ...new Set(transformedPayload.map(({ stock: { unit } }) => unit)),
+          ...new Set(action.payload.map(({ stock: { unit } }) => unit)),
         ].sort();
 
         state.data.categories = [
-          ...new Set(transformedPayload.map(({ category }) => category)),
+          ...new Set(action.payload.map(({ category }) => category)),
         ].sort();
       })
       .addCase(fetchProducts.rejected, (state, action) => {
@@ -301,24 +325,20 @@ const slice = createSlice({
         state.status.push = Constants.LOADING;
       })
       .addCase(pushProduct.fulfilled, (state, action) => {
-        const payload = action.payload;
-
         state.status.push = Constants.IDLE;
 
         // If the user used CSV (bulk) import, the data will be an array
-        // Transform each item first before storing to the datastore
+        // Add some new data before storing to the datastore
         if (!!action.payload.products) {
-          payload.products.forEach((item) => {
-            const { inbound, warehouse, shipped } = item.stock.quantity;
-            const totalQuantity = inbound + warehouse + shipped;
+          action.payload.products.forEach((item) => {
+            const { inbound, warehouse, shipped } = item.stock;
 
-            // Final transformed item
-            const transformedItem = {
-              ...item.product,
-              stock: { ...item.stock, totalQuantity },
-            };
+            // Calculate the sum of all stock on a given product,
+            // then add it to the product object
+            item.stock.total =
+              inbound.length + warehouse.length + shipped.length;
 
-            state.data.all.push(transformedItem);
+            state.data.all.push(item);
           });
         } else {
           state.data.all.push(action.payload);
@@ -340,24 +360,21 @@ const slice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.status.modify = Constants.SUCCESS;
 
-        const payload = action.payload;
-
-        // Remove the old product, push the approved change to the datastore,
-        // then re-sort everything in the datastore
+        // Remove the old product first
         state.data.all = state.data.all.filter(
           ({ _id }) => _id !== action.payload._id
         );
 
-        const { inbound, warehouse, shipped } = payload.stock.quantity;
-        const totalQuantity = inbound + warehouse + shipped;
+        const { inbound, warehouse, shipped } = action.payload.stock;
 
-        // Final transformed item
-        const transformedPayload = {
-          ...payload,
-          stock: { ...payload.stock, totalQuantity },
-        };
+        // Calculate the sum of all stock on a given product,
+        // then add it to the product object
+        action.payload.stock.total =
+          inbound.length + warehouse.length + shipped.length;
 
-        state.data.all.push(transformedPayload);
+        // Push the approved change with the new calculated data to the
+        // datastore, then re-sort everything in the datastore
+        state.data.all.push(action.payload);
         state.data.all.sort(dynamicSort("name"));
 
         // Data details should be updated with the latest approved change

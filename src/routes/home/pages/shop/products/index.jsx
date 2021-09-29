@@ -138,7 +138,7 @@ function ProductsWrapper() {
             className="btn btn-primary float-end mx-1"
             onClick={() => viewDataDetails(row.original._id)}
           >
-            View
+            View Details
           </button>
           <button
             className="btn btn-success float-end mx-1"
@@ -193,6 +193,7 @@ function ProductsWrapper() {
                   style: {
                     textAlign:
                       typeof cellInfo.value === "number" ? "center" : null,
+                    textTransform: "capitalize",
                   },
                 })}
               />
@@ -203,7 +204,15 @@ function ProductsWrapper() {
               <table></table>
               {importedCSV.map((data) => (
                 <div key={data.code}>
-                  {`[${data.code}] ${data.brand} - ${data.name} (${data.price}) ${data.class} ${data.category} > ${data.stock.quantity.inbound} ${data.stock.quantity.warehouse} ${data.stock.quantity.shipped} ${data.stock.unit}`}
+                  {`[${data.code}] ${data.brand} - ${
+                    data.name
+                  } @${data.prices.map(
+                    ({ label, value }) => ` [${label}] Php${value}`
+                  )} | ${data.class} ${data.category} > ${
+                    data.stock.quantity.inbound
+                  } ${data.stock.quantity.warehouse} ${
+                    data.stock.quantity.shipped
+                  } ${data.stock.unit}`}
                 </div>
               ))}
             </Card>
@@ -228,9 +237,10 @@ function ProductsWrapper() {
                 ({ id }) =>
                   id !== "details" &&
                   id !== "selection" &&
-                  id !== "price" &&
+                  id !== "brand" &&
                   id !== "name" &&
-                  id !== "quantity"
+                  id !== "price" &&
+                  id !== "stock.total"
               )}
               filterColumns={allColumns.filter(({ Filter }) => Filter !== "")}
             />

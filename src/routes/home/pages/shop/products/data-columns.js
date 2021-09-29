@@ -1,10 +1,7 @@
 import SelectColumnFilter from "../common/table/components/Filter/SelectColumnFilter";
-import SliderColumnFilter from "../common/table/components/Filter/SliderColumnFilter";
-import { filterGreaterThan } from "../common/table/utils";
-
 export const mobileColumns = [
   {
-    Header: "Product",
+    Header: "Product Information",
     columns: [
       {
         Header: "Brand",
@@ -25,15 +22,10 @@ export const mobileColumns = [
     Header: "Stock Information",
     columns: [
       {
-        Header: "Quantity",
-        accessor: "stock.totalQuantity",
+        Header: "Total Quantity",
+        accessor: "stock.total",
+        width: "15%",
         Filter: "",
-      },
-      {
-        Header: "Price",
-        accessor: "price",
-        Filter: SliderColumnFilter,
-        filter: filterGreaterThan,
       },
     ],
   },
@@ -41,7 +33,7 @@ export const mobileColumns = [
 
 export const webColumns = [
   {
-    Header: "Product",
+    Header: "Product Information",
     columns: [
       {
         Header: "Brand",
@@ -58,15 +50,15 @@ export const webColumns = [
       },
       {
         Header: "Class",
-        accessor: "class",
-        width: "12%",
+        accessor: "_class",
+        width: "15%",
         Filter: SelectColumnFilter,
         filter: "includes",
       },
       {
         Header: "Category",
         accessor: "category",
-        width: "12%",
+        width: "15%",
         Filter: SelectColumnFilter,
         filter: "includes",
       },
@@ -76,23 +68,18 @@ export const webColumns = [
     Header: "Stock Information",
     columns: [
       {
-        Header: "Quantity",
-        accessor: "stock.totalQuantity",
+        Header: "Total Quantity",
+        accessor: "stock.total",
+        width: "12%",
         className: "text-center",
         Filter: "",
       },
       {
         Header: "Unit",
-        accessor: "stock.unit",
-        width: "7%",
+        accessor: "unit",
+        width: "5%",
+        className: "text-center",
         Filter: "",
-      },
-      {
-        Header: "Price",
-        accessor: "price",
-        width: "8%",
-        Filter: SliderColumnFilter,
-        filter: filterGreaterThan,
       },
     ],
   },

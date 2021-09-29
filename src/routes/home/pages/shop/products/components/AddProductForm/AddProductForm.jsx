@@ -28,7 +28,7 @@ const INIT_FORM_VAL = {
   name: "",
   code: "",
   brand: "",
-  class: "",
+  _class: "",
   category: "",
   stock: { quantity: { inbound: 0, warehouse: 1, shipped: 0 }, unit: "Set" },
   price: 0,
@@ -141,7 +141,7 @@ function AddProductForm() {
       code: name === "code" ? value : product.code,
       brand: name === "brand" ? value : product.brand,
       name: name === "name" ? value : product.name,
-      class: name === "class" ? value : product.class,
+      _class: name === "class" ? value : product._class,
       category: name === "category" ? value : product.category,
       price: name === "price" ? parseInt(value) : parseInt(product.price),
       stock: {
@@ -182,21 +182,30 @@ function AddProductForm() {
       dynamicTyping: true,
       complete: (results) => {
         const transformedResults = results.data
-          .map((datum) => {
+          .map((item) => {
             return {
-              code: datum["S/N"],
-              brand: datum.BRAND,
-              name: datum.PRODUCT_NAME,
-              class: datum.CLASS,
-              category: datum.CATEGORY,
-              price: datum.PRICE,
+              code: item["S/N"],
+              brand: item.BRAND,
+              name: item.PRODUCT_NAME,
+              _class: item.CLASS,
+              category: item.CATEGORY,
+              prices: [
+                { label: "Retail", value: item.RETAIL },
+                { label: "Reseller", value: item.RESELLER },
+                { label: "Bulker", value: item.BULKER },
+                { label: "City Distributor", value: item.CITY_DISTRIBUTOR },
+                {
+                  label: "Provincial Distributor",
+                  value: item.PROVINCIAL_DISTRIBUTOR,
+                },
+              ],
               stock: {
                 quantity: {
-                  inbound: datum.INBOUND,
-                  warehouse: datum.WAREHOUSE,
-                  shipped: datum.SHIPPED,
+                  inbound: item.INBOUND,
+                  warehouse: item.WAREHOUSE,
+                  shipped: item.SHIPPED,
                 },
-                unit: datum.UNIT,
+                unit: item.UNIT,
               },
             };
           })
@@ -223,6 +232,14 @@ function AddProductForm() {
     }
   }, [dispatch, importedCSV, productInEdit]);
 
+  const setStatusIdle = useCallback(() => {
+    saveStatus !== Constants.IDLE &&
+      dispatch(setIdle(Constants.DataService.PUSH));
+
+    modifyStatus !== Constants.IDLE &&
+      dispatch(setIdle(Constants.DataService.MODIFY));
+  }, [dispatch, modifyStatus, saveStatus]);
+
   useEffect(() => {
     if (
       saveStatus === Constants.SUCCESS ||
@@ -231,17 +248,22 @@ function AddProductForm() {
       // If a save action is a success, always
       // reset everyting to defaults
       resetAll();
-      dispatch(setIdle("push"));
-      dispatch(setIdle("modify"));
+      setStatusIdle();
     } else if (
       saveStatus === Constants.FAILED ||
       modifyStatus === Constants.FAILED
     ) {
       // Otherwise, only reset the button state
       // so the user has a chance to re-edit
-      setDisable(INIT_BTN_STATE);
+      setDisable({
+        submitBtn: true,
+        resetBtn: false,
+        inputs: false,
+        inputCode: true,
+      });
+      setStatusIdle();
     }
-  }, [dispatch, resetAll, saveStatus, modifyStatus]);
+  }, [dispatch, resetAll, setStatusIdle, saveStatus, modifyStatus]);
 
   const codePlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
@@ -352,7 +374,7 @@ function AddProductForm() {
                 id="productClass"
                 name="class"
                 placeholder={classes[0]}
-                value={product.class}
+                value={product._class}
                 onChange={handleChange}
                 disabled={disable.inputs}
                 required
@@ -489,12 +511,12 @@ function AddProductForm() {
               <div className="d-flex flex-row justify-content-end">
                 <label
                   htmlFor="csvImportBtn"
-                  className="bt-file-upload btn btn-primary"
+                  className="bt-file-upload btn btn-primary ms-2"
                 >
                   Import CSV
                 </label>
                 <input
-                  id="csvImport"
+                  id="csvImportBtn"
                   type="file"
                   accept=".csv"
                   className="form-control form-control-sm"

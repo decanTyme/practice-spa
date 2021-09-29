@@ -97,20 +97,24 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataFetch = async (type, { populated }) => {
+  const onDataFetch = async (type, opts = {}) => {
+    const params = {};
+
+    if (opts.populated) params.populate = true;
+
     const requestConfig = {
       url: `/${type}`,
       method: "GET",
-      params: { populated },
+      params,
     };
 
     return instance(requestConfig);
   };
 
-  const onDataPush = async (type, data) => {
-    const params = { _item: "product" };
+  const onDataPush = async (type, data, opts = {}) => {
+    const params = {};
 
-    if (Array.isArray(data)) params.isArray = true;
+    if (Array.isArray(data)) params.batch = true;
 
     const requestConfig = {
       url: `/${type}/add`,
@@ -123,10 +127,13 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataModify = async (type, data) => {
+  const onDataModify = async (type, data, opts = {}) => {
+    const params = {};
+
     const requestConfig = {
       url: `/${type}/modify`,
       method: "PATCH",
+      params,
 
       data,
     };
