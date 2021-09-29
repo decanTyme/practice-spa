@@ -1,5 +1,11 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import { customAlphabet } from "nanoid";
 import Constants from "../constants";
+
+const nanoid = customAlphabet(
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  20
+);
 
 const slice = createSlice({
   name: "NotifyService",
@@ -24,7 +30,7 @@ const slice = createSlice({
         return {
           payload: {
             id: nanoid(),
-            date: opts?.date || Date.now(),
+            date: opts?.date || new Date().toISOString(),
             timeout: opts?.timeout || 5000,
             type,
             title,

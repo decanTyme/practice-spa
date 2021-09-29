@@ -14,7 +14,7 @@ function OldNotification({
         role="button"
         data-bs-toggle="collapse"
         aria-expanded="false"
-        aria-controls={`_${CSS.escape(id)}`}
+        aria-controls={`_${id}`}
         style={{ fontSize: "0.925rem" }}
       >
         <div className="d-flex justify-content-between align-items-center">
@@ -22,9 +22,14 @@ function OldNotification({
 
           <p className={"me-1 mb-0 " + toastStyle(type)}>{type}</p>
         </div>
-        <div className="collapse" id={`_${CSS.escape(id)}`}>
-          <p className="card-subtitle mb-2 text-muted fst-italic">
-            {formatDistanceToNow(date)} ago
+        <div className="collapse" id={`_${id}`}>
+          <p
+            className={
+              "card-subtitle text-muted fst-italic " +
+              (noHeader ? "mb-1" : "mb-2 ")
+            }
+          >
+            {formatDistanceToNow(parseISO(date))} ago
           </p>
           <p className="card-text text-muted">{message}</p>
         </div>
