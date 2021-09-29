@@ -32,6 +32,7 @@ const slice = createSlice({
             id: nanoid(),
             date: opts?.date || new Date().toISOString(),
             timeout: opts?.timeout || 5000,
+            noHeader: opts?.noHeader || false,
             type,
             title,
             message,
@@ -52,6 +53,7 @@ const slice = createSlice({
 
       if ((notification = state.queue.shift())) {
         state.archive.push(notification);
+        state.archive.sort((a, b) => b.date.localeCompare(a.date));
       }
 
       if (state.queue.length === 0) {
