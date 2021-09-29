@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { read } from "../../../../../../../../app/state/slices/notification";
@@ -41,7 +41,7 @@ function UnreadNotification({
           <p className={"me-1 mb-1 " + toastStyle(type)}>{type}</p>
         </div>
         <p className="card-subtitle mb-2 text-muted fst-italic">
-          {formatDistanceToNow(date)} ago
+          {formatDistanceToNow(parseISO(date))} ago
         </p>
         <p className="card-text">{message}</p>
       </div>

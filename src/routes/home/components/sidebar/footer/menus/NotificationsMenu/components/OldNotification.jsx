@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { determineMargin, toastStyle } from "../utils";
 
 function OldNotification({
@@ -22,13 +22,8 @@ function OldNotification({
 
           <p className={"me-1 mb-0 " + toastStyle(type)}>{type}</p>
         </div>
-        <div className="collapse" id={`_${id}`}>
-          <p
-            className={
-              "card-subtitle text-muted fst-italic " +
-              (noHeader ? "mb-1" : "mb-2 ")
-            }
-          >
+        <div className="collapse" id={`${id}`}>
+          <p className="card-subtitle mb-2 text-muted fst-italic">
             {formatDistanceToNow(parseISO(date))} ago
           </p>
           <p className="card-text text-muted">{message}</p>

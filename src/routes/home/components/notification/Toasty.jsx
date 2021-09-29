@@ -1,8 +1,7 @@
 import { Toast } from "bootstrap";
 import { useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
-import { formatDistanceToNow } from "date-fns";
-import Constants from "../../../../app/state/slices/constants";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { seen } from "../../../../app/state/slices/notification";
 import logo from "../../../../assets/logo_btph_bg_removed.png";
 
@@ -78,6 +77,7 @@ function Toasty({ data: { id, type, date, timeout, title, message } }) {
       <div className="toast-header">
         <img src={logo} height={32} className="rounded me-2" alt="BTPH Logo" />
         <strong className="me-auto">{title}</strong>
+          <small>{formatDistanceToNow(parseISO(date))} ago</small>
         <small>{formatDistanceToNow(date)}</small>
         <button
           type="button"
