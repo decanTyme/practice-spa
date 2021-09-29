@@ -68,7 +68,7 @@ function ProductsWrapper() {
       isLoggedIn &&
       !stale
     ) {
-      dispatch(fetchProducts("stocks"));
+      dispatch(fetchProducts());
     }
   }, [dispatch, dataFetchStatus, isLoggedIn, stale]);
 

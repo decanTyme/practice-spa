@@ -93,6 +93,7 @@ const slice = createSlice({
     rememberUser: false,
     userId: null,
     t_key: null,
+    access: null,
     userData: { firstname: null, lastname: null, role: null },
     stale: false,
     database: { connected: false, status: Constants.IDLE },
@@ -138,28 +139,26 @@ const slice = createSlice({
         state.database = { connected: false, status: Constants.IDLE };
       })
       .addCase(signIn.fulfilled, (state, action) => {
-        const { userId, refToken, userData } = action.payload;
+        const { userId, refToken, adminAccess, userData } = action.payload;
 
         state.status = Constants.IDLE;
 
+        /* Auth Information */
         state.isLoggedIn = true;
         state.userId = userId;
+        state.access = adminAccess;
 
         if (refToken) {
           state.t_key = refToken;
           state.rememberUser = true;
         }
 
-        if (
-          !state.userData ||
-          (state.userData && state.userData.firstname !== userData.firstname)
-        ) {
-          const { firstname, lastname, role } = userData;
+        /* User Information */
+        const { firstname, lastname, role } = userData;
 
-          state.userData.firstname = firstname;
-          state.userData.lastname = lastname;
-          state.userData.role = role;
-        }
+        state.userData.firstname = firstname;
+        state.userData.lastname = lastname;
+        state.userData.role = role;
       })
       .addCase(signIn.rejected, (state, action) => {
         state.status = Constants.AuthManager.Sign.ERROR;

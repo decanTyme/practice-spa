@@ -2,16 +2,26 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import HttpService from "../../../../../services/http";
 import { setStale } from "../../auth";
 import Constants from "../../constants";
+import { notify } from "../../notification";
 import { dynamicSort } from "../sort";
 
 /* Async thunks */
 export const fetchProducts = createAsyncThunk(
   "products/fetch",
-  async (type, { dispatch }) => {
-    const response = await HttpService().onDataFetch(type, { populated: true });
+  async (_, { dispatch }) => {
+    const response = await HttpService().onDataFetch("stocks", {
+      populated: true,
+    });
 
     if (response.status !== 200) {
       dispatch(setStale(true));
+      dispatch(
+        notify(
+          Constants.NotifyService.ERROR,
+          "Products Fetch Error",
+          response.data.message
+        )
+      );
       throw new Error();
     }
 
@@ -24,13 +34,33 @@ export const pushProduct = createAsyncThunk(
   async (data, { dispatch }) => {
     const response = await HttpService().onDataPush("stocks", data);
 
-    if (response.status >= 400 && response.status < 500) {
-      dispatch(setStale(true));
-      throw new Error();
-    }
-    dispatch(setProductStatus({ type: "push", status: Constants.SUCCESS }));
+    switch (response.status) {
+      case 200:
+        dispatch(
+          setProductStatus({
+            type: Constants.DataService.PUSH,
+            status: Constants.SUCCESS,
+          })
+        );
+        return response.data;
 
-    return response.data;
+      case 401:
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+        dispatch(
+          notify(
+            Constants.NotifyService.ERROR,
+            "Save Product Error",
+            response.data.message
+          )
+        );
+        throw new Error();
+
+      default:
+        return;
+    }
   }
 );
 
@@ -39,11 +69,33 @@ export const updateProduct = createAsyncThunk(
   async (modifiedData, { dispatch }) => {
     const response = await HttpService().onDataModify("stocks", modifiedData);
 
-    if (response.status >= 400 && response.status < 500) {
-      dispatch(setStale(true));
-      throw new Error();
+    switch (response.status) {
+      case 200:
+        dispatch(
+          setProductStatus({
+            type: Constants.DataService.MODIFY,
+            status: Constants.SUCCESS,
+          })
+        );
+        return modifiedData;
+
+      case 401:
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+        dispatch(
+          notify(
+            Constants.NotifyService.ERROR,
+            "Update Product Error",
+            response.data.message
+          )
+        );
+        throw new Error();
+
+      default:
+        return;
     }
-    if (response.data.success) return modifiedData;
   }
 );
 
@@ -52,12 +104,33 @@ export const removeProduct = createAsyncThunk(
   async (id, { dispatch }) => {
     const response = await HttpService().onDataRemove(id);
 
-    if (response.status >= 400 && response.status < 500) {
-      dispatch(setStale(true));
-      throw new Error();
-    }
+    switch (response.status) {
+      case 200:
+        dispatch(
+          setProductStatus({
+            type: Constants.DataService.REMOVE,
+            status: Constants.SUCCESS,
+          })
+        );
+        return id;
 
-    if (response.data.success) return id;
+      case 401:
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+        dispatch(
+          notify(
+            Constants.NotifyService.ERROR,
+            "Remove Product Error",
+            response.data.message
+          )
+        );
+        throw new Error();
+
+      default:
+        return;
+    }
   }
 );
 
@@ -268,8 +341,6 @@ const slice = createSlice({
         state.status.modify = Constants.SUCCESS;
 
         const payload = action.payload;
-
-        state.error.modify = action.payload;
 
         // Remove the old product, push the approved change to the datastore,
         // then re-sort everything in the datastore
