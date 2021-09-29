@@ -13,19 +13,28 @@ export const fetchProducts = createAsyncThunk(
       populated: true,
     });
 
-    if (response.status !== 200) {
-      dispatch(setStale(true));
-      dispatch(
-        notify(
-          Constants.NotifyService.ERROR,
-          "Products Fetch Error",
-          response.data.message
-        )
-      );
-      throw new Error();
-    }
+    const errMsg = "Product fetch unsuccessful!";
 
-    return response.data;
+    switch (response.status) {
+      case 401:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+      case 404:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error();
+
+      default:
+        return response.data;
+    }
   }
 );
 
@@ -34,32 +43,40 @@ export const pushProduct = createAsyncThunk(
   async (data, { dispatch }) => {
     const response = await HttpService().onDataPush("products", data);
 
+    const successMsg = "Product successfuly saved!";
+    const errMsg = "Product save unsuccessful!";
+
     switch (response.status) {
-      case 200:
+      case 401:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 403:
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        dispatch(
+          notify(Constants.SUCCESS, successMsg, void 0, {
+            noHeader: true,
+          })
+        );
+
         dispatch(
           setProductStatus({
             type: Constants.DataService.PUSH,
             status: Constants.SUCCESS,
           })
         );
+
         return response.data;
-
-      case 401:
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-        dispatch(
-          notify(
-            Constants.NotifyService.ERROR,
-            "Save Product Error",
-            response.data.message
-          )
-        );
-        throw new Error();
-
-      default:
-        return;
     }
   }
 );
@@ -69,32 +86,40 @@ export const updateProduct = createAsyncThunk(
   async (modifiedData, { dispatch }) => {
     const response = await HttpService().onDataModify("products", modifiedData);
 
+    const successMsg = "Product successfuly updated!";
+    const errMsg = "Product update unsuccessful!";
+
     switch (response.status) {
-      case 200:
+      case 401:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+
+        throw new Error();
+
+      default:
+        dispatch(
+          notify(Constants.SUCCESS, successMsg, void 0, {
+            noHeader: true,
+          })
+        );
+
         dispatch(
           setProductStatus({
             type: Constants.DataService.MODIFY,
             status: Constants.SUCCESS,
           })
         );
+
         return modifiedData;
-
-      case 401:
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-        dispatch(
-          notify(
-            Constants.NotifyService.ERROR,
-            "Update Product Error",
-            response.data.message
-          )
-        );
-        throw new Error();
-
-      default:
-        return;
     }
   }
 );
@@ -104,32 +129,40 @@ export const removeProduct = createAsyncThunk(
   async (id, { dispatch }) => {
     const response = await HttpService().onDataRemove("products", id);
 
+    const successMsg = "Product successfuly deleted!";
+    const errMsg = "Product delete unsuccessful!";
+
     switch (response.status) {
-      case 200:
+      case 401:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+
+        dispatch(setStale(true));
+        throw new Error();
+
+      case 403:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+
+        throw new Error();
+
+      default:
+        dispatch(
+          notify(Constants.SUCCESS, successMsg, void 0, {
+            noHeader: true,
+          })
+        );
+
         dispatch(
           setProductStatus({
             type: Constants.DataService.REMOVE,
             status: Constants.SUCCESS,
           })
         );
+
         return id;
-
-      case 401:
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-        dispatch(
-          notify(
-            Constants.NotifyService.ERROR,
-            "Remove Product Error",
-            response.data.message
-          )
-        );
-        throw new Error();
-
-      default:
-        return;
     }
   }
 );

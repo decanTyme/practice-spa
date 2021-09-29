@@ -244,7 +244,7 @@ function ProductDetailsCard() {
                     .splice(0, 2)
                     .map(
                       (
-                        { _id, batch, checked, addedBy, description },
+                        { _id, batch, _type, checked, addedBy, description },
                         i,
                         arr
                       ) => (
@@ -254,7 +254,13 @@ function ProductDetailsCard() {
                           })}
                           key={batch}
                         >
-                          <div className="card-body text-decoration-none text-black">
+                          <a
+                            href={`#_${_id}`}
+                            className="card-body text-decoration-none text-black"
+                            data-bs-target={`#${_type}StockMenu`}
+                            data-bs-toggle="modal"
+                            data-bs-dismiss="modal"
+                          >
                             <div className="card-title">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h6 className="mb-1">Batch No.: {batch}</h6>
@@ -262,7 +268,7 @@ function ProductDetailsCard() {
                                   className="fst-italic me-1 mb-1 text-success"
                                   style={{ fontSize: "0.875rem" }}
                                 >
-                                  #{_id.truncate(12)}
+                                  #{_id.truncate(10)}
                                 </p>
                                 {checked ? null : (
                                   <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
@@ -277,7 +283,7 @@ function ProductDetailsCard() {
                               </p>
                             </div>
                             <p className="card-text">{description}</p>
-                          </div>
+                          </a>
                         </div>
                       )
                     )
@@ -294,7 +300,9 @@ function ProductDetailsCard() {
                   <button
                     href="#inbound"
                     className="col-4 btn btn-sm m-0 p-0"
-                    onClick={openInboundMenu}
+                    data-bs-target="#inboundStockMenu"
+                    data-bs-toggle="modal"
+                    data-bs-dismiss="modal"
                   >
                     <div>Inbound</div>
                     <div className="fw-bold">
@@ -304,7 +312,9 @@ function ProductDetailsCard() {
                   <button
                     href="#warehouse"
                     className="col-4 btn btn-sm m-0 p-0 border-end border-start"
-                    onClick={openWarehouseMenu}
+                    data-bs-target="#warehouseStockMenu"
+                    data-bs-toggle="modal"
+                    data-bs-dismiss="modal"
                   >
                     <div>Warehouse</div>
                     <div className="fw-bold">
@@ -314,9 +324,9 @@ function ProductDetailsCard() {
                   <button
                     href="#shipped"
                     className="col-4 btn btn-sm m-0 p-0"
-                    onClick={() => {
-                      console.log("Opening Shipped");
-                    }}
+                    data-bs-target="#shippedStockMenu"
+                    data-bs-toggle="modal"
+                    data-bs-dismiss="modal"
                   >
                     <div>Shipped</div>
                     <div className="fw-bold">
@@ -353,6 +363,47 @@ function ProductDetailsCard() {
           ) : null}
         </div>
       </div>
+
+      {/* ----------------- Stock Menus ----------------- */}
+
+      <StockMenu
+        id="inboundStockMenu"
+        stockList={variant.stocks.inbound}
+        title="All Inbound Stocks"
+        addMenuId="inboundAddStockMenu"
+      />
+
+      <StockMenu
+        id="warehouseStockMenu"
+        stockList={variant.stocks.warehouse}
+        title="All In Warehouse Stocks"
+        addMenuId="warehouseAddStockMenu"
+      />
+
+      <StockMenu
+        id="shippedStockMenu"
+        stockList={variant.stocks.shipped}
+        title="All Shipped Stocks"
+        addMenuId="shippedAddStockMenu"
+      />
+
+      <AddStockMenu
+        id="inboundAddStockMenu"
+        title="Add Inbound Stock"
+        backTarget="inboundStockMenu"
+      />
+
+      <AddStockMenu
+        id="warehouseAddStockMenu"
+        title="Add Warehouse Stock"
+        backTarget="warehouseStockMenu"
+      />
+
+      <AddStockMenu
+        id="shippedAddStockMenu"
+        title="Add Shipped Stock"
+        backTarget="shippedStockMenu"
+      />
     </>
   );
 }

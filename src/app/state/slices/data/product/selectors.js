@@ -16,6 +16,15 @@ export const selectAllUnits = (state) =>
 export const selectProductDetails = (state) =>
   state.root.DataService.products.details;
 
+export const selectProductDetailsInbound = (state) =>
+  state.root.DataService.products.details?.stock.inbound;
+
+export const selectProductDetailsWarehouse = (state) =>
+  state.root.DataService.products.details?.stock.warehouse;
+
+export const selectProductDetailsShipped = (state) =>
+  state.root.DataService.products.details?.stock.shipped;
+
 export const selectProductInEdit = (state) =>
   state.root.DataService.products.currentlyModifying;
 
