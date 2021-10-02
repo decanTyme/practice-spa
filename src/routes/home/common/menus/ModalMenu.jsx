@@ -8,6 +8,7 @@ function ModalMenu(props) {
         (props?.scrollable ? " modal-dialog-scrollable" : " ")
       }
       tabIndex="-1"
+      data-bs-backdrop={props?.static ? "static" : null}
       ref={props?.reference}
     >
       <div
