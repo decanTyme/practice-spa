@@ -1,217 +1,13 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import HttpService from "../../../../../services/http";
-import { setStale } from "../../auth";
+import { createSlice } from "@reduxjs/toolkit";
 import Constants from "../../constants";
-import { notify } from "../../notification";
 import { dynamicSort } from "../sort";
-
-/* Async thunks */
-export const fetchProducts = createAsyncThunk(
-  "products/fetch",
-  async (_, { dispatch }) => {
-    const response = await HttpService().onDataFetch("products", {
-      populated: true,
-    });
-
-    const errMsg = "Product fetch unsuccessful!";
-
-    switch (response.status) {
-      case 401:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-      case 404:
-      case 418:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-        throw new Error();
-
-      default:
-        return response.data;
-    }
-  }
-);
-
-export const pushProduct = createAsyncThunk(
-  "products/push",
-  async (data, { dispatch }) => {
-    const response = await HttpService().onDataPush("products", data);
-
-    const successMsg = "Product successfuly saved!";
-    const errMsg = "Product save unsuccessful!";
-
-    switch (response.status) {
-      case 401:
-      case 418:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-        dispatch(setStale(true));
-        throw new Error(response.data.message);
-
-      case 403:
-      case 500:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-        throw new Error(response.data.message);
-
-      default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
-
-        dispatch(
-          setProductStatus({
-            type: Constants.DataService.PUSH,
-            status: Constants.SUCCESS,
-          })
-        );
-
-        return response.data;
-    }
-  }
-);
-
-export const updateProduct = createAsyncThunk(
-  "products/modify",
-  async (modifiedData, { dispatch }) => {
-    const response = await HttpService().onDataModify("products", modifiedData);
-
-    const successMsg = "Product successfuly updated!";
-    const errMsg = "Product update unsuccessful!";
-
-    switch (response.status) {
-      case 401:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-
-        throw new Error();
-
-      default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
-
-        dispatch(
-          setProductStatus({
-            type: Constants.DataService.MODIFY,
-            status: Constants.SUCCESS,
-          })
-        );
-
-        return modifiedData;
-    }
-  }
-);
-
-export const removeProduct = createAsyncThunk(
-  "products/delete",
-  async (id, { dispatch }) => {
-    const response = await HttpService().onDataRemove("products", id);
-
-    const successMsg = "Product successfuly deleted!";
-    const errMsg = "Product delete unsuccessful!";
-
-    switch (response.status) {
-      case 401:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-
-        dispatch(setStale(true));
-        throw new Error();
-
-      case 403:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-
-        throw new Error();
-
-      default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
-
-        dispatch(
-          setProductStatus({
-            type: Constants.DataService.REMOVE,
-            status: Constants.SUCCESS,
-          })
-        );
-
-        return id;
-    }
-  }
-);
-
-export const pushStock = createAsyncThunk(
-  "products/stock/push",
-  async (newStock, { dispatch }) => {
-    const response = HttpService().onDataPush("products", newStock);
-
-    const successMsg = "Stock successfuly saved!";
-    const errMsg = "Stock save unsuccessful!";
-
-    switch (response.status) {
-      case 401:
-      case 418:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-        dispatch(setStale(true));
-        throw new Error(response.data.message);
-
-      case 403:
-      case 500:
-        dispatch(
-          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
-        );
-        throw new Error(response.data.message);
-
-      default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
-
-        dispatch(
-          setProductStatus({
-            type: Constants.DataService.PUSH,
-            status: Constants.SUCCESS,
-          })
-        );
-
-        return {
-          stock: newStock,
-          _id: response.data.product._id,
-        };
-    }
-  }
-);
+import {
+  fetchProducts,
+  pushProduct,
+  pushStock,
+  removeProduct,
+  updateProduct,
+} from "./async-thunks";
 
 const slice = createSlice({
   name: "products",
@@ -245,10 +41,6 @@ const slice = createSlice({
             delete: Constants.IDLE,
           })
         : (state.status[action.payload] = Constants.IDLE);
-    },
-
-    setProductStatus: (state, action) => {
-      state.status[action.payload.type] = action.payload.status;
     },
 
     viewProductDetail: (state, action) => {
@@ -374,7 +166,7 @@ const slice = createSlice({
         state.status.push = Constants.LOADING;
       })
       .addCase(pushProduct.fulfilled, (state, action) => {
-        state.status.push = Constants.IDLE;
+        state.status.push = Constants.SUCCESS;
 
         // If the user used CSV (bulk) import, the data will be an array
         // Add some new data before storing to the datastore

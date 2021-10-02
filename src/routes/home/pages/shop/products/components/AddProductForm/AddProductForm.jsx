@@ -4,14 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import Papa from "papaparse";
 import Spinner from "../../../../components/spinner";
 import {
-  pushProduct,
-  updateProduct,
-  resetAllProductModification,
-  importCSV,
-  abortCSVImport,
-  setIdle,
-} from "../../../../../../../app/state/slices/data/product";
-import {
   selectProductInEdit,
   selectProductScannedCode,
   selectProductPushStatus,
@@ -23,6 +15,16 @@ import {
   selectProductModifyStatus,
 } from "../../../../../../../app/state/slices/data/product/selectors";
 import Constants from "../../../../../../../app/state/slices/constants";
+import {
+  pushProduct,
+  updateProduct,
+} from "../../../../../../../app/state/slices/data/product/async-thunks";
+import {
+  abortCSVImport,
+  importCSV,
+  resetAllProductModification,
+  setIdle,
+} from "../../../../../../../app/state/slices/data/product";
 
 const INIT_FORM_VAL = {
   name: "",

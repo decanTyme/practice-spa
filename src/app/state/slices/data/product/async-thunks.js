@@ -145,9 +145,9 @@ export const removeProduct = createAsyncThunk(
 
 /* Stocks */
 export const pushStock = createAsyncThunk(
-  "products/stocks/push",
-  async ({ newStock, _type }, { dispatch }) => {
-    const response = HttpService().onDataPush("stocks", newStock);
+  "products/stock/push",
+  async (newStock, { dispatch }) => {
+    const response = HttpService().onDataPush("products", newStock);
 
     const successMsg = "Stock successfuly saved!";
     const errMsg = "Stock save unsuccessful!";

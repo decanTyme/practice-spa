@@ -8,11 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
 import {
   fetchProducts,
-  modifyProduct,
   removeProduct,
-  addToProductSelection,
-  viewProductDetail,
-} from "../../../../../app/state/slices/data/product";
+} from "../../../../../app/state/slices/data/product/async-thunks";
 import {
   selectProductFetchStatus,
   selectAllProducts,
@@ -44,6 +41,11 @@ import {
 } from "../../../../../app/state/slices/auth/selectors";
 import { mobileColumns, webColumns } from "./data-columns";
 import Constants from "../../../../../app/state/slices/constants";
+import {
+  addToProductSelection,
+  modifyProduct,
+  viewProductDetail,
+} from "../../../../../app/state/slices/data/product";
 
 function ProductsWrapper() {
   const location = useLocation();

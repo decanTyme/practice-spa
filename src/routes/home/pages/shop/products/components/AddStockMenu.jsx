@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 import Spinner from "../../../components/spinner";
 import {
-  selectProductDetails,
+  selectAllUnits,
   selectProductImportedCSV,
   selectProductPushStatus,
 } from "../../../../../../app/state/slices/data/product/selectors";
@@ -13,7 +13,6 @@ import {
   abortCSVImport,
   setIdle,
 } from "../../../../../../app/state/slices/data/product";
-import { nanoid } from "@reduxjs/toolkit";
 
 const INIT_FORM_VAL = {
   batch: "",
