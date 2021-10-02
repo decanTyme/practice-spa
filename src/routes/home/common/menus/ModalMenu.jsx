@@ -5,13 +5,16 @@ function ModalMenu(props) {
       className={
         "modal" +
         (props?.fade ? " fade" : " ") +
-        (props?.centered ? " modal-dialog-centered" : " ") +
         (props?.scrollable ? " modal-dialog-scrollable" : " ")
       }
       tabIndex="-1"
       ref={props?.reference}
     >
-      <div className="modal-dialog">
+      <div
+        className={
+          "modal-dialog" + (props?.centered ? " modal-dialog-centered" : " ")
+        }
+      >
         <div className="modal-content" style={props?.themeMode}>
           <div className="modal-header">
             <h5 className="modal-title">{props.title}</h5>

@@ -3,7 +3,7 @@ import useThemeProvider from "../../../../../../services/providers/theme";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 import { Constants } from "../../../../../../constants";
 
-function SettingsMenu(props) {
+function SettingsMenu() {
   const { theme, changeTheme } = useThemeProvider();
 
   const onThemeModeChecked = () => {
@@ -18,6 +18,7 @@ function SettingsMenu(props) {
     <ModalMenu
       id="settingsMenu"
       fade={true}
+      centered={true}
       title="Settings"
       themeMode={Themes[theme]}
       body={
