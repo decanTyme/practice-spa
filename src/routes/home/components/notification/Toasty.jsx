@@ -24,9 +24,8 @@ function Toasty({
       thisToast?.hide();
 
       setTimeout(() => {
-        thisToast?.dispose();
         dispatch(seen());
-      }, 250);
+      }, 300);
     }, timeout);
 
     return () => clearTimeout(__timeout);

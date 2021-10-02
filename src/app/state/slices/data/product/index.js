@@ -167,6 +167,52 @@ export const removeProduct = createAsyncThunk(
   }
 );
 
+export const pushStock = createAsyncThunk(
+  "products/stock/push",
+  async (newStock, { dispatch }) => {
+    const response = HttpService().onDataPush("products", newStock);
+
+    const successMsg = "Stock successfuly saved!";
+    const errMsg = "Stock save unsuccessful!";
+
+    switch (response.status) {
+      case 401:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 403:
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        dispatch(
+          notify(Constants.SUCCESS, successMsg, void 0, {
+            noHeader: true,
+          })
+        );
+
+        dispatch(
+          setProductStatus({
+            type: Constants.DataService.PUSH,
+            status: Constants.SUCCESS,
+          })
+        );
+
+        return {
+          stock: newStock,
+          _id: response.data.product._id,
+        };
+    }
+  }
+);
+
 const slice = createSlice({
   name: "products",
   initialState: {
@@ -402,6 +448,26 @@ const slice = createSlice({
       state.currentlyModifying = null;
       state.details = null;
     });
+
+    /* Push stock cases */
+    builder
+      .addCase(pushStock.pending, (state) => {
+        state.status.push = Constants.LOADING;
+      })
+      .addCase(pushStock.fulfilled, (state, action) => {
+        state.status.push = Constants.SUCCESS;
+
+        state.data.forEach(({ _id, stock }) => {
+          if (action.payload._id === _id) {
+            stock.inbound.push(action.payload.stock);
+          }
+        });
+      })
+      .addCase(pushStock.rejected, (state, action) => {
+        state.status.push = Constants.FAILED;
+
+        state.error = action.error.message;
+      });
   },
 });
 
