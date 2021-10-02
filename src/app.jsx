@@ -10,6 +10,26 @@ import NotificationsMenu from "./routes/home/components/sidebar/footer/menus/Not
 const Login = lazy(() => import("./routes/auth/login"));
 const Home = lazy(() => import("./routes/home"));
 
+// eslint-disable-next-line
+String.prototype.capitalize = function () {
+  const str = this.toString();
+  return str
+    .split(" ")
+    .map((word) => word.replace(word.charAt(0), word.charAt(0).toUpperCase()))
+    .join(" ");
+};
+
+// eslint-disable-next-line
+String.prototype.truncate = function (maxLength) {
+  const str = this.toString();
+  return str.substring(0, maxLength) + "...";
+};
+
+// eslint-disable-next-line
+Number.prototype.commaSplice = function () {
+  return this.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 function App() {
   return (
     <Suspense fallback={<Spinner type="grow" addClass="text-danger" />}>
