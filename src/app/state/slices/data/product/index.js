@@ -170,13 +170,7 @@ export const removeProduct = createAsyncThunk(
 const slice = createSlice({
   name: "products",
   initialState: {
-    data: {
-      all: [],
-      brands: [],
-      classes: [],
-      categories: [],
-      units: [],
-    },
+    data: [],
     status: {
       fetch: Constants.IDLE,
       push: Constants.IDLE,
@@ -246,13 +240,7 @@ const slice = createSlice({
 
     resetAllCachedProductData: (state) => {
       // Empty datastore
-      state.data = {
-        all: [],
-        brands: [],
-        classes: [],
-        categories: [],
-        units: [],
-      };
+      state.data = [];
 
       // Reset everything to defaults
       state.status = {
@@ -325,26 +313,8 @@ const slice = createSlice({
           state.data.push(item);
         });
 
-        // Sort the fetched data
-        state.data.all.sort(dynamicSort("name"));
-
-        // Get all needed subdata, ensure there is no duplication,
-        // then finally sort
-        state.data.brands = [
-          ...new Set(action.payload.map(({ brand }) => brand)),
-        ].sort();
-
-        state.data.classes = [
-          ...new Set(action.payload.map(({ _class }) => _class)),
-        ].sort();
-
-        state.data.units = [
-          ...new Set(action.payload.map(({ stock: { unit } }) => unit)),
-        ].sort();
-
-        state.data.categories = [
-          ...new Set(action.payload.map(({ category }) => category)),
-        ].sort();
+        // Finally, sort the fetched data
+        state.data.sort(dynamicSort("name"));
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status.fetch = Constants.FAILED;
@@ -371,14 +341,14 @@ const slice = createSlice({
             item.stock.total =
               inbound.length + warehouse.length + shipped.length;
 
-            state.data.all.push(item);
+            state.data.push(item);
           });
         } else {
-          state.data.all.push(action.payload);
+          state.data.push(action.payload);
         }
 
         // Sort datastore
-        state.data.all.sort(dynamicSort("name"));
+        state.data.sort(dynamicSort("name"));
 
         state.sn = null;
       })
@@ -394,9 +364,7 @@ const slice = createSlice({
         state.status.modify = Constants.SUCCESS;
 
         // Remove the old product first
-        state.data.all = state.data.all.filter(
-          ({ _id }) => _id !== action.payload._id
-        );
+        state.data = state.data.filter(({ _id }) => _id !== action.payload._id);
 
         const { inbound, warehouse, shipped } = action.payload.stock;
 
@@ -407,8 +375,8 @@ const slice = createSlice({
 
         // Push the approved change with the new calculated data to the
         // datastore, then re-sort everything in the datastore
-        state.data.all.push(action.payload);
-        state.data.all.sort(dynamicSort("name"));
+        state.data.push(action.payload);
+        state.data.sort(dynamicSort("name"));
 
         // Data details should be updated with the latest approved change
         state.details = action.payload;
@@ -427,8 +395,8 @@ const slice = createSlice({
 
       // After removing the aprroved deleted data, remove from datastore
       // and re-sort
-      state.data = state.data.all.filter(({ _id }) => _id !== action.payload);
-      state.data.all.sort(dynamicSort("name"));
+      state.data = state.data.filter(({ _id }) => _id !== action.payload);
+      state.data.sort(dynamicSort("name"));
 
       state.sn = null;
       state.currentlyModifying = null;

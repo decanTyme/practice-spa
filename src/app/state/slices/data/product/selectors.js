@@ -1,17 +1,42 @@
+import { createSelector } from "reselect";
+
 export const selectAllProducts = (state) =>
-  state.root.DataService.products.data.all;
+  state.root.DataService.products.data;
 
-export const selectAllBrands = (state) =>
-  state.root.DataService.products.data.brands;
+export const selectAllBrands = createSelector(
+  [selectAllProducts],
+  (products) => {
+    return [...new Set(products.map(({ brand }) => brand))].sort();
+  }
+);
 
-export const selectAllClasses = (state) =>
-  state.root.DataService.products.data.classes;
+export const selectAllClasses = createSelector(
+  [selectAllProducts],
+  (products) => {
+    return [...new Set(products.map(({ _class }) => _class))].sort();
+  }
+);
 
-export const selectAllCategories = (state) =>
-  state.root.DataService.products.data.categories;
+export const selectAllCategories = createSelector(
+  [selectAllProducts],
+  (products) => {
+    return [...new Set(products.map(({ category }) => category))].sort();
+  }
+);
 
-export const selectAllUnits = (state) =>
-  state.root.DataService.products.data.units;
+export const selectAllUnits = createSelector(
+  [selectAllProducts],
+  (products) => {
+    return [...new Set(products.map(({ unit }) => unit))].sort();
+  }
+);
+
+export const selectAllStockInbound = createSelector(
+  [selectAllProducts],
+  (products) => {
+    return products.map((product) => product.stock.inbound);
+  }
+);
 
 export const selectProductDetails = (state) =>
   state.root.DataService.products.details;
