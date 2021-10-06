@@ -86,14 +86,15 @@ export const updateProduct = createAsyncThunk(
         );
 
         dispatch(setStale(true));
-        throw new Error();
+        throw new Error(response.data.message);
 
+      case 400:
       case 403:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
 
-        throw new Error();
+        throw new Error(response.data.message);
 
       default:
         dispatch(
@@ -147,7 +148,12 @@ export const removeProduct = createAsyncThunk(
 export const pushStock = createAsyncThunk(
   "products/stock/push",
   async (newStock, { dispatch }) => {
-    const response = HttpService().onDataPush("products", newStock);
+    const response = await HttpService().onDataPush("stocks", newStock, {
+      params: {
+        _id: newStock.variantId,
+        _type: newStock._type,
+      },
+    });
 
     const successMsg = "Stock successfuly saved!";
     const errMsg = "Stock save unsuccessful!";
@@ -169,15 +175,19 @@ export const pushStock = createAsyncThunk(
         throw new Error(response.data.message);
 
       default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
         return {
-          stock: newStock,
-          _id: response.data.product._id,
+          stock: response.data.stock,
+          variantId: response.data.stock.variant,
+          _type: response.data.stock._type,
         };
     }
   }

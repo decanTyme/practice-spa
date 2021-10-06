@@ -445,7 +445,7 @@ function AddProductForm() {
           </div>
 
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mt-3 align-items-center d-flex align-items-center">
+          <div className="row g-2 mt-3 d-flex align-items-center">
             <div className="col">
               <div className="form-check m-0">
                 <input

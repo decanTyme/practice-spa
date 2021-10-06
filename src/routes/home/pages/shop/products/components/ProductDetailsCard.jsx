@@ -3,11 +3,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { modifyProduct } from "../../../../../../app/state/slices/data/product";
 import { removeProduct } from "../../../../../../app/state/slices/data/product/async-thunks";
-import { selectProductInEdit } from "../../../../../../app/state/slices/data/product/selectors";
+import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
+import classNames from "classnames";
+import { isMobile } from "react-device-detect";
+import StockMenu from "./StockMenu";
+import AddStockMenu from "./AddStockMenu";
 
-function ProductDetailsCard({
-  product,
-  product: {
+function ProductDetailsCard() {
+  const dispatch = useDispatch();
+
+  const productDetails = useSelector(selectProductDetails);
+
+  const {
     _id,
     name,
     code,

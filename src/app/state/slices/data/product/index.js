@@ -250,10 +250,26 @@ const slice = createSlice({
       .addCase(pushStock.fulfilled, (state, action) => {
         state.status.push = Constants.SUCCESS;
 
-        state.data.forEach(({ _id, stock }) => {
-          if (action.payload._id === _id) {
-            stock.inbound.push(action.payload.stock);
-          }
+        state.data.forEach((product) => {
+          let total = product.stock.total;
+
+          product.variants.forEach((variant) => {
+            if (action.payload.variantId === variant._id) {
+              variant.stocks[action.payload._type].push(action.payload.stock);
+
+              variant.stocks[action.payload._type]
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              // Since we're only adding one stock
+              // at a time, just increment the sum
+              total++;
+
+              product.stock = { total };
+
+              state.details = product;
+            }
+          });
         });
       })
       .addCase(pushStock.rejected, (state, action) => {
