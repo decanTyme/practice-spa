@@ -5,6 +5,7 @@ import { requestAuthToken, setAuthError } from "../app/state/slices/auth";
 import { selectAuthCurrentState } from "../app/state/slices/auth/selectors";
 import Constants from "../app/state/slices/constants";
 import { selectNotifyState } from "../app/state/slices/notification/selectors";
+import { notify } from "../app/state/slices/notification";
 
 /**
  * A hook that checks and handles all authentication routing.
@@ -50,24 +51,33 @@ function AuthManagerRouter() {
             return router.replace(callback || "/dashboard");
           }
 
-          // Only run when the auth token is stale but has no pending notifications
-          // (either already shown onscreen or in queue), then check if it was not
-          // deliberate by making sure the user didn't do it themselves!
+          // Only run when the auth token is stale but notify the user first,
+          // then only after there are no other pending notifications left
+          // (neither shown onscreen or in queue) we request a new auth token.
+          // However, we have to check the auth status first to see if it was
+          // not deliberate by making sure the user didn't do it themselves!
           // (e.g. by signing off)
           //
           // It's important that we want to wait for a while until after the user
           // sees all pending notifications first before we do anything else like
           // request a new token, which might cause the session to expire and
-          // everything to force signoff without the user understanding why.
+          // force everything to signoff without the user understanding why.
           //
           // Otherwise, if the user has checked 'remember me', request immediately
           // for a token since we know the server will refresh the token anyway.
-          if (
-            stale &&
-            status === Constants.IDLE &&
-            (!hasPendingNotifications || rememberUser)
-          ) {
-            dispatch(requestAuthToken());
+          if (stale && status === Constants.IDLE) {
+            dispatch(
+              notify(
+                Constants.NotifyService.ERROR,
+                "Authentication error",
+                rememberUser
+                  ? "Just a moment! Refreshing some infromation..."
+                  : error
+              )
+            );
+
+            if (!hasPendingNotifications || rememberUser)
+              dispatch(requestAuthToken());
           }
 
           return;

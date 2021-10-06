@@ -1,11 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import HttpService from "../../../../services/http";
 import Constants from "../constants";
-import {
-  selectAuthRefToken,
-  selectAuthUserId,
-  selectAuthRememberUser,
-} from "./selectors";
+import { selectAuthRefToken, selectAuthUserId } from "./selectors";
 import { resetAllCachedCustomerData } from "../data/customer";
 import { resetAllCachedProductData } from "../data/product";
 import { clearAllNotifications, notify } from "../notification";
@@ -45,23 +41,10 @@ export const signOut = createAsyncThunk(
 
 export const getDatabaseStatus = createAsyncThunk(
   "AuthManager/getDatabaseStatus",
-  async (_, { dispatch, getState }) => {
-    const rememberUser = selectAuthRememberUser(getState());
-
+  async () => {
     const response = await http.onDatabasePing();
 
-    if (response.status !== 200) {
-      dispatch(
-        notify(
-          Constants.NotifyService.ERROR,
-          "Database Connect Error",
-          rememberUser
-            ? "Just a moment! Refreshing some infromation..."
-            : response.data.message
-        )
-      );
-      throw new Error(response.data.message);
-    }
+    if (response.status !== 200) throw new Error(response.data.message);
 
     return response.data;
   }
@@ -73,6 +56,8 @@ export const requestAuthToken = createAsyncThunk(
     const refToken = selectAuthRefToken(getState());
     const userId = selectAuthUserId(getState());
 
+    const successMsg = "Successfully refreshed. You may resume operations.";
+
     const response = await http.onReAuthRequest(userId, refToken);
 
     if (!response.data.auth) {
@@ -81,6 +66,12 @@ export const requestAuthToken = createAsyncThunk(
     }
 
     dispatch(setStatus(Constants.AuthManager.Sign.Token.REFRESH_SUCCESS));
+
+    dispatch(
+      notify(Constants.SUCCESS, successMsg, void 0, {
+        noHeader: true,
+      })
+    );
 
     return response.data;
   }
