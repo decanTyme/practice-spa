@@ -33,7 +33,7 @@ function PaginationTable({
   return (
     <div className="card">
       <div className="table-responsive">
-        <table {...getTableProps()} className="table table-hover rounded-top">
+        <table {...getTableProps()} className="table table-hover">
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()}>
@@ -85,13 +85,13 @@ function PaginationTable({
                 </Fragment>
               );
             })}
-            <tr className="text-center">
+            <tr>
               {loading ? (
-                <td colSpan="10000">
+                <td colSpan="10000" className="text-center">
                   <Spinner addClass="spinner-border-sm">Loading...</Spinner>
                 </td>
               ) : (
-                <td colSpan="10000">
+                <td colSpan="10000" className="text-center">
                   {dataLength > 0
                     ? `Showing ${page.length} of ${dataLength} products`
                     : "It seems that there is no data yet."}

@@ -188,8 +188,8 @@ function ProductsWrapper() {
     <Wrapper pageTitle="Products">
       <section className="row g-3">
         <div className="col-sm-9">
-          <ErrorBoundary>
-            <div className="product-table-wrapper">
+          <div className="product-table-wrapper">
+            <ErrorBoundary>
               <PaginationTable
                 loading={dataFetchStatus === Constants.LOADING}
                 dataLength={data.length}
@@ -207,8 +207,17 @@ function ProductsWrapper() {
                   },
                 })}
               />
-            </div>
-          </ErrorBoundary>
+            </ErrorBoundary>
+          </div>
+          <div className="mt-3">
+            {productDetails ? (
+              <ErrorBoundary>
+                <ProductDetailsCard product={productDetails} />
+              </ErrorBoundary>
+            ) : (
+              <Card title="Select a product to view" />
+            )}
+          </div>
           {importedCSV ? (
             <Card title="Imported CSV (Preview)" className="mt-3">
               <table></table>
@@ -229,16 +238,8 @@ function ProductsWrapper() {
           ) : null}
         </div>
         <aside className="col-sm-3">
-          {productDetails ? (
-            <ErrorBoundary>
-              <ProductDetailsCard product={productDetails} />
-            </ErrorBoundary>
-          ) : (
-            <Card title="Select a product to view" />
-          )}
           <ErrorBoundary>
             <FilterOptionsCard
-              className="mt-3"
               getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
               preGlobalFilteredRows={preGlobalFilteredRows}
               setGlobalFilter={setGlobalFilter}

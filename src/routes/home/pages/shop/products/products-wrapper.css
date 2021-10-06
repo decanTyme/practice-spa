@@ -1,15 +1,49 @@
-.product-table-wrapper table {
-  position: relative;
-  padding: 10rem;
-}
-
-.product-table-wrapper table thead th {
-  background: #47709c;
-  color: white;
-  text-align: center;
-}
-
 .product-table-wrapper select.form-select {
   width: inherit;
   height: 100%;
+}
+
+table {
+  padding: 16px;
+}
+
+table thead {
+  background-color: #4d5a68;
+  color: white;
+  padding: 32px;
+  display: table-header-group;
+  vertical-align: middle;
+  border-color: inherit;
+  border-collapse: separate;
+}
+
+table tr {
+  padding: 32px;
+  text-align: center;
+  display: table-row;
+  vertical-align: inherit;
+  border-color: inherit;
+}
+
+table th,
+table td {
+  vertical-align: top;
+}
+
+table thead tr th {
+  padding: 0.55rem !important;
+}
+
+table td {
+  text-align: left;
+}
+
+table thead:first-child tr:first-child th:first-child,
+table tbody:first-child tr:first-child td:first-child {
+  border-radius: 0.25rem 0 0 0;
+}
+
+thead:first-child tr:first-child th:last-child,
+tbody:first-child tr:first-child td:last-child {
+  border-radius: 0 0.25rem 0 0;
 }

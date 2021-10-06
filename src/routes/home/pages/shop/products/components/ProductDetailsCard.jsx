@@ -118,6 +118,12 @@ function ProductDetailsCard({
                 <span className="visually-hidden">Next</span>
               </button>
             </div>
+
+            {isMobile ? null : (
+              <div className="card-footer border-0 p-2 text-muted">
+                Item ID: {_id}
+              </div>
+            )}
           </div>
 
           <div className="col-sm-4 d-flex flex-column">

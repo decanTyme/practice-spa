@@ -1,0 +1,11 @@
+.page-wrapper .sticky-top {
+  background-color: #f5f5f5;
+  /* background-color: #3a3f48; */
+  /* color: #ffffff; */
+  /* box-shadow: 0px 1px 2px #282c33; */
+}
+
+.page-wrapper-viewport {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}

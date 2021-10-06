@@ -57,7 +57,7 @@ function Home() {
         <main
           className={
             (isMobile ? onMobileViewportClass : onDesktopViewportClass) +
-            "p-0 pb-5 pb-md-1 pb-lg-5 mt-3"
+            "p-0 pb-5 pb-md-1 pb-lg-5"
           }
         >
           <Viewport />
