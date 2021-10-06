@@ -36,6 +36,7 @@ import {
   rowSelectPlugin,
 } from "../common/table/utils";
 import {
+  selectAuthDatabaseStatus,
   selectAuthStaleStatus,
   selectAuthState,
 } from "../../../../../app/state/slices/auth/selectors";
@@ -51,6 +52,7 @@ function ProductsWrapper() {
   const location = useLocation();
   const dispatch = useDispatch();
 
+  const database = useSelector(selectAuthDatabaseStatus);
   const isLoggedIn = useSelector(selectAuthState);
   const stale = useSelector(selectAuthStaleStatus);
 
@@ -64,15 +66,21 @@ function ProductsWrapper() {
   useEffect(() => {
     // Only fetch if either the user is logged in, not stale, or
     // Data Service is idle or has a previously failed attempt
-    if (
-      (dataFetchStatus === Constants.IDLE ||
-        dataFetchStatus === Constants.FAILED) &&
-      isLoggedIn &&
-      !stale
-    ) {
-      dispatch(fetchProducts());
-    }
-  }, [dispatch, dataFetchStatus, isLoggedIn, stale]);
+    const timeout = setTimeout(() => {
+      if (
+        (dataFetchStatus === Constants.IDLE ||
+          dataFetchStatus === Constants.FAILED) &&
+        database.status === Constants.IDLE &&
+        isLoggedIn &&
+        !stale
+      ) {
+        console.log("Fetching...");
+        dispatch(fetchProducts());
+      }
+    });
+
+    return () => clearTimeout(timeout);
+  }, [dispatch, dataFetchStatus, isLoggedIn, stale, database]);
 
   const viewDataDetails = useCallback(
     (itemId) => {
