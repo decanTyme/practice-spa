@@ -1,5 +1,5 @@
 import { Toast } from "bootstrap";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { seen } from "../../../../app/state/slices/notification";
@@ -11,25 +11,27 @@ function Toasty({
 }) {
   const dispatch = useDispatch();
 
-  const toastRef = useRef(null);
-
   useEffect(() => {
-    const thisToast =
-      toastRef.current &&
-      Toast.getOrCreateInstance(toastRef.current, { autohide: false });
+    const thisToast = Toast.getOrCreateInstance(document.getElementById(id), {
+      autohide: false,
+    });
 
     thisToast?.show();
 
+    let __timeout_;
     const __timeout = setTimeout(() => {
       thisToast?.hide();
 
-      setTimeout(() => {
-        dispatch(seen());
+      __timeout_ = setTimeout(() => {
+        dispatch(seen(id));
       }, 300);
     }, timeout);
 
-    return () => clearTimeout(__timeout);
-  });
+    return () => {
+      clearTimeout(__timeout);
+      clearTimeout(__timeout_);
+    };
+  }, [dispatch, id, timeout]);
 
   return (
     <div
@@ -39,7 +41,6 @@ function Toasty({
       aria-live="assertive"
       aria-atomic="true"
       style={{ width: "92vw", maxWidth: 420 }}
-      ref={toastRef}
     >
       {noHeader ? (
         <div className="d-flex">

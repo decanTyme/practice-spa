@@ -25,14 +25,18 @@ const slice = createSlice({
         type = Constants.NotifyService.INFO,
         title,
         message,
-        opts = {}
+        {
+          date = new Date().toISOString(),
+          timeout = 5000,
+          noHeader = false,
+        } = {}
       ) => {
         return {
           payload: {
             id: nanoid(),
-            date: opts?.date || new Date().toISOString(),
-            timeout: opts?.timeout || 5000,
-            noHeader: opts?.noHeader || false,
+            date,
+            timeout,
+            noHeader,
             type,
             title,
             message,
@@ -48,13 +52,15 @@ const slice = createSlice({
       },
     },
 
-    seen: (state) => {
-      let notification;
+    seen: (state, action) => {
+      state.queue = state.queue.filter((notification) => {
+        if (notification.id === action.payload) {
+          state.archive.push(notification);
+          state.archive.sort((a, b) => b.date.localeCompare(a.date));
+        }
 
-      if ((notification = state.queue.shift())) {
-        state.archive.push(notification);
-        state.archive.sort((a, b) => b.date.localeCompare(a.date));
-      }
+        return notification.id !== action.payload;
+      });
 
       if (state.queue.length === 0) {
         state.hasPendingNotifications = false;
