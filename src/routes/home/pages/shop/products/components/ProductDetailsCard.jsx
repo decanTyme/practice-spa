@@ -293,7 +293,7 @@ function ProductDetailsCard({
                 )}
               </li>
 
-              {/* ---------------------------- Stock Details ---------------------------- */}
+              {/* ------------------------ Stock Details ------------------------ */}
               <div className="container-fluid border-top px-1">
                 <div className="row g-0 py-2 text-center">
                   <button
@@ -334,6 +334,7 @@ function ProductDetailsCard({
                   </button>
                 </div>
               </div>
+
               {/* ---------------------------- Product Options ---------------------------- */}
               <div
                 className="btn-group"
@@ -365,44 +366,13 @@ function ProductDetailsCard({
 
       {/* ----------------- Stock Menus ----------------- */}
 
-      <StockMenu
-        id="inboundStockMenu"
-        stockList={variant.stocks.inbound}
-        title="All Inbound Stocks"
-        addMenuId="inboundAddStockMenu"
-      />
+      <StockMenu type="inbound" stockList={variant.stocks.inbound} />
+      <StockMenu type="warehouse" stockList={variant.stocks.warehouse} />
+      <StockMenu type="shipped" stockList={variant.stocks.shipped} />
 
-      <StockMenu
-        id="warehouseStockMenu"
-        stockList={variant.stocks.warehouse}
-        title="All In Warehouse Stocks"
-        addMenuId="warehouseAddStockMenu"
-      />
-
-      <StockMenu
-        id="shippedStockMenu"
-        stockList={variant.stocks.shipped}
-        title="All Shipped Stocks"
-        addMenuId="shippedAddStockMenu"
-      />
-
-      <AddStockMenu
-        id="inboundAddStockMenu"
-        title="Add Inbound Stock"
-        backTarget="inboundStockMenu"
-      />
-
-      <AddStockMenu
-        id="warehouseAddStockMenu"
-        title="Add Warehouse Stock"
-        backTarget="warehouseStockMenu"
-      />
-
-      <AddStockMenu
-        id="shippedAddStockMenu"
-        title="Add Shipped Stock"
-        backTarget="shippedStockMenu"
-      />
+      <AddStockMenu type="inbound" variant={variant} />
+      <AddStockMenu type="warehouse" variant={variant} />
+      <AddStockMenu type="shipped" variant={variant} />
     </>
   );
 }

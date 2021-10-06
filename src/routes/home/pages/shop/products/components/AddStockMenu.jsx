@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ModalMenu from "../../../../common/menus/ModalMenu";
-import Spinner from "../../../components/spinner";
 import {
-  selectAllUnits,
   selectProductImportedCSV,
   selectProductPushStatus,
 } from "../../../../../../app/state/slices/data/product/selectors";
@@ -13,15 +11,18 @@ import {
   abortCSVImport,
   setIdle,
 } from "../../../../../../app/state/slices/data/product";
+import classNames from "classnames";
+import { selectAllCouriers } from "../../../../../../app/state/slices/data/courier";
 
 const INIT_FORM_VAL = {
   batch: "",
-  description: "",
+  checked: false,
+  description: "Any description or remarks of the batch here...",
   quantity: 0,
   pricePerUnit: 0,
-  purchasedOn: new Date().toISOString(),
-  manufacturedOn: new Date().toISOString(),
-  expiry: new Date().toISOString(),
+  purchasedOn: "",
+  manufacturedOn: "",
+  expiry: "",
   courier: "",
   arrivedOn: "",
 };
@@ -33,40 +34,31 @@ const INIT_BTN_STATE = {
   inputCode: false,
 };
 
-function AddStockMenu({ id, backTarget, title }) {
+const StockTypes = {
+  INBOUND: "inbound",
+  WAREHOUSE: "warehouse",
+  SHIPPED: "shipped",
+};
+
+function AddStockMenu({ variant, type }) {
   const dispatch = useDispatch();
 
-  const dataInDetails = useSelector(selectProductDetails);
-  const couriers = [
-    {
-      _id: nanoid(),
-      name: "J&T",
-    },
-    {
-      _id: nanoid(),
-      name: "Capex",
-    },
-    {
-      _id: nanoid(),
-      name: "EMR",
-    },
-    {
-      _id: nanoid(),
-      name: "AP Cargo",
-    },
-  ];
+  const couriers = useSelector(selectAllCouriers);
 
   const saveStatus = useSelector(selectProductPushStatus);
   const importedCSV = useSelector(selectProductImportedCSV);
 
   const [stock, setStock] = useState(INIT_FORM_VAL);
+  const [loading, setLoading] = useState();
   const [disable, setDisable] = useState(INIT_BTN_STATE);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const addStockForm = document.getElementById("addStockForm");
+
+    const addStockForm = document.getElementById(`${type}AddStockForm`);
 
     if (addStockForm.checkValidity()) {
+      setLoading(true);
       setDisable({
         submitBtn: true,
         resetBtn: true,
@@ -74,11 +66,27 @@ function AddStockMenu({ id, backTarget, title }) {
         inputCode: true,
       });
 
-      if (importedCSV) dispatch(pushStock(importedCSV));
-      else
-        dispatch(
-          pushStock({ ...stock, _id: dataInDetails._id, _type: "inbound" })
-        );
+      try {
+        await dispatch(
+          pushStock({
+            ...stock,
+            purchasedOn: new Date(stock.purchasedOn).toISOString(),
+            manufacturedOn:
+              stock.manufacturedOn &&
+              new Date(stock.manufacturedOn).toISOString(),
+            expiry: new Date(stock.expiry).toISOString(),
+            arrivedOn:
+              stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
+            variantId: variant._id,
+            _type: type,
+          })
+        ).unwrap();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+        setDisable(INIT_BTN_STATE);
+      }
 
       addStockForm.classList.remove("was-validated");
     } else {
@@ -99,6 +107,7 @@ function AddStockMenu({ id, backTarget, title }) {
 
     setStock({
       batch: name === "batch" ? value.toUpperCase() : stock.batch,
+      checked: name === "checked" ? e.target.checked : stock.checked,
       description: name === "description" ? value : stock.description,
       quantity:
         name === "quantity" ? parseInt(value) : parseInt(stock.quantity),
@@ -156,14 +165,14 @@ function AddStockMenu({ id, backTarget, title }) {
 
   return (
     <ModalMenu
-      id={id}
+      id={`${type}AddStockMenu`}
       fade={true}
       static={true}
-      title={title}
+      title={`Add ${type.capitalize()} Stock`}
       headerBtn={
         <button
           className="btn py-1 px-2"
-          data-bs-target={`#${backTarget}`}
+          data-bs-target={`#${type}StockMenu`}
           data-bs-toggle="modal"
           data-bs-dismiss="modal"
         >
@@ -171,12 +180,9 @@ function AddStockMenu({ id, backTarget, title }) {
         </button>
       }
       body={
-        <form
-          id="addStockForm"
-          className="container-fluid needs-validation mb-2"
-        >
+        <form id={`${type}AddStockForm`} className="needs-validation px-2 mb-2">
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row row-cols-auto g-2 mb-3">
+          <div className="row g-2 mb-3">
             <div className="col-12">
               <label htmlFor="productCode" className="form-label">
                 Batch Number
@@ -213,7 +219,7 @@ function AddStockMenu({ id, backTarget, title }) {
             </div>
           </div>
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row row-cols-auto g-3 mb-3">
+          <div className="row g-3 mb-3">
             <div className="col-6">
               <label htmlFor="stockQuantity" className="form-label">
                 Quantity
@@ -259,6 +265,7 @@ function AddStockMenu({ id, backTarget, title }) {
               </div>
             </div>
           </div>
+
           {/* ------------------------------ Row ------------------------------ */}
           <div className="row row-cols-2 g-3 mb-3">
             <div className="col-6">
@@ -270,7 +277,6 @@ function AddStockMenu({ id, backTarget, title }) {
                 type="date"
                 name="purchasedOn"
                 value={stock.purchasedOn}
-                placeholder="{units[0]}"
                 className="form-control"
                 onChange={handleChange}
                 disabled={disable.inputs}
@@ -295,9 +301,11 @@ function AddStockMenu({ id, backTarget, title }) {
                 value={stock.courier}
                 onChange={handleChange}
                 disabled={disable.inputs}
+                required
               >
+                <option value="">Select Courier</option>
                 {couriers.map(({ _id, name }) => (
-                  <option key={_id} value={name}>
+                  <option key={_id} value={_id}>
                     {name}
                   </option>
                 ))}
@@ -308,8 +316,9 @@ function AddStockMenu({ id, backTarget, title }) {
               <div className="valid-feedback">Looks good!</div>
             </div>
           </div>
+
           {/* ------------------------------ Row ------------------------------ */}
-          <div className="row row-cols-auto g-3">
+          <div className="row g-3 mb-3">
             <div className="col-6">
               <label htmlFor="manufactureDate" className="form-label">
                 Manufactured On
@@ -319,7 +328,6 @@ function AddStockMenu({ id, backTarget, title }) {
                 type="date"
                 name="manufacturedOn"
                 className="form-control"
-                placeholder="{units[0]}"
                 value={stock.manufacturedOn}
                 onChange={handleChange}
                 disabled={disable.inputs}
@@ -340,8 +348,7 @@ function AddStockMenu({ id, backTarget, title }) {
                 type="date"
                 name="expiry"
                 className="form-control"
-                placeholder="{units[0]}"
-                value={stock.manufacturedOn}
+                value={stock.expiry}
                 onChange={handleChange}
                 disabled={disable.inputs}
                 min="2020-01-01"
@@ -352,6 +359,79 @@ function AddStockMenu({ id, backTarget, title }) {
                 Please select a valid date.
               </div>
               <div className="valid-feedback">Looks good!</div>
+            </div>
+          </div>
+
+          {/* ------------- Show only when adding warehouse stocks ------------ */}
+          {type === StockTypes.WAREHOUSE ? (
+            <div className="row g-3 mb-4">
+              <div className="col-12">
+                <label htmlFor="arrivalDate" className="form-label">
+                  Arrived On
+                </label>
+                <div className="input-group mb-3">
+                  <input
+                    id="arrivalDate"
+                    type="date"
+                    name="arrivedOn"
+                    className="form-control"
+                    value={stock.arrivedOn}
+                    onChange={handleChange}
+                    disabled={disable.inputs}
+                    min="2020-01-01"
+                  />
+
+                  <div className="invalid-feedback">
+                    Please select a valid date.
+                  </div>
+                  <div className="valid-feedback">Looks good!</div>
+
+                  <div className="input-group-text">
+                    <div className="form-check">
+                      <input
+                        id="inventoryChecked"
+                        name="checked"
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={stock.checked}
+                        onChange={handleChange}
+                        style={{ marginTop: "0.32rem" }}
+                        disabled={disable.inputs}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="inventoryChecked"
+                        style={{ fontSize: "0.9rem" }}
+                      >
+                        Batch Already Checked
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* ------------------------------ Row ------------------------------ */}
+          <div
+            className={classNames("row g-3", {
+              "mt-3": type !== StockTypes.WAREHOUSE,
+            })}
+          >
+            <div className="col-12">
+              <div className="form-floating">
+                <textarea
+                  id="stockDesc"
+                  name="description"
+                  className="form-control"
+                  placeholder="Any description or remarks of the batch here..."
+                  style={{ height: "100px" }}
+                  value={stock.description}
+                  onChange={handleChange}
+                ></textarea>
+                <div className="valid-feedback">Looks good!</div>
+                <label htmlFor="stockDesc">Description (Optional)</label>
+              </div>
             </div>
           </div>
         </form>
@@ -375,11 +455,14 @@ function AddStockMenu({ id, backTarget, title }) {
             onClick={handleSubmit}
             disabled={disable.submitBtn}
           >
-            {saveStatus !== Constants.IDLE ? (
-              <Spinner addClass="spinner-border-sm">Save</Spinner>
-            ) : (
-              "Save"
-            )}
+            {loading ? (
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden={false}
+              ></span>
+            ) : null}
+            Save
           </button>
         </>
       }

@@ -8,17 +8,25 @@ import { stockMarkInventoryChecked } from "../../../../../../app/state/slices/da
 import { selectProductPushStatus } from "../../../../../../app/state/slices/data/product/selectors";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 
-function StockMenu({ addMenuId, stockList, id, title }) {
+const INIT_STATE_LOADING = {
+  check: false,
+  move: false,
+};
+
+function StockMenu({ type, stockList }) {
   const dispatch = useDispatch();
 
   const access = useSelector(selectAuthAccess);
   const saveStatus = useSelector(selectProductPushStatus);
 
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(INIT_STATE_LOADING);
 
   const handleMark = async (e) => {
     try {
-      setLoading(true);
+      setLoading({
+        check: true,
+        move: false,
+      });
 
       await dispatch(
         stockMarkInventoryChecked({
@@ -29,7 +37,9 @@ function StockMenu({ addMenuId, stockList, id, title }) {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoading(INIT_STATE_LOADING);
+    }
+  };
     }
   };
 
@@ -39,20 +49,18 @@ function StockMenu({ addMenuId, stockList, id, title }) {
     if (saveStatus !== Constants.IDLE)
       dispatch(setIdle(Constants.DataService.PUSH));
   }, [dispatch, saveStatus]);
-
   return (
     <ModalMenu
-      id={id}
+      id={`${type}StockMenu`}
       fade={true}
       scrollable={true}
-      title={title}
+      title={`All ${type.capitalize()} Stocks`}
       headerBtn={
         <button
           className="btn py-1 px-2"
-          data-bs-target={`#${addMenuId}`}
+          data-bs-target={`#${type}AddStockMenu`}
           data-bs-toggle="modal"
           data-bs-dismiss="modal"
-          data-bs-backtarget={id}
         >
           Add Stock
         </button>
@@ -72,11 +80,12 @@ function StockMenu({ addMenuId, stockList, id, title }) {
                   pricePerUnit,
                   purchasedOn,
                   manufacturedOn,
+                  courier,
                   expiry,
                 },
                 i
               ) => (
-                <div className={"card " + (i === 1 && "mt-3")} key={batch}>
+                <div className={"card " + (i >= 1 && "mt-3")} key={batch}>
                   <a
                     href={`#_${_id}`}
                     className="card-body text-decoration-none text-black"
@@ -139,6 +148,13 @@ function StockMenu({ addMenuId, stockList, id, title }) {
                       <div>{parseISO(purchasedOn).toDateString()}</div>
                     </li>
 
+                    {type === "warehouse" && (
+                      <li className="list-group-item d-inline-flex justify-content-between">
+                        <div>Date of Arrival</div>
+                        <div>{parseISO(expiry).toDateString()}</div>
+                      </li>
+                    )}
+
                     <li className="list-group-item d-inline-flex justify-content-between">
                       <div>Manufacture Date</div>
                       <div>{parseISO(manufacturedOn).toDateString()}</div>
@@ -151,30 +167,34 @@ function StockMenu({ addMenuId, stockList, id, title }) {
 
                     <li className="list-group-item d-inline-flex justify-content-between">
                       <div>Courier</div>
-                      <div>J&T</div>
+                      <div>{courier.name}</div>
                     </li>
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>
-                        Mark Inventory {checked ? "Unchecked" : "Checked"}
-                      </div>
-                      <div className="form-check m-0 d-inline-flex  align-items-center">
-                        {loading ? (
-                          <span
-                            className="spinner-border spinner-border-sm"
-                            role="status"
-                            aria-hidden={false}
-                          ></span>
-                        ) : null}
-                        <input
-                          id="addStockCheckbox"
-                          className="form-check-input m-0 ms-2"
-                          type="checkbox"
-                          checked={checked}
-                          onChange={handleMark}
-                          data-id={_id}
-                          disabled={!access || loading}
-                        />
+                    {type === "warehouse" && (
+                      <li className="list-group-item d-inline-flex justify-content-between">
+                        <div>
+                          Mark Inventory {checked ? "Unchecked" : "Checked"}
+                        </div>
+                        <div className="form-check m-0 d-inline-flex  align-items-center">
+                          {loading.check && (
+                            <span
+                              className="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden={false}
+                            ></span>
+                          )}
+                          <input
+                            id="inventoryCheckbox"
+                            className="form-check-input m-0 ms-2"
+                            type="checkbox"
+                            checked={checked}
+                            onChange={handleMark}
+                            data-id={_id}
+                            disabled={!access || loading.check}
+                          />
+                        </div>
+                      </li>
+                    )}
                       </div>
                     </li>
                   </ul>
