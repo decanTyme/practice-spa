@@ -205,6 +205,7 @@ export const stockMarkInventoryChecked = createAsyncThunk(
 
     switch (response.status) {
       case 401:
+      case 403:
       case 418:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
@@ -212,7 +213,6 @@ export const stockMarkInventoryChecked = createAsyncThunk(
         dispatch(setStale(true));
         throw new Error(response.data.message);
 
-      case 403:
       case 500:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
