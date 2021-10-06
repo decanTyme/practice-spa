@@ -182,3 +182,48 @@ export const pushStock = createAsyncThunk(
     }
   }
 );
+
+export const stockMarkInventoryChecked = createAsyncThunk(
+  "products/stocks/mark",
+  async ({ _id, mark }, { dispatch }) => {
+    const response = await HttpService().onDataModify("stocks", void 0, {
+      params: { _id, check: true, mark },
+    });
+
+    const successMsg = `Stock successfuly ${mark ? "mark" : "unmark"}ed!`;
+    const errMsg = `Stock ${mark ? "mark" : "unmark"} unsuccessful!`;
+
+    switch (response.status) {
+      case 401:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 403:
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(
+          notify(Constants.SUCCESS, successMsg, void 0, {
+            noHeader: true,
+          })
+        );
+
+        return response.data;
+    }
+  }
+);

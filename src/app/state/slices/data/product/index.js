@@ -7,6 +7,7 @@ import {
   pushStock,
   removeProduct,
   updateProduct,
+  stockMarkInventoryChecked,
 } from "./async-thunks";
 
 const slice = createSlice({
@@ -256,6 +257,43 @@ const slice = createSlice({
         });
       })
       .addCase(pushStock.rejected, (state, action) => {
+        state.status.push = Constants.FAILED;
+
+        state.error = action.error.message;
+      });
+
+    /* Stock mark inventory check cases */
+    builder
+      .addCase(stockMarkInventoryChecked.pending, (state) => {
+        state.status.push = Constants.LOADING;
+      })
+      .addCase(stockMarkInventoryChecked.fulfilled, (state, action) => {
+        state.status.push = Constants.SUCCESS;
+
+        for (const product of state.data) {
+          for (const variant of product.variants) {
+            for (const stock of variant.stocks[action.payload.stock._type]) {
+              if (action.payload.stock._id === stock._id) {
+                variant.stocks[action.payload.stock._type] = variant.stocks[
+                  action.payload.stock._type
+                ].filter(({ _id }) => _id !== action.payload.stock._id);
+
+                variant.stocks[action.payload.stock._type].push(
+                  action.payload.stock
+                );
+
+                variant.stocks[action.payload.stock._type]
+                  .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                  .sort((a, _) => (a.checked ? 1 : -1));
+
+                state.details = product;
+                break;
+              }
+            }
+          }
+        }
+      })
+      .addCase(stockMarkInventoryChecked.rejected, (state, action) => {
         state.status.push = Constants.FAILED;
 
         state.error = action.error.message;

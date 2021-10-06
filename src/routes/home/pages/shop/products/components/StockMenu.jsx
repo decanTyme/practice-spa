@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAuthAccess } from "../../../../../../app/state/slices/auth/selectors";
 import Constants from "../../../../../../app/state/slices/constants";
 import { setIdle } from "../../../../../../app/state/slices/data/product";
+import { stockMarkInventoryChecked } from "../../../../../../app/state/slices/data/product/async-thunks";
 import { selectProductPushStatus } from "../../../../../../app/state/slices/data/product/selectors";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 
@@ -14,6 +15,23 @@ function StockMenu({ addMenuId, stockList, id, title }) {
   const saveStatus = useSelector(selectProductPushStatus);
 
   const [loading, setLoading] = useState();
+
+  const handleMark = async (e) => {
+    try {
+      setLoading(true);
+
+      await dispatch(
+        stockMarkInventoryChecked({
+          _id: e.target.dataset.id,
+          mark: e.target.checked,
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // If a save action is a success, always set
@@ -137,15 +155,25 @@ function StockMenu({ addMenuId, stockList, id, title }) {
                     </li>
 
                     <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Mark Inventory Checked</div>
-                      <div className="form-check m-0">
+                      <div>
+                        Mark Inventory {checked ? "Unchecked" : "Checked"}
+                      </div>
+                      <div className="form-check m-0 d-inline-flex  align-items-center">
+                        {loading ? (
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden={false}
+                          ></span>
+                        ) : null}
                         <input
                           id="addStockCheckbox"
-                          className="form-check-input mx-auto"
+                          className="form-check-input m-0 ms-2"
                           type="checkbox"
-                          value={isChecked || checked}
-                          onChange={(e) => setChecked(e.target.checked)}
-                          disabled={!access}
+                          checked={checked}
+                          onChange={handleMark}
+                          data-id={_id}
+                          disabled={!access || loading}
                         />
                       </div>
                     </li>
