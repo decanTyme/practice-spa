@@ -2,18 +2,16 @@ function ModalMenu(props) {
   return (
     <div
       id={props.id}
-      className={
-        "modal" +
-        (props?.fade ? " fade" : " ") +
-        (props?.scrollable ? " modal-dialog-scrollable" : " ")
-      }
+      className={"modal" + (props?.fade ? " fade" : " ")}
       tabIndex="-1"
       data-bs-backdrop={props?.static ? "static" : null}
       ref={props?.reference}
     >
       <div
         className={
-          "modal-dialog" + (props?.centered ? " modal-dialog-centered" : " ")
+          "modal-dialog" +
+          (props?.centered ? " modal-dialog-centered" : " ") +
+          (props?.scrollable ? " modal-dialog-scrollable" : " ")
         }
       >
         <div className="modal-content" style={props?.themeMode}>
