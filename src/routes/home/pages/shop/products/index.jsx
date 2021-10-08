@@ -74,7 +74,6 @@ function ProductsWrapper() {
         isLoggedIn &&
         !stale
       ) {
-        console.log("Fetching...");
         dispatch(fetchProducts());
       }
     });
@@ -83,13 +82,8 @@ function ProductsWrapper() {
   }, [dispatch, dataFetchStatus, isLoggedIn, stale, database]);
 
   const viewDataDetails = useCallback(
-    (itemId) => {
-      data.forEach((item) => {
-        if (item._id === itemId && productDetails?._id !== itemId)
-          dispatch(viewProductDetail(item));
-      });
-    },
-    [data, productDetails, dispatch]
+    (item) => dispatch(viewProductDetail(item)),
+    [dispatch]
   );
 
   const onRemoveProduct = useCallback(
@@ -141,27 +135,27 @@ function ProductsWrapper() {
   } = table;
 
   const tableActionsDropdown = useCallback(
-    ({ row }) => {
+    ({ row: { original: item } }) => {
       return (
         <div>
           <button
             className="btn btn-primary float-end mx-1"
-            onClick={() => viewDataDetails(row.original._id)}
+            onClick={() => viewDataDetails(item)}
           >
             View Details
           </button>
           <button
             className="btn btn-success float-end mx-1"
             onClick={() => {
-              viewDataDetails(row.original._id);
-              dispatch(modifyProduct(row.original));
+              viewDataDetails(item);
+              dispatch(modifyProduct(item));
             }}
           >
             Quick Edit
           </button>
           <button
             className="btn btn-danger float-end mx-1"
-            onClick={() => onRemoveProduct(row.original)}
+            onClick={() => onRemoveProduct(item)}
           >
             Quick Delete
           </button>
@@ -196,13 +190,11 @@ function ProductsWrapper() {
                 tableProps={table}
                 renderRowSubComponent={tableActionsDropdown}
                 getRowProps={(row) => ({
-                  onClick: () =>
-                    isMobile ? viewDataDetails(row.original._id) : null,
+                  onClick: () => isMobile && viewDataDetails(row.original),
                 })}
                 getCellProps={(cellInfo) => ({
                   style: {
-                    textAlign:
-                      typeof cellInfo.value === "number" ? "center" : null,
+                    textAlign: typeof cellInfo.value === "number" && "center",
                     textTransform: "capitalize",
                   },
                 })}
