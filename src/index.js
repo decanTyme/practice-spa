@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "font-awesome/css/font-awesome.min.css";
+import "./assets/fontawesome-free-5.15.4-web/css/all.min.css";
 import "./index.css";
 import { Provider } from "react-redux";
 import { BrowserRouter, Route } from "react-router-dom";
