@@ -111,11 +111,7 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataPush = async (type, data, opts = {}) => {
-    const params = {};
-
-    if (Array.isArray(data)) params.batch = true;
-
+  const onDataPush = async (type, data, { params = {} } = {}) => {
     const requestConfig = {
       url: `/${type}/add`,
       method: "POST",
@@ -127,11 +123,13 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataModify = async (type, data, opts = {}) => {
-    const params = {};
-
+  const onDataModify = async (
+    type,
+    data,
+    { params = {}, endpoint = "modify" } = {}
+  ) => {
     const requestConfig = {
-      url: `/${type}/modify`,
+      url: `/${type}/${endpoint}`,
       method: "PATCH",
       params,
 

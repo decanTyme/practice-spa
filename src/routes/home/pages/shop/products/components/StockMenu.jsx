@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAuthAccess } from "../../../../../../app/state/slices/auth/selectors";
 import Constants from "../../../../../../app/state/slices/constants";
 import { setIdle } from "../../../../../../app/state/slices/data/product";
-import { stockMarkInventoryChecked } from "../../../../../../app/state/slices/data/product/async-thunks";
+import {
+  moveStock,
+  stockMarkInventoryChecked,
+} from "../../../../../../app/state/slices/data/product/async-thunks";
 import { selectProductPushStatus } from "../../../../../../app/state/slices/data/product/selectors";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 
@@ -40,6 +43,38 @@ function StockMenu({ type, stockList }) {
       setLoading(INIT_STATE_LOADING);
     }
   };
+
+  const handleMove = async (e) => {
+    try {
+      const moveToType = e.target.dataset.move;
+      const previousType = e.target.dataset.typePrev;
+      const isInventoryChecked = e.target.checked;
+      const batchNo = e.target.dataset.batch;
+
+      if (!isInventoryChecked && moveToType === "sold") {
+        const confirmMove = window.confirm(
+          `It seems that you still haven't checked the inventory of batch no. ${batchNo} yet. Are you sure you want to move this to ${e.target.dataset.move}?`
+        );
+
+        if (!confirmMove) return;
+      }
+
+      setLoading({
+        move: true,
+        check: false,
+      });
+
+      await dispatch(
+        moveStock({
+          _id: e.target.dataset.id,
+          _type: moveToType,
+          prevType: previousType,
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(INIT_STATE_LOADING);
     }
   };
 
@@ -72,6 +107,7 @@ function StockMenu({ type, stockList }) {
               (
                 {
                   _id,
+                  _type,
                   batch,
                   checked,
                   addedBy,
@@ -103,7 +139,7 @@ function StockMenu({ type, stockList }) {
                         >
                           #{_id.truncate(12)}
                         </p>
-                        {checked ? null : (
+                        {!checked && type !== "shipped" && (
                           <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
                             <span className="visually-hidden">New stock</span>
                           </span>
@@ -195,8 +231,53 @@ function StockMenu({ type, stockList }) {
                         </div>
                       </li>
                     )}
-                      </div>
-                    </li>
+
+                    {type !== "shipped" && (
+                      <li className="list-group-item d-inline-flex justify-content-between align-items-center p-0">
+                        <div className="py-2 px-3">Move</div>
+                        <div
+                          className="btn-group d-inline-flex align-items-center"
+                          role="group"
+                          aria-label="Product options"
+                        >
+                          {loading.move && (
+                            <span
+                              className="spinner-border spinner-border-sm me-3"
+                              role="status"
+                              aria-hidden={false}
+                            ></span>
+                          )}
+
+                          {type === "inbound" && (
+                            <button
+                              type="button"
+                              className="btn btn-light border-start border-end rounded-0 px-3 py-2"
+                              data-id={_id}
+                              data-move="warehouse"
+                              data-type-prev={_type}
+                              onClick={handleMove}
+                            >
+                              Warehouse
+                            </button>
+                          )}
+
+                          {type === "warehouse" && (
+                            <button
+                              type="button"
+                              className="btn btn-light border-start rounded-0 px-3 py-2"
+                              data-id={_id}
+                              data-batch={batch}
+                              data-move="sold"
+                              data-move-checked={checked}
+                              data-type-prev={_type}
+                              onClick={handleMove}
+                            >
+                              Shipped
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    )}
                   </ul>
                 </div>
               )

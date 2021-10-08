@@ -8,6 +8,7 @@ import {
   removeProduct,
   updateProduct,
   stockMarkInventoryChecked,
+  moveStock,
 } from "./async-thunks";
 
 const slice = createSlice({
@@ -158,7 +159,7 @@ const slice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status.fetch = Constants.FAILED;
 
-        state.error = action.error.message;
+        state.error.fetch = action.error.message;
       });
 
     /* Push product cases */
@@ -194,7 +195,7 @@ const slice = createSlice({
       .addCase(pushProduct.rejected, (state, action) => {
         state.status.push = Constants.FAILED;
 
-        state.error = action.error.message;
+        state.error.push = action.error.message;
       });
 
     /* Update product cases */
@@ -275,7 +276,44 @@ const slice = createSlice({
       .addCase(pushStock.rejected, (state, action) => {
         state.status.push = Constants.FAILED;
 
-        state.error = action.error.message;
+        state.error.push = action.error.message;
+      });
+
+    /* Stock move location cases */
+    builder
+      .addCase(moveStock.pending, (state) => {
+        state.status.push = Constants.LOADING;
+      })
+      .addCase(moveStock.fulfilled, (state, action) => {
+        state.status.push = Constants.SUCCESS;
+
+        for (const product of state.data) {
+          for (const variant of product.variants) {
+            for (const stock of variant.stocks[action.payload.prevType]) {
+              if (action.payload.data.moved._id === stock._id) {
+                variant.stocks[action.payload.prevType] = variant.stocks[
+                  action.payload.prevType
+                ].filter(({ _id }) => _id !== action.payload.data.moved._id);
+
+                variant.stocks[action.payload.data.moved._type].push(
+                  action.payload.data.moved
+                );
+
+                variant.stocks[action.payload.data.moved._type]
+                  .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                  .sort((a, _) => (a.checked ? 1 : -1));
+
+                state.details = product;
+                break;
+              }
+            }
+          }
+        }
+      })
+      .addCase(moveStock.rejected, (state, action) => {
+        state.status.push = Constants.FAILED;
+
+        state.error.modify = action.error.message;
       });
 
     /* Stock mark inventory check cases */
@@ -312,7 +350,7 @@ const slice = createSlice({
       .addCase(stockMarkInventoryChecked.rejected, (state, action) => {
         state.status.push = Constants.FAILED;
 
-        state.error = action.error.message;
+        state.error.modify = action.error.message;
       });
   },
 });

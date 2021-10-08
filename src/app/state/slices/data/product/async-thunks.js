@@ -193,6 +193,48 @@ export const pushStock = createAsyncThunk(
   }
 );
 
+export const moveStock = createAsyncThunk(
+  "products/stocks/move",
+  async ({ _id, _type, prevType }, { dispatch }) => {
+    const response = await HttpService().onDataModify("stocks", void 0, {
+      params: { _id, _type },
+      endpoint: "move",
+    });
+
+    const successMsg = `Stock move success!`;
+    const errMsg = `Stock move unsuccessful!`;
+
+    switch (response.status) {
+      case 401:
+      case 403:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
+
+        return { data: response.data, prevType };
+    }
+  }
+);
+
 export const stockMarkInventoryChecked = createAsyncThunk(
   "products/stocks/mark",
   async ({ _id, mark }, { dispatch }) => {
