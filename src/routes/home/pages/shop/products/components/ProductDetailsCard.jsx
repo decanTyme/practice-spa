@@ -1,17 +1,26 @@
 // import placeholderProductImg from "../../../../../../assets/placeholder_product_image.png";
+import classNames from "classnames";
 import { useEffect, useMemo, useState } from "react";
+import { isMobile } from "react-device-detect";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  selectAuthDatabaseStatus,
+  selectAuthStaleStatus,
+  selectAuthState,
+} from "../../../../../../app/state/slices/auth/selectors";
+import Constants from "../../../../../../app/state/slices/constants";
+import {
+  fetchCouriers,
+  selectCourierFetchStatus,
+} from "../../../../../../app/state/slices/data/courier";
 import { modifyProduct } from "../../../../../../app/state/slices/data/product";
 import { removeProduct } from "../../../../../../app/state/slices/data/product/async-thunks";
 import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
-import classNames from "classnames";
-import { isMobile } from "react-device-detect";
-import StockMenu from "./StockMenu";
 import AddStockMenu from "./AddStockMenu";
+import StockMenu from "./StockMenu";
 
 function ProductDetailsCard() {
   const dispatch = useDispatch();
-
   const productDetails = useSelector(selectProductDetails);
 
   const {
@@ -26,6 +35,31 @@ function ProductDetailsCard() {
     images,
     variants,
   } = productDetails;
+
+  const database = useSelector(selectAuthDatabaseStatus);
+  const isLoggedIn = useSelector(selectAuthState);
+  const stale = useSelector(selectAuthStaleStatus);
+
+  const dataFetchStatus = useSelector(selectCourierFetchStatus);
+
+  useEffect(() => {
+    // Only fetch if either the user is logged in, not stale, or
+    // Data Service is idle or has a previously failed attempt
+    const timeout = setTimeout(() => {
+      if (
+        (dataFetchStatus === Constants.IDLE ||
+          dataFetchStatus === Constants.FAILED) &&
+        database.status === Constants.IDLE &&
+        isLoggedIn &&
+        !stale
+      ) {
+        console.log(dataFetchStatus, "fetch cours");
+        dispatch(fetchCouriers());
+      }
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [dispatch, dataFetchStatus, isLoggedIn, stale, database]);
 
   const [variant, setVariant] = useState(variants[0]);
 
