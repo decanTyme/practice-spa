@@ -52,6 +52,9 @@ function Toasty({
             }
             data-bs-dismiss="toast"
             aria-label="Close"
+            onClick={() => {
+              dispatch(seen(id));
+            }}
           ></button>
         </div>
       ) : (
@@ -70,6 +73,9 @@ function Toasty({
               className={"btn-close " + determineDismissBtnStyle(type)}
               data-bs-dismiss="toast"
               aria-label="Close"
+              onClick={() => {
+                dispatch(seen(id));
+              }}
             ></button>
           </div>
           <div className="toast-body">{message}</div>
