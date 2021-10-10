@@ -5,6 +5,7 @@ function ModalMenu(props) {
       className={"modal" + (props?.fade ? " fade" : " ")}
       tabIndex="-1"
       data-bs-backdrop={props?.static ? "static" : null}
+      data-bs-keyboard={!props?.keyboard}
       ref={props?.reference}
     >
       <div
