@@ -46,6 +46,7 @@ import {
   modifyProduct,
   viewProductDetail,
 } from "../../../../../app/state/slices/data/product";
+import ProductOptions from "./components/ProductOptionsCard";
 
 function ProductsWrapper() {
   const location = useLocation();
@@ -110,6 +111,7 @@ function ProductsWrapper() {
       data,
       initialState: {
         pageIndex: index - 1,
+        pageSize: 5,
       },
       DefaultColumn,
       FilterTypes,
@@ -188,6 +190,7 @@ function ProductsWrapper() {
               <PaginationTable
                 loading={dataFetchStatus === Constants.LOADING}
                 dataLength={data.length}
+                pageSizes={[5, 10, 15, 20, 25]}
                 tableProps={table}
                 renderRowSubComponent={tableActionsDropdown}
                 getRowProps={(row) => ({
@@ -256,7 +259,7 @@ function ProductsWrapper() {
 
           <div className="mt-3">
             <ErrorBoundary>
-              <AddProductForm />
+              <ProductOptions />
             </ErrorBoundary>
           </div>
         </aside>

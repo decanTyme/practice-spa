@@ -9,6 +9,7 @@ const defaultRowSubComponent = () => <div className="text-end">None</div>;
 function PaginationTable({
   loading,
   dataLength,
+  pageSizes = [10, 20, 30, 40, 50],
   getRowProps = defaultPropGetter,
   getCellProps = defaultPropGetter,
   renderRowSubComponent = defaultRowSubComponent,
@@ -169,7 +170,7 @@ function PaginationTable({
                   setPageSize(Number(e.target.value));
                 }}
               >
-                {[10, 20, 30, 40, 50].map((pageSize) => (
+                {pageSizes.map((pageSize) => (
                   <option key={pageSize} value={pageSize}>
                     Show {pageSize}
                   </option>
