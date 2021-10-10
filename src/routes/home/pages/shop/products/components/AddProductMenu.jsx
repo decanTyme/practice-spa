@@ -22,7 +22,6 @@ import {
   abortCSVImport,
   importCSV,
   resetAllProductModification,
-  setIdle,
 } from "../../../../../../app/state/slices/data/product";
 import { Modal, Tooltip } from "bootstrap";
 import AddVariantForm from "./AddProductForm/AddVariantForm";
@@ -326,7 +325,7 @@ function AddProductMenu() {
     });
   };
 
-  const resetAll = useCallback(() => {
+  const resetToDefaults = useCallback(() => {
     // Make sure to reset only if there is a product currently in edit
     if (productInEdit) dispatch(resetAllProductModification());
 
@@ -344,26 +343,19 @@ function AddProductMenu() {
     setVariants([getInitVariantVal()]);
   }, [dispatch, importedCSV, productInEdit]);
 
-  const setStatusIdle = useCallback(() => {
-    saveStatus !== Constants.IDLE &&
-      dispatch(setIdle(Constants.DataService.PUSH));
-
-    modifyStatus !== Constants.IDLE &&
-      dispatch(setIdle(Constants.DataService.MODIFY));
-  }, [dispatch, modifyStatus, saveStatus]);
-
   useEffect(() => {
     if (
       saveStatus === Constants.SUCCESS ||
       modifyStatus === Constants.SUCCESS
     ) {
-      // If a save action is a success, always
-      // reset everyting to defaults
-      resetAll();
-      setStatusIdle();
+      // Hide the menu
       Modal.getOrCreateInstance(
         document.getElementById("addProductMenu")
       ).hide();
+
+      // If a save action is a success, always
+      // reset everyting to defaults
+      resetToDefaults();
     } else if (
       saveStatus === Constants.FAILED ||
       modifyStatus === Constants.FAILED
@@ -376,9 +368,8 @@ function AddProductMenu() {
         inputs: false,
         inputCode: true,
       });
-      setStatusIdle();
     }
-  }, [dispatch, resetAll, setStatusIdle, saveStatus, modifyStatus]);
+  }, [dispatch, resetToDefaults, saveStatus, modifyStatus]);
 
   const codePlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
@@ -731,7 +722,7 @@ function AddProductMenu() {
             type="reset"
             className="btn btn-secondary ms-2"
             disabled={disable.resetBtn}
-            onClick={resetAll}
+            onClick={resetToDefaults}
           >
             {text.resetBtn}
           </button>

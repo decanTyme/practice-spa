@@ -7,10 +7,7 @@ import {
 } from "../../../../../../app/state/slices/data/product/selectors";
 import Constants from "../../../../../../app/state/slices/constants";
 import { pushStock } from "../../../../../../app/state/slices/data/product/async-thunks";
-import {
-  abortCSVImport,
-  setIdle,
-} from "../../../../../../app/state/slices/data/product";
+import { abortCSVImport } from "../../../../../../app/state/slices/data/product";
 import classNames from "classnames";
 import { selectAllCouriers } from "../../../../../../app/state/slices/data/courier";
 
@@ -141,9 +138,6 @@ function AddStockMenu({ variant, type }) {
       // If a save action is a success, always
       // reset everyting to defaults
       resetAll();
-
-      saveStatus !== Constants.IDLE &&
-        dispatch(setIdle(Constants.DataService.PUSH));
     } else if (saveStatus === Constants.FAILED) {
       // Otherwise, only reset the button state
       // so the user has a chance to re-edit
@@ -153,9 +147,6 @@ function AddStockMenu({ variant, type }) {
         inputs: false,
         inputCode: true,
       });
-
-      saveStatus !== Constants.IDLE &&
-        dispatch(setIdle(Constants.DataService.PUSH));
     }
   }, [dispatch, resetAll, saveStatus]);
 

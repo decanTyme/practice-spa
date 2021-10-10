@@ -15,6 +15,8 @@ import {
   selectProductDetails,
   selectCurrentlySelectedProducts,
   selectProductImportedCSV,
+  selectProductPushStatus,
+  selectProductModifyStatus,
 } from "../../../../../app/state/slices/data/product/selectors";
 import {
   useTable,
@@ -44,6 +46,7 @@ import Constants from "../../../../../app/state/slices/constants";
 import {
   addToProductSelection,
   modifyProduct,
+  setIdle,
   viewProductDetail,
 } from "../../../../../app/state/slices/data/product";
 import ProductOptions from "./components/ProductOptionsCard";
@@ -62,6 +65,18 @@ function ProductsWrapper() {
   const importedCSV = useSelector(selectProductImportedCSV);
 
   const dataFetchStatus = useSelector(selectProductFetchStatus);
+  const saveStatus = useSelector(selectProductPushStatus);
+  const modifyStatus = useSelector(selectProductModifyStatus);
+
+  useEffect(() => {
+    saveStatus !== Constants.IDLE &&
+      saveStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.PUSH));
+
+    modifyStatus !== Constants.IDLE &&
+      modifyStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.MODIFY));
+  }, [dispatch, modifyStatus, saveStatus]);
 
   useEffect(() => {
     // Only fetch if either the user is logged in, not stale, or

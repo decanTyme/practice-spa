@@ -1,14 +1,11 @@
 import { parseISO } from "date-fns";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuthAccess } from "../../../../../../app/state/slices/auth/selectors";
-import Constants from "../../../../../../app/state/slices/constants";
-import { setIdle } from "../../../../../../app/state/slices/data/product";
 import {
   moveStock,
   stockMarkInventoryChecked,
 } from "../../../../../../app/state/slices/data/product/async-thunks";
-import { selectProductPushStatus } from "../../../../../../app/state/slices/data/product/selectors";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 
 const INIT_STATE_LOADING = {
@@ -20,7 +17,6 @@ function StockMenu({ type, stockList }) {
   const dispatch = useDispatch();
 
   const access = useSelector(selectAuthAccess);
-  const saveStatus = useSelector(selectProductPushStatus);
 
   const [loading, setLoading] = useState(INIT_STATE_LOADING);
 
@@ -77,13 +73,6 @@ function StockMenu({ type, stockList }) {
       setLoading(INIT_STATE_LOADING);
     }
   };
-
-  useEffect(() => {
-    // If a save action is a success, always set
-    // the status back to idle
-    if (saveStatus !== Constants.IDLE)
-      dispatch(setIdle(Constants.DataService.PUSH));
-  }, [dispatch, saveStatus]);
 
   return (
     <ModalMenu
