@@ -27,7 +27,7 @@ const slice = createSlice({
       modify: null,
       delete: null,
     },
-    details: null,
+    currentlyViewedItem: null,
     sn: null,
     currentlyModifying: null,
     currentlySelected: [],
@@ -46,7 +46,7 @@ const slice = createSlice({
     },
 
     viewProductDetail: (state, action) => {
-      state.details = action.payload;
+      state.currentlyViewedItem = action.payload;
 
       state.sn = null;
       state.currentlyModifying = null;
@@ -95,7 +95,7 @@ const slice = createSlice({
         modify: null,
         delete: null,
       };
-      state.details = null;
+      state.currentlyViewedItem = null;
       state.sn = null;
       state.currentlyModifying = null;
       state.currentlySelected = [];
@@ -127,18 +127,18 @@ const slice = createSlice({
               .sort((a, b) => b.expiry.localeCompare(a.expiry))
               .sort((a, _) => (a.checked ? 1 : -1));
 
-            const shipped = variant.stocks
-              .filter(({ _type }) => _type === "shipped")
+            const sold = variant.stocks
+              .filter(({ _type }) => _type === "sold")
               .sort((a, b) => b.expiry.localeCompare(a.expiry))
               .sort((a, _) => (a.checked ? 1 : -1));
 
             images.push(...variant.images);
 
             // Calculate the sum of all stock quantities on a given product
-            total += inbound.length + warehouse.length + shipped.length;
+            total += inbound.length + warehouse.length + sold.length;
 
             // Rewrite the stock field with the filtered stock types
-            variant.stocks = { inbound, warehouse, shipped };
+            variant.stocks = { inbound, warehouse, sold };
 
             // Delete some unnecessary fields
             delete variant.id;
@@ -170,21 +170,95 @@ const slice = createSlice({
       .addCase(pushProduct.fulfilled, (state, action) => {
         state.status.push = Constants.SUCCESS;
 
+        // Modify some structure before pushing to the datastore
         // If the user used CSV (bulk) import, the data will be an array
-        // Add some new data before storing to the datastore
-        if (!!action.payload.products) {
-          action.payload.products.forEach((item) => {
-            const { inbound, warehouse, shipped } = item.stock;
+        if (action.payload.products) {
+          const products = action.payload.products;
 
-            // Calculate the sum of all stock on a given product,
-            // then add it to the product object
-            item.stock.total =
-              inbound.length + warehouse.length + shipped.length;
+          products.forEach((item) => {
+            const images = [];
+            let total = 0;
 
+            item.variants.forEach((variant) => {
+              const inbound = variant.stocks
+                .filter(({ _type }) => _type === "inbound")
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              const warehouse = variant.stocks
+                .filter(({ _type }) => _type === "warehouse")
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              const sold = variant.stocks
+                .filter(({ _type }) => _type === "sold")
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              images.push(...variant.images);
+
+              // Calculate the sum of all stock quantities on a given product
+              total += inbound.length + warehouse.length + sold.length;
+
+              // Rewrite the stock field with the filtered stock types
+              variant.stocks = { inbound, warehouse, sold };
+
+              // Delete some unnecessary fields
+              delete variant.id;
+              delete variant.product;
+            });
+
+            // Append the newly calculated values to the original data
+            item.stock = { total };
+            item.images = [...item.images, ...images];
+
+            // Finally, push the data to the datastore
             state.data.push(item);
           });
         } else {
-          state.data.push(action.payload);
+          const images = [];
+          let total = 0;
+
+          const product = action.payload;
+
+          product.variants.forEach((variant) => {
+            const inbound = variant.stocks
+              .filter(({ _type }) => _type === "inbound")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
+
+            const warehouse = variant.stocks
+              .filter(({ _type }) => _type === "warehouse")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
+
+            const sold = variant.stocks
+              .filter(({ _type }) => _type === "sold")
+              .sort((a, b) => b.expiry.localeCompare(a.expiry))
+              .sort((a, _) => (a.checked ? 1 : -1));
+
+            images.push(...variant.images);
+
+            // Calculate the sum of all stock quantities on a given product
+            total += inbound.length + warehouse.length + sold.length;
+
+            // Rewrite the stock field with the filtered stock types
+            variant.stocks = { inbound, warehouse, sold };
+
+            // Delete some unnecessary fields
+            delete variant.id;
+            delete variant.product;
+          });
+
+          // Append the newly calculated values to the original data
+          product.stock = { total };
+          product.images = [...product.images, ...images];
+
+          // Push to the datastore
+          state.data.push(product);
+
+          // Show the new product to the user
+          state.currentlyViewedItem = product;
         }
 
         // Sort datastore
@@ -200,26 +274,61 @@ const slice = createSlice({
 
     /* Update product cases */
     builder
+      .addCase(updateProduct.pending, (state) => {
+        state.status.modify = Constants.LOADING;
+      })
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.status.modify = Constants.SUCCESS;
 
+        const product = action.payload;
+
         // Remove the old product first
-        state.data = state.data.filter(({ _id }) => _id !== action.payload._id);
+        state.data = state.data.filter(({ _id }) => _id !== product._id);
 
-        const { inbound, warehouse, shipped } = action.payload.stock;
+        const images = [];
+        let total = 0;
 
-        // Calculate the sum of all stock on a given product,
-        // then add it to the product object
-        action.payload.stock.total =
-          inbound.length + warehouse.length + shipped.length;
+        product.variants.forEach((variant) => {
+          const inbound = variant.stocks
+            .filter(({ _type }) => _type === "inbound")
+            .sort((a, b) => b.expiry.localeCompare(a.expiry))
+            .sort((a, _) => (a.checked ? 1 : -1));
+
+          const warehouse = variant.stocks
+            .filter(({ _type }) => _type === "warehouse")
+            .sort((a, b) => b.expiry.localeCompare(a.expiry))
+            .sort((a, _) => (a.checked ? 1 : -1));
+
+          const sold = variant.stocks
+            .filter(({ _type }) => _type === "sold")
+            .sort((a, b) => b.expiry.localeCompare(a.expiry))
+            .sort((a, _) => (a.checked ? 1 : -1));
+
+          images.push(...variant.images);
+
+          // Calculate the sum of all stock quantities on a given product
+          total += inbound.length + warehouse.length + sold.length;
+
+          // Rewrite the stock field with the filtered stock types
+          variant.stocks = { inbound, warehouse, sold };
+
+          // Delete some unnecessary fields
+          delete variant.id;
+          delete variant.product;
+        });
+
+        // Append the newly calculated values to the original data
+        product.stock = { total };
+        product.images = [...product.images, ...images];
 
         // Push the approved change with the new calculated data to the
         // datastore, then re-sort everything in the datastore
-        state.data.push(action.payload);
+        state.data.push(product);
         state.data.sort(dynamicSort("name"));
 
-        // Data details should be updated with the latest approved change
-        state.details = action.payload;
+        // Currently viewed item should be updated
+        // with the latest approved change
+        state.currentlyViewedItem = product;
 
         // Finally, clear some states
         state.currentlyModifying = null;
@@ -240,7 +349,7 @@ const slice = createSlice({
 
       state.sn = null;
       state.currentlyModifying = null;
-      state.details = null;
+      state.currentlyViewedItem = null;
     });
 
     /* Push stock cases */
@@ -251,10 +360,10 @@ const slice = createSlice({
       .addCase(pushStock.fulfilled, (state, action) => {
         state.status.push = Constants.SUCCESS;
 
-        state.data.forEach((product) => {
+        for (const product of state.data) {
           let total = product.stock.total;
 
-          product.variants.forEach((variant) => {
+          for (const variant of product.variants) {
             if (action.payload.variantId === variant._id) {
               variant.stocks[action.payload._type].push(action.payload.stock);
 
@@ -268,10 +377,11 @@ const slice = createSlice({
 
               product.stock = { total };
 
-              state.details = product;
+              // Update the viewed product
+              state.currentlyViewedItem = product;
             }
-          });
-        });
+          }
+        }
       })
       .addCase(pushStock.rejected, (state, action) => {
         state.status.push = Constants.FAILED;
@@ -303,7 +413,7 @@ const slice = createSlice({
                   .sort((a, b) => b.expiry.localeCompare(a.expiry))
                   .sort((a, _) => (a.checked ? 1 : -1));
 
-                state.details = product;
+                state.currentlyViewedItem = product;
                 break;
               }
             }
@@ -340,7 +450,7 @@ const slice = createSlice({
                   .sort((a, b) => b.expiry.localeCompare(a.expiry))
                   .sort((a, _) => (a.checked ? 1 : -1));
 
-                state.details = product;
+                state.currentlyViewedItem = product;
                 break;
               }
             }

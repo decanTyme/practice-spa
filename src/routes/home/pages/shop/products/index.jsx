@@ -195,7 +195,11 @@ function ProductsWrapper() {
                 getCellProps={(cellInfo) => ({
                   style: {
                     textAlign: typeof cellInfo.value === "number" && "center",
-                    textTransform: "capitalize",
+                    textTransform:
+                      (cellInfo.column.id === "_class" ||
+                        cellInfo.column.id === "category" ||
+                        cellInfo.column.id === "unit") &&
+                      "capitalize",
                   },
                 })}
               />
@@ -222,7 +226,7 @@ function ProductsWrapper() {
                   )} | ${data.class} ${data.category} > ${
                     data.stock.quantity.inbound
                   } ${data.stock.quantity.warehouse} ${
-                    data.stock.quantity.shipped
+                    data.stock.quantity.sold
                   } ${data.stock.unit}`}
                 </div>
               ))}

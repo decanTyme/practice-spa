@@ -39,16 +39,16 @@ export const selectAllStockInbound = createSelector(
 );
 
 export const selectProductDetails = (state) =>
-  state.root.DataService.products.details;
+  state.root.DataService.products.currentlyViewedItem;
 
 export const selectProductDetailsInbound = (state) =>
-  state.root.DataService.products.details?.stock.inbound;
+  state.root.DataService.products.currentlyViewedItem?.stock.inbound;
 
 export const selectProductDetailsWarehouse = (state) =>
-  state.root.DataService.products.details?.stock.warehouse;
+  state.root.DataService.products.currentlyViewedItem?.stock.warehouse;
 
-export const selectProductDetailsShipped = (state) =>
-  state.root.DataService.products.details?.stock.shipped;
+export const selectProductDetailsSold = (state) =>
+  state.root.DataService.products.currentlyViewedItem?.stock.sold;
 
 export const selectProductInEdit = (state) =>
   state.root.DataService.products.currentlyModifying;

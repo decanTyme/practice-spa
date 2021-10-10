@@ -37,7 +37,7 @@ const INIT_BTN_STATE = {
 const StockTypes = {
   INBOUND: "inbound",
   WAREHOUSE: "warehouse",
-  SHIPPED: "shipped",
+  SOLD: "sold",
 };
 
 function AddStockMenu({ variant, type }) {

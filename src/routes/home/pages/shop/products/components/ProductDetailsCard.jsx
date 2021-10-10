@@ -53,7 +53,6 @@ function ProductDetailsCard() {
         isLoggedIn &&
         !stale
       ) {
-        console.log(dataFetchStatus, "fetch cours");
         dispatch(fetchCouriers());
       }
     }, 0);
@@ -88,11 +87,11 @@ function ProductDetailsCard() {
       [
         ...variant.stocks.inbound,
         ...variant.stocks.warehouse,
-        ...variant.stocks.shipped,
+        ...variant.stocks.sold,
       ]
         .filter((stock) => !stock.checked)
         .sort((a, _) => (a.checked ? 1 : -1)),
-    [variant.stocks.inbound, variant.stocks.shipped, variant.stocks.warehouse]
+    [variant.stocks.inbound, variant.stocks.sold, variant.stocks.warehouse]
   );
 
   return (
@@ -254,7 +253,7 @@ function ProductDetailsCard() {
                     <div>Sale Price</div>
                     <div className="fw-bolder">
                       {variant.prices.find(({ label }) => label === "sale")
-                        .value || "N/A"}
+                        ?.value || "N/A"}
                     </div>
                   </div>
                 </div>
@@ -362,16 +361,14 @@ function ProductDetailsCard() {
                     </div>
                   </button>
                   <button
-                    href="#shipped"
+                    href="#sold"
                     className="col-4 btn btn-sm m-0 p-0"
-                    data-bs-target="#shippedStockMenu"
+                    data-bs-target="#soldStockMenu"
                     data-bs-toggle="modal"
                     data-bs-dismiss="modal"
                   >
-                    <div>Shipped</div>
-                    <div className="fw-bold">
-                      {variant.stocks.shipped.length}
-                    </div>
+                    <div>Sold</div>
+                    <div className="fw-bold">{variant.stocks.sold.length}</div>
                   </button>
                 </div>
               </div>
@@ -409,11 +406,11 @@ function ProductDetailsCard() {
 
       <StockMenu type="inbound" stockList={variant.stocks.inbound} />
       <StockMenu type="warehouse" stockList={variant.stocks.warehouse} />
-      <StockMenu type="shipped" stockList={variant.stocks.shipped} />
+      <StockMenu type="sold" stockList={variant.stocks.sold} />
 
       <AddStockMenu type="inbound" variant={variant} />
       <AddStockMenu type="warehouse" variant={variant} />
-      <AddStockMenu type="shipped" variant={variant} />
+      <AddStockMenu type="sold" variant={variant} />
     </>
   );
 }

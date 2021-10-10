@@ -66,7 +66,7 @@ export const pushProduct = createAsyncThunk(
           })
         );
 
-        return response.data;
+        return response.data.product;
     }
   }
 );
@@ -81,6 +81,7 @@ export const updateProduct = createAsyncThunk(
 
     switch (response.status) {
       case 401:
+      case 418:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
@@ -90,6 +91,7 @@ export const updateProduct = createAsyncThunk(
 
       case 400:
       case 403:
+      case 404:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
@@ -103,15 +105,17 @@ export const updateProduct = createAsyncThunk(
           })
         );
 
-        return modifiedData;
+        return response.data.product;
     }
   }
 );
 
 export const removeProduct = createAsyncThunk(
   "products/delete",
-  async (id, { dispatch }) => {
-    const response = await HttpService().onDataRemove("products", id);
+  async (_id, { dispatch }) => {
+    const response = await HttpService().onDataRemove("products", void 0, {
+      params: { _id },
+    });
 
     const successMsg = "Product successfuly deleted!";
     const errMsg = "Product delete unsuccessful!";
@@ -133,13 +137,9 @@ export const removeProduct = createAsyncThunk(
         throw new Error();
 
       default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
-        return id;
+        return _id;
     }
   }
 );

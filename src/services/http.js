@@ -139,10 +139,11 @@ function HttpService() {
     return instance(requestConfig);
   };
 
-  const onDataRemove = async (type, data) => {
+  const onDataRemove = async (type, data, { params = {} } = {}) => {
     const requestConfig = {
       url: `/${type}/del`,
       method: "DELETE",
+      params,
 
       data,
     };

@@ -84,6 +84,7 @@ function StockMenu({ type, stockList }) {
     if (saveStatus !== Constants.IDLE)
       dispatch(setIdle(Constants.DataService.PUSH));
   }, [dispatch, saveStatus]);
+
   return (
     <ModalMenu
       id={`${type}StockMenu`}
@@ -115,6 +116,7 @@ function StockMenu({ type, stockList }) {
                   quantity,
                   pricePerUnit,
                   purchasedOn,
+                  arrivedOn,
                   manufacturedOn,
                   courier,
                   expiry,
@@ -139,7 +141,7 @@ function StockMenu({ type, stockList }) {
                         >
                           #{_id.truncate(12)}
                         </p>
-                        {!checked && type !== "shipped" && (
+                        {!checked && type !== "sold" && (
                           <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
                             <span className="visually-hidden">New stock</span>
                           </span>
@@ -187,7 +189,7 @@ function StockMenu({ type, stockList }) {
                     {type === "warehouse" && (
                       <li className="list-group-item d-inline-flex justify-content-between">
                         <div>Date of Arrival</div>
-                        <div>{parseISO(expiry).toDateString()}</div>
+                        <div>{parseISO(arrivedOn).toDateString()}</div>
                       </li>
                     )}
 
@@ -232,7 +234,7 @@ function StockMenu({ type, stockList }) {
                       </li>
                     )}
 
-                    {type !== "shipped" && (
+                    {type !== "sold" && (
                       <li className="list-group-item d-inline-flex justify-content-between align-items-center p-0">
                         <div className="py-2 px-3">Move</div>
                         <div
@@ -272,7 +274,7 @@ function StockMenu({ type, stockList }) {
                               data-type-prev={_type}
                               onClick={handleMove}
                             >
-                              Shipped
+                              Sold
                             </button>
                           )}
                         </div>
