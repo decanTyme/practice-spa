@@ -127,7 +127,6 @@ function ProductDetailsCard() {
                     className={classNames("carousel-item", {
                       active: i === 0,
                     })}
-                    data-bs-interval="3000"
                   >
                     <img src={url} className="d-block w-100" alt={caption} />
                   </div>
@@ -382,6 +381,8 @@ function ProductDetailsCard() {
                 <button
                   type="button"
                   className="btn btn-secondary rounded-0"
+                  data-bs-target="#addProductMenu"
+                  data-bs-toggle="modal"
                   onClick={onEditProduct}
                 >
                   Edit

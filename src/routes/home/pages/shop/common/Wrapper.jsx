@@ -3,7 +3,7 @@ import "./page-wrapper.css";
 function Wrapper({ children, pageTitle }) {
   return (
     <div className="container-fluid px-0 page-wrapper">
-      <div className="d-flex justify-content-between align-items-center py-2 pt-3 px-3 mb-3 mt-2 sticky-top">
+      <div className="d-flex justify-content-between align-items-center pb-2 pt-3 px-3 mb-1 mb-lg-2 mt-2 sticky-top">
         <h1 className="h2">{pageTitle}</h1>
         <div className="btn-toolbar mb-2 mb-md-0">
           <div className="btn-group">

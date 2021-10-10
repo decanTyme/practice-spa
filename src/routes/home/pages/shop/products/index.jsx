@@ -2,7 +2,6 @@ import "./products-wrapper.css";
 import { useCallback, useEffect } from "react";
 import ProductDetailsCard from "./components/ProductDetailsCard";
 import PaginationTable from "../common/table/PaginationTable";
-import AddProductForm from "./components/AddProductForm/AddProductForm";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
@@ -146,6 +145,8 @@ function ProductsWrapper() {
           </button>
           <button
             className="btn btn-success float-end mx-1"
+            data-bs-target="#addProductMenu"
+            data-bs-toggle="modal"
             onClick={() => {
               viewDataDetails(item);
               dispatch(modifyProduct(item));
