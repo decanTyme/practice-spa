@@ -3,16 +3,18 @@ import logo from "../../assets/logo_btph_bg_removed.png";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { Tooltip } from "bootstrap";
 import Alert from "../home/pages/components/alert";
 import { setStatus, signIn } from "../../app/state/slices/auth";
 import { selectAuthCurrentState } from "../../app/state/slices/auth/selectors";
 import Constants from "../../app/state/slices/constants";
+import useInitializeTooltips from "../../services/hooks/use-init-tooltips";
 
 /**
  * Login page of BodyTalks.PH Inventory Management System.
  */
 function Login() {
+  useInitializeTooltips();
+
   const dispatch = useDispatch();
 
   const state = useSelector(selectAuthCurrentState);
@@ -27,21 +29,6 @@ function Login() {
   useEffect(() => {
     dispatch(setStatus(Constants.IDLE));
   }, [dispatch]);
-
-  useEffect(() => {
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    const tooltipList = tooltipTriggerList.map((tooltipTriggerEl) => {
-      return new Tooltip(tooltipTriggerEl);
-    });
-
-    return () => {
-      tooltipList.forEach((tooltip) => {
-        tooltip.dispose();
-      });
-    };
-  }, []);
 
   return (
     <div className="h-100 d-flex">
