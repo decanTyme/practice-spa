@@ -3,7 +3,7 @@ import { customAlphabet } from "nanoid";
 import Constants from "../constants";
 
 const nanoid = customAlphabet(
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
   20
 );
 
@@ -14,8 +14,7 @@ const slice = createSlice({
     queue: [],
     archive: [],
     hasPendingNotifications: false,
-    readCount: 0,
-    autoDisable: true,
+    autohide: true,
     status: Constants.IDLE,
     error: null,
   },
@@ -25,41 +24,37 @@ const slice = createSlice({
         type = Constants.NotifyService.INFO,
         title,
         message,
-        {
-          date = new Date().toISOString(),
-          timeout = 5000,
-          noHeader = false,
-        } = {}
+        { autohide = true, date = new Date().toISOString(), delay = 5000 } = {}
       ) => {
         return {
           payload: {
             id: nanoid(),
-            date,
-            timeout,
-            noHeader,
+            autohide,
             type,
+            delay,
+            date,
             title,
             message,
             read: false,
           },
         };
       },
-      reducer: (state, action) => {
+      reducer: (state, { payload: notification }) => {
         state.status = Constants.NotifyService.WORKING;
 
-        state.queue.push(action.payload);
+        state.queue.push(notification);
         state.hasPendingNotifications = true;
       },
     },
 
-    seen: (state, action) => {
-      state.queue = state.queue.filter((notification) => {
-        if (notification.id === action.payload) {
-          state.archive.push(notification);
+    seen: (state, { payload: seenNotifId }) => {
+      state.queue = state.queue.filter((queuedNotif) => {
+        if (queuedNotif.id === seenNotifId) {
+          state.archive.push(queuedNotif);
           state.archive.sort((a, b) => b.date.localeCompare(a.date));
         }
 
-        return notification.id !== action.payload;
+        return queuedNotif.id !== seenNotifId;
       });
 
       if (state.queue.length === 0) {
@@ -68,16 +63,14 @@ const slice = createSlice({
       }
     },
 
-    read: (state, action) => {
+    read: (state, { payload: readNotifId }) => {
       state.archive.forEach((notification) => {
-        if (notification.id === action.payload) {
-          notification.read = true;
-        }
+        if (notification.id === readNotifId) notification.read = true;
       });
     },
 
-    setAutoDisable: (state, action) => {
-      state.autoDisable = action.payload;
+    setAutoHide: (state, action) => {
+      state.autohide = action.payload;
     },
 
     setNotifyStatus: (state, action) => {
@@ -89,7 +82,7 @@ const slice = createSlice({
       state.queue = [];
       state.archive = [];
       state.hasPendingNotifications = false;
-      state.autoDisable = true;
+      state.autohide = true;
       state.status = Constants.IDLE;
       state.error = null;
     },
