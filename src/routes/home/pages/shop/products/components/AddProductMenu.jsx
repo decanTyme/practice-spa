@@ -181,13 +181,6 @@ function AddProductMenu() {
         resetBtn: "Cancel",
       });
     }
-
-    return () => {
-      setProduct(INIT_FORM_VAL);
-      setVariants([getInitVariantVal()]);
-      setDisable(INIT_BTN_STATE);
-      setText(INIT_BTN_TEXT);
-    };
   }, [productInEdit]);
 
   const handleSubmit = async (e) => {
@@ -326,8 +319,14 @@ function AddProductMenu() {
   };
 
   const resetToDefaults = useCallback(() => {
-    // Make sure to reset only if there is a product currently in edit
-    if (productInEdit) dispatch(resetAllProductModification());
+    // Make sure to reset all current product modifications
+    // only if there is a product currently in edit
+    if (productInEdit) {
+      // Hide the menu
+      return Modal.getOrCreateInstance(
+        document.getElementById("addProductMenu")
+      ).hide();
+    }
 
     // Make sure to clear CSV imports only if there is a
     // CSV currently imported
@@ -344,24 +343,21 @@ function AddProductMenu() {
   }, [dispatch, importedCSV, productInEdit]);
 
   useEffect(() => {
+
+    // If a save or modify action is a success, hide the menu
     if (
       saveStatus === Constants.SUCCESS ||
       modifyStatus === Constants.SUCCESS
     ) {
       // Hide the menu
       Modal.getOrCreateInstance(
+      return Modal.getOrCreateInstance(
         document.getElementById("addProductMenu")
       ).hide();
+    }
 
-      // If a save action is a success, always
-      // reset everyting to defaults
-      resetToDefaults();
-    } else if (
-      saveStatus === Constants.FAILED ||
-      modifyStatus === Constants.FAILED
-    ) {
-      // Otherwise, only reset the button state
-      // so the user has a chance to re-edit
+    // Otherwise, only reset the button state
+    // so the user has a chance to re-edit
       setDisable({
         submitBtn: true,
         resetBtn: false,
@@ -369,7 +365,41 @@ function AddProductMenu() {
         inputCode: true,
       });
     }
-  }, [dispatch, resetToDefaults, saveStatus, modifyStatus]);
+  // Listen for modal events
+  useEffect(() => {
+    const productForm = document.getElementById("addProductMenu");
+
+    // When modal is closed, revert all states to INIT
+    const hideModalListener = (event) => {
+      setDisable(INIT_BTN_STATE);
+      setText(INIT_BTN_TEXT);
+      setProduct(INIT_FORM_VAL);
+      setVariants([getInitVariantVal()]);
+
+      dispatch(resetAllProductModification());
+    };
+
+    const hidePreventedListener = (event) => {
+      console.log("Modal prevented from closing");
+    };
+
+    productForm.addEventListener("hidden.bs.modal", hideModalListener);
+
+    productForm.addEventListener(
+      "hidePrevented.bs.modal",
+      hidePreventedListener
+    );
+
+    const removeListeners = () => {
+      productForm.removeEventListener("hidden.bs.modal", hideModalListener);
+      productForm.removeEventListener(
+        "hidePrevented.bs.modal",
+        hidePreventedListener
+      );
+    };
+
+    return () => removeListeners();
+  }, [dispatch]);
 
   const codePlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
