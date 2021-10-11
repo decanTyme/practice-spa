@@ -67,11 +67,7 @@ export const requestAuthToken = createAsyncThunk(
 
     dispatch(setStatus(Constants.AuthManager.Sign.Token.REFRESH_SUCCESS));
 
-    dispatch(
-      notify(Constants.SUCCESS, successMsg, void 0, {
-        noHeader: true,
-      })
-    );
+    dispatch(notify(Constants.SUCCESS, successMsg));
 
     return response.data;
   }

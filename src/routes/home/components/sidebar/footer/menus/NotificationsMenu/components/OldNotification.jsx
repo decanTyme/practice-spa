@@ -3,7 +3,7 @@ import { determineMargin, toastStyle } from "../utils";
 
 function OldNotification({
   unfilteredLength,
-  data: { id, date, type, title, message, noHeader },
+  data: { id, date, type, title, message },
   index: i,
 }) {
   return (
@@ -18,21 +18,22 @@ function OldNotification({
         style={{ fontSize: "0.925rem" }}
       >
         <div className="d-flex justify-content-between align-items-center">
-          <h6 className="mt-1 mb-1 fw-bolder text-muted">{title}</h6>
+          <h6 className="mb-0 fw-bolder text-muted">{title}</h6>
 
-          <p className={"me-1 mb-0 " + toastStyle(type)}>{type}</p>
+          <p className={"mb-auto " + toastStyle(type)}>{type}</p>
         </div>
-        <div className="collapse" id={`${id}`}>
+        <div className="collapse" id={`_${id}`}>
           <p
             className={
               "card-subtitle text-muted fst-italic " +
-              (noHeader ? "mb-1" : "mb-2 ")
+              (message ? "mb-2" : "mb-1")
             }
+            style={{ marginTop: "0.14rem" }}
           >
             {formatDistanceToNow(parseISO(date))} ago
           </p>
-          {noHeader ? null : (
-            <p className="card-text text-muted mb-1">{message}</p>
+          {message && (
+            <p className="card-text text-muted mb-1 mt-3">{message}</p>
           )}
         </div>
       </a>

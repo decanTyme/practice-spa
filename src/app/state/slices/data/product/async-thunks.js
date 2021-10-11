@@ -60,11 +60,7 @@ export const pushProduct = createAsyncThunk(
         throw new Error(response.data.message);
 
       default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
+        dispatch(notify(Constants.SUCCESS, successMsg));
 
         return response.data.product;
     }
@@ -99,11 +95,7 @@ export const updateProduct = createAsyncThunk(
         throw new Error(response.data.message);
 
       default:
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
+        dispatch(notify(Constants.SUCCESS, successMsg));
 
         return response.data.product;
     }
@@ -269,11 +261,7 @@ export const stockMarkInventoryChecked = createAsyncThunk(
           throw new Error(response.data.message);
         }
 
-        dispatch(
-          notify(Constants.SUCCESS, successMsg, void 0, {
-            noHeader: true,
-          })
-        );
+        dispatch(notify(Constants.SUCCESS, successMsg));
 
         return response.data;
     }

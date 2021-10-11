@@ -7,7 +7,7 @@ import { determineMargin, toastStyle } from "../utils";
 
 function UnreadNotification({
   unfilteredLength,
-  data: { id, date, type, title, message, noHeader },
+  data: { id, date, type, title, message },
   index: i,
 }) {
   const dispatch = useDispatch();
@@ -17,11 +17,11 @@ function UnreadNotification({
   const isVisible = useOnScreen(ref && ref);
 
   useEffect(() => {
-    const allRead = () => {
+    const notifRead = () => {
       isVisible && dispatch(read(id));
     };
 
-    return () => allRead();
+    return () => notifRead();
   });
 
   return (
@@ -42,13 +42,12 @@ function UnreadNotification({
         </div>
         <p
           className={
-            "card-subtitle text-muted fst-italic " +
-            (noHeader ? "mb-1" : "mb-2 ")
+            "card-subtitle text-muted fst-italic " + (message ? "mb-2" : "mb-1")
           }
         >
           {formatDistanceToNow(parseISO(date))} ago
         </p>
-        {noHeader ? null : <p className="card-text mb-1">{message}</p>}
+        {message && <p className="card-text mb-1">{message}</p>}
       </div>
     </div>
   );
