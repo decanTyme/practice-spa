@@ -1,13 +1,8 @@
 import classNames from "classnames";
 import { isMobile } from "react-device-detect";
+import { getInitVariantVal } from "./init";
 
-function AddVariantForm({
-  INIT_VARIANT_VAL,
-  disable,
-  setDisable,
-  variants,
-  setVariants,
-}) {
+function AddVariantForm({ disable, setDisable, variants, setVariants }) {
   const handleVariantChange = (variantIndex, priceIndex) => (e) => {
     setDisable({
       ...disable,
@@ -80,7 +75,7 @@ function AddVariantForm({
             style={{ fontSize: "0.8rem" }}
             onClick={(e) => {
               e.preventDefault();
-              setVariants([...variants, INIT_VARIANT_VAL]);
+              setVariants([...variants, getInitVariantVal()]);
             }}
           >
             <i className="fas fa-plus"></i>
