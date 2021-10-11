@@ -6,32 +6,23 @@ import { seen } from "../../../../app/state/slices/notification";
 import logo from "../../../../assets/logo_btph_bg_removed.png";
 import { determineDismissBtnStyle, determineToastStyle } from "./utils";
 
-function Toasty({
-  data: { id, type, date, timeout, noHeader, title, message },
-}) {
+function Toasty({ data: { id, autohide, type, date, delay, title, message } }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const thisToast = Toast.getOrCreateInstance(document.getElementById(id), {
-      autohide: false,
-    });
+    const thisToastElement = document.getElementById(id);
 
-    thisToast?.show();
+    // Immediately show the notification
+    Toast.getOrCreateInstance(thisToastElement, { autohide, delay }).show();
 
-    let __timeout_;
-    const __timeout = setTimeout(() => {
-      thisToast?.hide();
-
-      __timeout_ = setTimeout(() => {
-        dispatch(seen(id));
-      }, 300);
-    }, timeout);
-
-    return () => {
-      clearTimeout(__timeout);
-      clearTimeout(__timeout_);
-    };
-  }, [dispatch, id, timeout]);
+    // Once the notification is fully hidden,
+    // mark the notification as "seen"
+    thisToastElement.addEventListener(
+      "hidden.bs.toast",
+      () => dispatch(seen(id)),
+      { once: true }
+    );
+  }, [dispatch, id, autohide, delay]);
 
   return (
     <div
@@ -42,7 +33,7 @@ function Toasty({
       aria-atomic="true"
       style={{ width: "92vw", maxWidth: 420 }}
     >
-      {noHeader ? (
+      {!message ? (
         <div className="d-flex">
           <div className="toast-body">{title}</div>
           <button
