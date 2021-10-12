@@ -4,13 +4,13 @@ export const mobileColumns = [
     columns: [
       {
         Header: "Type",
-        accessor: "type",
+        accessor: "_type",
         width: "30%",
         Filter: "",
       },
       {
         Header: "Name",
-        accessor: "name",
+        accessor: "fullname",
         width: "52%",
         Filter: "",
       },
@@ -34,20 +34,14 @@ export const webColumns = [
     columns: [
       {
         Header: "Type",
-        accessor: "type",
-        width: "12%",
+        accessor: "_type",
+        width: "20%",
         Filter: "",
       },
       {
         Header: "Name",
-        accessor: "name",
+        accessor: "fullname",
         width: "40%",
-        Filter: "",
-      },
-      {
-        Header: "Contact",
-        accessor: "contact",
-        width: "8%",
         Filter: "",
       },
     ],

@@ -83,7 +83,10 @@ const slice = createSlice({
       .addCase(fetchCustomers.fulfilled, (state, action) => {
         state.status.fetch = Constants.SUCCESS;
 
-        state.data = action.payload;
+        state.data = action.payload.map((customer) => ({
+          ...customer,
+          fullname: `${customer.firstname} ${customer.lastname}`,
+        }));
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.status.fetch = Constants.SUCCESS;

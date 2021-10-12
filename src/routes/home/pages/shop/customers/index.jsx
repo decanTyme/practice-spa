@@ -1,5 +1,4 @@
 import "./customers-wrapper.css";
-import { matchSorter } from "match-sorter";
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { isMobile } from "react-device-detect";
@@ -27,7 +26,6 @@ import {
   selectAllCustomers,
   selectCurrentlySelectedCustomers,
   selectCustomerDetails,
-  selectCustomerFetchError,
   selectCustomerFetchStatus,
 } from "../../../../../app/state/slices/data/customer/selectors";
 import CustomerDetailsCard from "./CustomerDetailsCard";
@@ -38,10 +36,12 @@ import {
   rowSelectPlugin,
 } from "../common/table/utils";
 import {
+  selectAuthDatabaseStatus,
   selectAuthStaleStatus,
   selectAuthState,
 } from "../../../../../app/state/slices/auth/selectors";
 import AddCustomerForm from "./components/forms/AddCustomerForm";
+import Constants from "../../../../../app/state/slices/constants";
 
 function Customers() {
   const dispatch = useDispatch();
@@ -53,27 +53,29 @@ function Customers() {
   const customerDetails = useSelector(selectCustomerDetails);
   const dataInSelection = useSelector(selectCurrentlySelectedCustomers);
 
+  const database = useSelector(selectAuthDatabaseStatus);
+
   const customerFetchStatus = useSelector(selectCustomerFetchStatus);
-  const error = useSelector(selectCustomerFetchError);
 
   useEffect(() => {
-    if (
-      (customerFetchStatus === "IDLE" || customerFetchStatus === "FAILED") &&
-      isLoggedIn &&
-      !stale
-    ) {
-      dispatch(fetchCustomers());
-    }
-  }, [dispatch, customerFetchStatus, error, isLoggedIn, stale]);
+    const timeout = setTimeout(() => {
+      if (
+        (customerFetchStatus === Constants.IDLE ||
+          customerFetchStatus === Constants.FAILED) &&
+        database.status === Constants.IDLE &&
+        isLoggedIn &&
+        !stale
+      ) {
+        dispatch(fetchCustomers());
+      }
+    });
+
+    return () => clearTimeout(timeout);
+  }, [dispatch, customerFetchStatus, isLoggedIn, stale, database]);
 
   const viewDataDetails = useCallback(
-    (itemId) => {
-      data.forEach((item) => {
-        if (item._id === itemId && customerDetails?._id !== itemId)
-          dispatch(viewCustomerDetail(item));
-      });
-    },
-    [data, customerDetails, dispatch]
+    (item) => dispatch(viewCustomerDetail(item)),
+    [dispatch]
   );
 
   const table = useTable(
@@ -111,7 +113,7 @@ function Customers() {
         <div>
           <button
             className="btn btn-primary float-end mx-1"
-            onClick={() => viewDataDetails(row.original._id)}
+            onClick={() => viewDataDetails(row.original)}
           >
             View
           </button>
@@ -149,34 +151,40 @@ function Customers() {
   return (
     <Wrapper pageTitle="Customers">
       <section className="row g-3">
-        <div className="col-sm-8">
+        <div className="col-sm-9">
           <ErrorBoundary>
             <div className="customer-table-wrapper">
               <PaginationTable
+                loading={customerFetchStatus === Constants.LOADING}
                 dataLength={data.length}
                 tableProps={table}
                 renderRowSubComponent={tableActionsDropdown}
                 getRowProps={(row) => ({
                   onClick: () =>
-                    isMobile ? viewDataDetails(row.original._id) : null,
+                    isMobile ? viewDataDetails(row.original) : null,
                 })}
                 getCellProps={(cellInfo) => ({
                   style: {
-                    textAlign:
-                      typeof cellInfo.value === "number" ? "center" : null,
+                    textAlign: typeof cellInfo.value === "number" && "center",
+                    textTransform:
+                      cellInfo.column.id === "_type" && "capitalize",
                   },
                 })}
               />
             </div>
           </ErrorBoundary>
         </div>
-        <aside className="col-sm-4">
+        <aside className="col-sm-3">
           {customerDetails ? (
             <ErrorBoundary>
               <CustomerDetailsCard customerDetails={customerDetails} />
             </ErrorBoundary>
           ) : (
-            <Card title="Select a customer to view" />
+            <Card>
+              <Card.Body>
+                <Card.Title>Select a customer to view</Card.Title>
+              </Card.Body>
+            </Card>
           )}
 
           <ErrorBoundary>
@@ -203,12 +211,5 @@ function Customers() {
     </Wrapper>
   );
 }
-
-function fuzzyTextFilterFn(rows, id, filterValue) {
-  return matchSorter(rows, filterValue, { keys: [(row) => row.values[id]] });
-}
-
-// Let the table remove the filter if the string is empty
-fuzzyTextFilterFn.autoRemove = (val) => !val;
 
 export default Customers;

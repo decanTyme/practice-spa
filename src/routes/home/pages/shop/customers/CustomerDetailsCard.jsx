@@ -1,4 +1,4 @@
-import placeholderCustomerImg from "../../../../../assets/placeholder_customer_image.png";
+// import placeholderCustomerImg from "../../../../../assets/placeholder_customer_image.png";
 
 function CustomerDetailsCard({ customerDetails }) {
   const onEditProduct = (e) => {
@@ -23,12 +23,14 @@ function CustomerDetailsCard({ customerDetails }) {
       <div className="card-body">
         <div className="d-flex justify-content-between">
           <div>
-            <h5 className="flex-fill mb-1">{customerDetails.name}</h5>
-            <p className="card-subtitle text-muted">{customerDetails.type}</p>
+            <h5 className="flex-fill mb-1">{`${customerDetails.lastname}, ${customerDetails.firstname}`}</h5>
+            <p className="card-subtitle text-muted text-capitalize">
+              {customerDetails._type}
+            </p>
           </div>
           <div>
             <img
-              src={placeholderCustomerImg}
+              src={customerDetails.displayPic}
               width="72"
               className="img-thumbnail"
               alt={customerDetails.name}
@@ -38,35 +40,51 @@ function CustomerDetailsCard({ customerDetails }) {
       </div>
 
       <ul className="list-group list-group-flush">
-        <li className="list-group-item d-inline-flex justify-content-between">
-          <div>Contact Number</div>
-          <div className="d-inline-flex">
-            <div className="text-muted">Globe</div>
-            <span className="mx-2">•</span>
-            <div>{customerDetails.contact}</div>
+        <li className="list-group-item d-flex justify-content-between">
+          <div>Contact Numbers</div>
+          <div>
+            {customerDetails.contacts.map(({ _id, telcom, number }) => (
+              <div key={_id} className="d-flex">
+                <div className="text-muted">{telcom}</div>
+                <span className="mx-2">•</span>
+                <div>{number}</div>
+                {/* <i className="fas fa-copy text-muted ms-2 d-flex align-items-center" /> */}
+              </div>
+            ))}
           </div>
         </li>
-        <li className="list-group-item d-inline-flex justify-content-between">
-          <div>Address</div>
-          <div>{customerDetails.address}</div>
+        <li className="list-group-item">
+          <div className="row">
+            <div className="col-3">Address</div>
+            <div className="col">
+              {Object.entries(customerDetails.address)
+                .filter(([key]) => key !== "postcode")
+                .map(([label, value]) => (
+                  <div key={label} className="d-flex justify-content-between">
+                    <div className="text-capitalize">{label}</div>
+                    <div>{value}</div>
+                  </div>
+                ))}
+            </div>
+          </div>
         </li>
 
         <li className="list-group-item d-inline-flex justify-content-between">
           <div>Postal Code</div>
-          <div>8502</div>
+          <div>{customerDetails.address.postcode}</div>
         </li>
         <li className="list-group-item d-inline-flex justify-content-between">
-          <div>Jurisdiction</div>
-          <div>N/A</div>
+          <div>Designation</div>
+          <div>{customerDetails.designation || "N/A"}</div>
         </li>
         <li className="list-group-item">
           <div className="row">
-            <div className="col-6 d-inline-flex justify-content-between pe-4">
+            <div className="col-4 d-inline-flex justify-content-between pe-4">
               <div>Debt</div>
               <div className="fw-bolder">{customerDetails.debt}</div>
             </div>
-            <div className="col-6 d-inline-flex justify-content-between">
-              <div>Assets</div>
+            <div className="col-8 d-inline-flex justify-content-between">
+              <div>Total Purchased Products</div>
               <div className="fw-bolder">123</div>
             </div>
           </div>
