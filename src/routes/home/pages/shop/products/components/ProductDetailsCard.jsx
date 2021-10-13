@@ -16,6 +16,8 @@ import {
 import { modifyProduct } from "../../../../../../app/state/slices/data/product";
 import { removeProduct } from "../../../../../../app/state/slices/data/product/async-thunks";
 import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
+import Card from "../../../../common/Card";
+import Container from "../../../../common/Container";
 import AddStockMenu from "./AddStockMenu";
 import StockMenu from "./StockMenu";
 
@@ -96,9 +98,9 @@ function ProductDetailsCard() {
 
   return (
     <>
-      <div className="card">
-        <div className="row g-0">
-          <div className="col-sm-4">
+      <Card>
+        <Container.Row g="0">
+          <Container.Col modifier="sm" columns="4">
             {/* ---------------------- Product Images ---------------------- */}
             <div
               id="productImages"
@@ -158,44 +160,39 @@ function ProductDetailsCard() {
               </button>
             </div>
 
-            {isMobile ? null : (
-              <div className="card-footer border-0 p-2 text-muted">
-                Item ID: {_id}
-              </div>
-            )}
-          </div>
+            {!isMobile && <Card.Footer>Item ID: {_id}</Card.Footer>}
+          </Container.Col>
 
-          <div className="col-sm-4 d-flex flex-column">
-            {/* ------------------------------ Product Details ------------------------------ */}
-            <div className="card-body flex-grow-1">
-              <div className="card-title">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="mb-1">{name}</h5>
-                  <p className="fst-italic me-1 mb-1 text-success">#{code}</p>
-                </div>
-                <p className="card-subtitle text-muted mb-2">{brand}</p>
+          {/* ------------------------------ Product Details ------------------------------ */}
+          <Container.Col
+            modifier="sm"
+            columns="4"
+            className="d-flex flex-column"
+          >
+            <Card.Body className="flex-grow-1">
+              <div className="d-flex justify-content-between align-items-center">
+                <h5 className="mb-1">{name}</h5>
+                <p className="fst-italic me-1 mb-1 text-success">#{code}</p>
               </div>
-              <p className="card-text">{description}</p>
-            </div>
+              <Card.SubTitle>{brand.name}</Card.SubTitle>
+              <Card.Text>{description}</Card.Text>
+            </Card.Body>
 
-            <ul className="list-group list-group-flush">
-              {/* ------------------------------ List Item ------------------------------ */}
-              <li className="list-group-item d-inline-flex justify-content-between border-top">
+            <Card.ListGroup flush>
+              <Card.ListGroupItem className="d-inline-flex justify-content-between border-top">
                 <div>Class</div>
                 <div className="text-capitalize">{_class}</div>
-              </li>
+              </Card.ListGroupItem>
 
-              {/* ------------------------------ List Item ------------------------------ */}
-              <li className="list-group-item d-inline-flex justify-content-between">
+              <Card.ListGroupItem className="d-inline-flex justify-content-between">
                 <div>Category</div>
                 <div className="text-capitalize">{category}</div>
-              </li>
+              </Card.ListGroupItem>
 
-              {/* ------------------------------ List Item ------------------------------ */}
-              <li className="list-group-item">
-                <div className="row">
-                  <div className="col-8">Variant</div>
-                  <div className="col-4">
+              <Card.ListGroupItem>
+                <Container.Row>
+                  <Container.Col columns="8">Variant</Container.Col>
+                  <Container.Col columns="4">
                     <select
                       className="form-select form-select-sm"
                       aria-label="Select variant"
@@ -209,17 +206,16 @@ function ProductDetailsCard() {
                         </option>
                       ))}
                     </select>
-                  </div>
-                </div>
-              </li>
+                  </Container.Col>
+                </Container.Row>
+              </Card.ListGroupItem>
 
-              {/* ------------------------------ List Item ------------------------------ */}
-              <li className="list-group-item">
-                <div className="row">
-                  <div className="col-3">
-                    <div>Prices ({variant.value})</div>
-                  </div>
-                  <div className="col-9">
+              <Card.ListGroupItem>
+                <Container.Row>
+                  <Container.Col columns="3">
+                    Prices ({variant.value})
+                  </Container.Col>
+                  <Container.Col columns="9">
                     <div className="d-block">
                       {variant.prices
                         .filter(({ label }) => label !== "sale")
@@ -235,41 +231,44 @@ function ProductDetailsCard() {
                           </div>
                         ))}
                     </div>
-                  </div>
-                </div>
-              </li>
-              <li
-                className={classNames("list-group-item", {
-                  "border-bottom": isMobile,
-                })}
+                  </Container.Col>
+                </Container.Row>
+              </Card.ListGroupItem>
+
+              <Card.ListGroupItem
+                className={classNames({ "border-bottom": isMobile })}
               >
-                <div className="row">
-                  <div className="col-6 d-inline-flex justify-content-between pe-4">
+                <Container.Row>
+                  <Container.Col
+                    columns="6"
+                    className="d-inline-flex justify-content-between pe-4"
+                  >
                     <div>Unit</div>
                     <div className="fw-bolder text-capitalize">{unit}</div>
-                  </div>
-                  <div className="col-6 d-inline-flex justify-content-between">
+                  </Container.Col>
+                  <Container.Col
+                    columns="6"
+                    className="d-inline-flex justify-content-between"
+                  >
                     <div>Sale Price</div>
                     <div className="fw-bolder">
                       {variant.prices.find(({ label }) => label === "sale")
                         ?.value || "N/A"}
                     </div>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div
-            className={classNames("col-sm-4 d-flex", {
-              "border-start": !isMobile,
-            })}
+                  </Container.Col>
+                </Container.Row>
+              </Card.ListGroupItem>
+            </Card.ListGroup>
+          </Container.Col>
+          <Container.Col
+            modifier="sm"
+            columns="4"
+            className={classNames("d-flex", { "border-start": !isMobile })}
           >
-            <ul className="list-group list-group-flush flex-grow-1">
-              {/* ------------------------------ List Item ------------------------------ */}
-              <li
+            <Card.ListGroup flush className="flex-grow-1">
+              <Card.ListGroupItem
                 className={classNames(
-                  "list-group-item h-100 border-bottom-0 d-flex flex-column",
+                  "h-100 border-bottom-0 d-flex flex-column",
                   { "pb-3": isMobile, "p-3": !isMobile }
                 )}
               >
@@ -286,11 +285,11 @@ function ProductDetailsCard() {
                         i,
                         arr
                       ) => (
-                        <div
-                          className={classNames("card", {
+                        <Card
+                          key={batch}
+                          className={classNames({
                             "mb-3": i !== arr.length - 1,
                           })}
-                          key={batch}
                         >
                           <a
                             href={`#_${_id}`}
@@ -299,11 +298,11 @@ function ProductDetailsCard() {
                             data-bs-toggle="modal"
                             data-bs-dismiss="modal"
                           >
-                            <div className="card-title">
+                            <Card.Title>
                               <div className="d-flex justify-content-between align-items-center">
-                                <h6 className="mb-1">Batch No.: {batch}</h6>
+                                <h6 className="mb-0">Batch No.: {batch}</h6>
                                 <p
-                                  className="fst-italic me-1 mb-1 text-success"
+                                  className="fst-italic fw-normal me-1 mb-0 text-success"
                                   style={{ fontSize: "0.875rem" }}
                                 >
                                   #{_id.truncate(10)}
@@ -316,13 +315,12 @@ function ProductDetailsCard() {
                                   </span>
                                 )}
                               </div>
-                              <p className="card-subtitle text-muted mb-2">
-                                {`Added by: ${addedBy.firstname} ${addedBy.lastname}`}
-                              </p>
-                            </div>
-                            <p className="card-text">{description}</p>
+                            </Card.Title>
+                            <Card.SubTitle>{`Added by: ${addedBy.user.firstname} ${addedBy.user.lastname}`}</Card.SubTitle>
+
+                            <Card.Text>{description}</Card.Text>
                           </a>
-                        </div>
+                        </Card>
                       )
                     )
                 ) : (
@@ -330,11 +328,11 @@ function ProductDetailsCard() {
                     Now new stock on this variant for now.
                   </div>
                 )}
-              </li>
+              </Card.ListGroupItem>
 
               {/* ------------------------ Stock Details ------------------------ */}
-              <div className="container-fluid border-top px-1">
-                <div className="row g-0 py-2 text-center">
+              <Container fluid className="border-top px-1">
+                <Container.Row g="0" className="py-2 text-center">
                   <button
                     href="#inbound"
                     className="col-4 btn btn-sm m-0 p-0"
@@ -369,8 +367,8 @@ function ProductDetailsCard() {
                     <div>Sold</div>
                     <div className="fw-bold">{variant.stocks.sold.length}</div>
                   </button>
-                </div>
-              </div>
+                </Container.Row>
+              </Container>
 
               {/* ---------------------------- Product Options ---------------------------- */}
               <div
@@ -395,13 +393,12 @@ function ProductDetailsCard() {
                   Delete
                 </button>
               </div>
-            </ul>
-          </div>
-          {isMobile ? (
-            <div className="card-footer text-muted">Item ID: {_id}</div>
-          ) : null}
-        </div>
-      </div>
+            </Card.ListGroup>
+          </Container.Col>
+
+          {isMobile && <Card.Footer>Item ID: {_id}</Card.Footer>}
+        </Container.Row>
+      </Card>
 
       {/* ----------------- Stock Menus ----------------- */}
 

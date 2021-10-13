@@ -1,5 +1,6 @@
 // import { useCallback, useEffect, useMemo, useState } from "react";
 import Card from "../../../../../common/Card";
+import Container from "../../../../../common/Container";
 
 function AddCustomerForm({ className }) {
   // const [customer, setCustomer]= useState()
@@ -26,15 +27,12 @@ function AddCustomerForm({ className }) {
   };
 
   return (
-    <Card
-      className={className}
-      customTitle={<h6 className="card-title mb-3">Add Customer</h6>}
-    >
-      <div>
+    <Card>
+      <Card.Body>
+        <Card.Title h6>Add Customer</Card.Title>
         <form id="addCustomerForm" className="needs-validation">
-          {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mb-3">
-            <div className="col-sm-7">
+          <Container.Row g="2" className="mb-3">
+            <Container.Col modifier="sm" columns="7">
               <label htmlFor="customerName" className="form-label">
                 First Name
               </label>
@@ -43,8 +41,8 @@ function AddCustomerForm({ className }) {
                 Please select a valid name.
               </div>
               <div className="valid-feedback">Looks good!</div>
-            </div>
-            <div className="col-sm-5">
+            </Container.Col>
+            <Container.Col modifier="sm" columns="5">
               <label htmlFor="customerName" className="form-label">
                 Last Name
               </label>
@@ -53,11 +51,11 @@ function AddCustomerForm({ className }) {
                 Please select a valid name.
               </div>
               <div className="valid-feedback">Looks good!</div>
-            </div>
-          </div>
-          {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mb-3">
-            <div className="col">
+            </Container.Col>
+          </Container.Row>
+
+          <Container.Row g="2" className="mb-3">
+            <Container.Col>
               <label htmlFor="contactNum" className="form-label">
                 Contact Number
               </label>
@@ -68,8 +66,12 @@ function AddCustomerForm({ className }) {
                 className="form-control"
                 pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
               />
-            </div>
-            <div className="col-6">
+              <div className="invalid-feedback">
+                Please select a valid contact number.
+              </div>
+              <div className="valid-feedback">Looks good!</div>
+            </Container.Col>
+            <Container.Col columns="6">
               <label htmlFor="customerName" className="form-label">
                 Type
               </label>
@@ -88,14 +90,14 @@ function AddCustomerForm({ className }) {
               </select>
 
               <div className="invalid-feedback">
-                Please select a valid unit.
+                Please select a valid customer type.
               </div>
               <div className="valid-feedback">Looks good!</div>
-            </div>
-          </div>
-          {/* ------------------------------ Row ------------------------------ */}
-          <div className="row g-2 mb-3">
-            <div className="col">
+            </Container.Col>
+          </Container.Row>
+
+          <Container.Row g="2" className="mb-3">
+            <Container.Col>
               <label htmlFor="customerAddress" className="form-label">
                 Address
               </label>
@@ -105,9 +107,14 @@ function AddCustomerForm({ className }) {
                 name="address"
                 className="form-control"
               />
-            </div>
-          </div>
-          <div className="row g-2 mt-3">
+              <div className="invalid-feedback">
+                Please enter a address name.
+              </div>
+              <div className="valid-feedback">Looks good!</div>
+            </Container.Col>
+          </Container.Row>
+
+          <Container.Row g="2" className="mt-3">
             <div className="d-flex flex-row justify-content-end">
               {/* <label
                 htmlFor="csvImportBtn"
@@ -149,9 +156,9 @@ function AddCustomerForm({ className }) {
                 Save
               </button>
             </div>
-          </div>
+          </Container.Row>
         </form>
-      </div>
+      </Card.Body>
     </Card>
   );
 }

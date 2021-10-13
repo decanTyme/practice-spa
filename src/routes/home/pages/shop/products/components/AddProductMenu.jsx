@@ -37,6 +37,7 @@ import {
   INIT_FORM_VAL,
 } from "./AddProductForm/init";
 import useInitializeTooltips from "../../../../../../services/hooks/use-init-tooltips";
+import Container from "../../../../common/Container";
 
 function AddProductMenu() {
   useInitializeTooltips();
@@ -106,9 +107,9 @@ function AddProductMenu() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const addProductForm = document.getElementById("addProductForm");
+    const productForm = document.getElementById("addProductForm");
 
-    if (addProductForm.checkValidity()) {
+    if (productForm.checkValidity()) {
       setDisable({
         submitBtn: true,
         resetBtn: true,
@@ -151,9 +152,9 @@ function AddProductMenu() {
           })
         );
 
-      addProductForm.classList.remove("was-validated");
+      productForm.classList.remove("was-validated");
     } else {
-      addProductForm.classList.add("was-validated");
+      productForm.classList.add("was-validated");
     }
   };
 
@@ -261,6 +262,7 @@ function AddProductMenu() {
     setText(INIT_BTN_TEXT);
     setProduct(INIT_FORM_VAL);
     setVariants([getInitVariantVal()]);
+    document.getElementById("addProductForm").classList.remove("was-validated");
   }, [dispatch, importedCSV, productInEdit]);
 
   useEffect(() => {
@@ -271,52 +273,53 @@ function AddProductMenu() {
       saveStatus === Constants.FAILED || modifyStatus === Constants.FAILED;
 
     // If a save or modify action is a success, hide the menu
-    if (saveSuccess) {
+    if (saveSuccess)
       return Modal.getOrCreateInstance(
         document.getElementById("addProductMenu")
       ).hide();
-    }
 
     // Otherwise, only reset the button state
     // so the user has a chance to re-edit
-    if (saveFailed) {
+    if (saveFailed)
       return setDisable({
         submitBtn: true,
         resetBtn: false,
         inputs: false,
         inputCode: true,
       });
-    }
   }, [dispatch, saveStatus, modifyStatus]);
 
   // Listen for modal events
   useEffect(() => {
-    const productForm = document.getElementById("addProductMenu");
+    const productMenu = document.getElementById("addProductMenu");
 
     // When modal is closed, revert all states to INIT
-    const hideModalListener = (event) => {
+    const hideModalListener = () => {
       setDisable(INIT_BTN_STATE);
       setText(INIT_BTN_TEXT);
       setProduct(INIT_FORM_VAL);
       setVariants([getInitVariantVal()]);
+      document
+        .getElementById("addProductForm")
+        .classList.remove("was-validated");
 
       dispatch(resetAllProductModification());
     };
 
-    const hidePreventedListener = (event) => {
+    const hidePreventedListener = () => {
       console.log("Modal prevented from closing");
     };
 
-    productForm.addEventListener("hidden.bs.modal", hideModalListener);
+    productMenu.addEventListener("hidden.bs.modal", hideModalListener);
 
-    productForm.addEventListener(
+    productMenu.addEventListener(
       "hidePrevented.bs.modal",
       hidePreventedListener
     );
 
     const removeListeners = () => {
-      productForm.removeEventListener("hidden.bs.modal", hideModalListener);
-      productForm.removeEventListener(
+      productMenu.removeEventListener("hidden.bs.modal", hideModalListener);
+      productMenu.removeEventListener(
         "hidePrevented.bs.modal",
         hidePreventedListener
       );
@@ -330,374 +333,401 @@ function AddProductMenu() {
   }, []);
 
   return (
-    <ModalMenu
-      id="addProductMenu"
-      fade
-      scrollable
-      static
-      keyboard
-      size="lg"
-      addDismissBtn={!productInEdit}
-      title={productInEdit ? "Edit Product" : "Add New Product"}
-      body={
-        <div className="px-1">
-          <form
-            id="addProductForm"
-            className="needs-validation add-product-form"
-            noValidate
-          >
-            {/* ------------------------------ Row ------------------------------ */}
-            <div className="row g-4">
-              <div
-                className={classNames("col-sm-6", { "border-end": !isMobile })}
+    <>
+      <ModalMenu id="addProductMenu" fade _static keyboard>
+        <ModalMenu.Dialog scrollable size="lg">
+          <ModalMenu.Content>
+            <ModalMenu.Header>
+              <ModalMenu.Title>
+                {productInEdit ? "Edit Product" : "Add New Product"}
+              </ModalMenu.Title>
+              {!productInEdit && (
+                <ModalMenu.DismissButton>Dismiss</ModalMenu.DismissButton>
+              )}
+            </ModalMenu.Header>
+
+            <ModalMenu.Body>
+              <form
+                id="addProductForm"
+                className="needs-validation px-1 add-product-form"
+                noValidate
               >
-                {!isMobile && (
-                  <h6 className="mb-3">Enter Product Information</h6>
-                )}
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className="row g-3 mb-3">
-                  <div className="col">
-                    <label htmlFor="productName" className="form-label">
-                      Name
-                    </label>
-                    <input
-                      id="productName"
-                      type="text"
-                      name="name"
-                      className="form-control form-control-sm"
-                      placeholder="Facial Cream"
-                      value={product.name}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                      pattern="[a-zA-Z0-9- ]+"
-                    />
-                    <div className="invalid-feedback">Cannot be empty.</div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                  <div className="col-sm-5">
-                    <label htmlFor="productCode" className="form-label">
-                      S/N
-                    </label>
-                    <div className="input-group">
-                      <input
-                        id="productCode"
-                        type="text"
-                        name="code"
-                        className="form-control form-control-sm"
-                        placeholder={codePlaceholder}
-                        value={product.code}
-                        onChange={handleChange}
-                        disabled={disable.inputs || disable.inputCode}
-                        required
-                        pattern="[0-9]+"
-                      />
-                      {disable.inputCode ? null : (
-                        <button
-                          id="qrBtn"
-                          type="button"
-                          className="btn btn-sm btn-outline-secondary"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addProductScannerModal"
-                          disabled
-                          aria-label="Scan QR code"
-                        >
-                          <i className="fa fa-qrcode"></i>
-                        </button>
-                      )}
-                      <div className="invalid-feedback">
-                        Invalid serial number.
-                      </div>
-                      <div className="valid-feedback">Looks good!</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className="row g-3 mb-3">
-                  <div className="col-sm-6">
-                    <label htmlFor="productBrand" className="form-label">
-                      Brand
-                    </label>
-                    <input
-                      className="form-control form-control-sm"
-                      list="brandList"
-                      id="productBrand"
-                      name="brand"
-                      placeholder={brands[0]}
-                      value={product.brand}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-                    <datalist id="brandList">
-                      {brands.map((brand) => (
-                        <option key={brand} value={brand} />
-                      ))}
-                    </datalist>
-                    <div className="invalid-feedback">
-                      Please select a valid brand.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                  <div className="col-sm-6">
-                    <label htmlFor="productClass" className="form-label">
-                      Class
-                    </label>
-                    <input
-                      className="form-control form-control-sm text-capitalize"
-                      list="productClassList"
-                      id="productClass"
-                      name="class"
-                      placeholder={classes[0]}
-                      value={product._class}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-                    <datalist id="productClassList">
-                      {classes.map((_class) => (
-                        <option key={_class} value={_class.capitalize()} />
-                      ))}
-                    </datalist>
-                    <div className="invalid-feedback">
-                      Please select a valid class.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </div>
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className="row g-3 mb-3">
-                  <div className="col-sm-6">
-                    <label htmlFor="productUnit" className="form-label">
-                      Unit
-                    </label>
-                    <input
-                      className="form-control form-control-sm text-capitalize"
-                      list="unitList"
-                      id="productUnit"
-                      name="unit"
-                      placeholder={units[0]}
-                      value={product.unit}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-
-                    <datalist id="unitList">
-                      {units.map((unit) => (
-                        <option key={unit} value={unit.capitalize()} />
-                      ))}
-                    </datalist>
-                    <div className="invalid-feedback">
-                      Please select a valid unit.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                  <div className="col-sm-6">
-                    <label htmlFor="productCategory" className="form-label">
-                      Category
-                    </label>
-                    <input
-                      className="form-control form-control-sm text-capitalize"
-                      list="categoryList"
-                      id="productCategory"
-                      name="category"
-                      placeholder={categories[0]}
-                      value={product.category}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-                    <datalist id="categoryList">
-                      {categories.map((category) => (
-                        <option key={category} value={category.capitalize()} />
-                      ))}
-                    </datalist>
-                    <div className="invalid-feedback">
-                      Please select a valid category.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </div>
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className="row g-3 mb-3">
-                  <div className="col-12">
-                    <label htmlFor="productDesc" className="form-label">
-                      Description (Optional)
-                    </label>
-                    <textarea
-                      id="productDesc"
-                      name="description"
-                      className="form-control form-control-sm"
-                      placeholder="Any description of the product here..."
-                      style={{ height: "75px" }}
-                      value={product.description}
-                      onChange={handleChange}
-                    ></textarea>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </div>
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className="row g-3 mb-3">
-                  <div className="col">
-                    <label htmlFor="productImages" className="form-label">
-                      Images{" "}
-                      <i
-                        className="fas fa-question-circle text-muted"
-                        data-bs-toggle="tooltip"
-                        title="Valid image links only, no spaces. Multiple links may be separated by commas."
-                        onClick={(e) => e.preventDefault()}
-                      />
-                    </label>
-                    <input
-                      id="productImages"
-                      type="url"
-                      name="image"
-                      className="form-control form-control-sm"
-                      placeholder="https://..."
-                      value={product.images}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      pattern="(https?|ftp|image)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$"
-                    />
-                    <div className="invalid-feedback">Invalid image link.</div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </div>
-
-                {/* -------------------------- Row -------------------------- */}
-                <div className={classNames("row g-3", { "mb-3": isMobile })}>
-                  <div className="form-label">Image Previews</div>
-                  <div className="col d-flex justify-content-center flex-wrap mt-0">
-                    {product.images.length !== 0 &&
-                    product.images[0]?.length ? (
-                      <div
-                        id="addProductImages"
-                        className="carousel slide"
-                        data-bs-ride="carousel"
-                      >
-                        <div className="carousel-indicators">
-                          {product.images.map((_, i) => (
-                            <button
-                              key={customNanoid()}
-                              type="button"
-                              className={classNames({
-                                active: i === 0,
-                              })}
-                              data-bs-target="#addProductImages"
-                              data-bs-slide-to={i}
-                              aria-current={i}
-                            ></button>
-                          ))}
-                        </div>
-                        <div className="carousel-inner">
-                          {product.images.map((url, i) => (
-                            <div
-                              key={customNanoid()}
-                              className={classNames("carousel-item", {
-                                active: i === 0,
-                              })}
-                            >
-                              <img src={url} className="d-block w-100" alt="" />
-                            </div>
-                          ))}
-                        </div>
-                        <button
-                          className="carousel-control-prev"
-                          type="button"
-                          data-bs-target="#addProductImages"
-                          data-bs-slide="prev"
-                        >
-                          <span
-                            className="carousel-control-prev-icon"
-                            aria-hidden="true"
-                          />
-                          <span className="visually-hidden">Previous</span>
-                        </button>
-                        <button
-                          className="carousel-control-next"
-                          type="button"
-                          data-bs-target="#addProductImages"
-                          data-bs-slide="next"
-                        >
-                          <span
-                            className="carousel-control-next-icon"
-                            aria-hidden="true"
-                          />
-                          <span className="visually-hidden">Next</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="text-muted mt-0 p-3">
-                        No valid image links provided.
-                      </div>
+                <Container.Row>
+                  <Container.Col
+                    modifier="sm"
+                    columns="6"
+                    className={classNames({ "border-end": !isMobile })}
+                  >
+                    {!isMobile && (
+                      <h6 className="mb-3">Enter Product Information</h6>
                     )}
+
+                    <Container.Row>
+                      <Container.Col className="mb-3">
+                        <label htmlFor="productName" className="form-label">
+                          Name
+                        </label>
+                        <input
+                          id="productName"
+                          type="text"
+                          name="name"
+                          className="form-control"
+                          placeholder="Facial Cream"
+                          value={product.name}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          required
+                          pattern="[a-zA-Z0-9- ]+"
+                        />
+                        <div className="invalid-feedback">
+                          Invalid product name.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+
+                      <Container.Col modifier="sm" columns="5" className="mb-3">
+                        <label htmlFor="productCode" className="form-label">
+                          S/N
+                        </label>
+                        <div className="input-group">
+                          <input
+                            id="productCode"
+                            type="text"
+                            name="code"
+                            className="form-control"
+                            placeholder={codePlaceholder}
+                            value={product.code}
+                            onChange={handleChange}
+                            disabled={disable.inputs || disable.inputCode}
+                            required
+                            pattern="[0-9]+"
+                          />
+                          {disable.inputCode ? null : (
+                            <button
+                              id="qrBtn"
+                              type="button"
+                              className="btn btn-outline-secondary"
+                              data-bs-toggle="modal"
+                              data-bs-target="#addProductScannerModal"
+                              disabled
+                              aria-label="Scan QR code"
+                            >
+                              <i className="fa fa-qrcode"></i>
+                            </button>
+                          )}
+                          <div className="invalid-feedback">
+                            Invalid serial number.
+                          </div>
+                          <div className="valid-feedback">Looks good!</div>
+                        </div>
+                      </Container.Col>
+                    </Container.Row>
+
+                    <Container.Row>
+                      <Container.Col modifier="sm" columns="6" className="mb-3">
+                        <label htmlFor="productBrand" className="form-label">
+                          Brand
+                        </label>
+                        <a
+                          href="#addBrandMenu"
+                          role="button"
+                          data-bs-target="#addBrandMenu"
+                          data-bs-toggle="modal"
+                          className="text-decoration-none float-end fw-light"
+                          style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
+                        >
+                          Add brand
+                        </a>
+                        <select
+                          id="productBrand"
+                          name="brand"
+                          className="form-select"
+                          value={product.brand}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          required
+                        >
+                          <option value="">Select Brand</option>
+                          {brands.map((brand) => (
+                            <option key={brand._id} value={brand._id}>
+                              {brand.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="invalid-feedback">
+                          Please select a valid brand.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+
+                      <Container.Col modifier="sm" columns="6" className="mb-3">
+                        <label htmlFor="productClass" className="form-label">
+                          Class
+                        </label>
+                        <input
+                          className="form-control text-capitalize"
+                          list="productClassList"
+                          id="productClass"
+                          name="class"
+                          placeholder={classes[0]}
+                          value={product._class}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          required
+                        />
+                        <datalist id="productClassList">
+                          {classes.map((_class) => (
+                            <option key={_class} value={_class.capitalize()} />
+                          ))}
+                        </datalist>
+                        <div className="invalid-feedback">
+                          Please select a valid class.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+                    </Container.Row>
+
+                    <Container.Row>
+                      <Container.Col modifier="sm" columns="6" className="mb-3">
+                        <label htmlFor="productUnit" className="form-label">
+                          Unit
+                        </label>
+                        <input
+                          className="form-control text-capitalize"
+                          list="unitList"
+                          id="productUnit"
+                          name="unit"
+                          placeholder={units[0]}
+                          value={product.unit}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          required
+                        />
+
+                        <datalist id="unitList">
+                          {units.map((unit) => (
+                            <option key={unit} value={unit.capitalize()} />
+                          ))}
+                        </datalist>
+                        <div className="invalid-feedback">
+                          Please select a valid unit.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+
+                      <Container.Col modifier="sm" columns="6" className="mb-3">
+                        <label htmlFor="productCategory" className="form-label">
+                          Category
+                        </label>
+                        <input
+                          className="form-control text-capitalize"
+                          list="categoryList"
+                          id="productCategory"
+                          name="category"
+                          placeholder={categories[0]}
+                          value={product.category}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          required
+                        />
+                        <datalist id="categoryList">
+                          {categories.map((category) => (
+                            <option
+                              key={category}
+                              value={category.capitalize()}
+                            />
+                          ))}
+                        </datalist>
+                        <div className="invalid-feedback">
+                          Please select a valid category.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+                    </Container.Row>
+
+                    <Container.Row className="mb-3">
+                      <Container.Col columns="12">
+                        <label htmlFor="productDesc" className="form-label">
+                          Description (Optional)
+                        </label>
+                        <textarea
+                          id="productDesc"
+                          name="description"
+                          className="form-control"
+                          placeholder="Any description of the product here..."
+                          style={{ height: "75px" }}
+                          value={product.description}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                        ></textarea>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+                    </Container.Row>
+
+                    <Container.Row className="mb-3">
+                      <Container.Col>
+                        <label htmlFor="productImages" className="form-label">
+                          Images{" "}
+                          <i
+                            className="fas fa-question-circle text-muted"
+                            data-bs-toggle="tooltip"
+                            title="Valid image links only, no spaces. Multiple links may be separated by commas."
+                            onClick={(e) => e.preventDefault()}
+                          />
+                        </label>
+                        <input
+                          id="productImages"
+                          type="url"
+                          name="image"
+                          className="form-control"
+                          placeholder="https://..."
+                          value={product.images}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          pattern="(https?|ftp|image)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$"
+                        />
+                        <div className="invalid-feedback">
+                          Invalid image link.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </Container.Col>
+                    </Container.Row>
+
+                    <Container.Row className={classNames({ "mb-4": isMobile })}>
+                      <div className="form-label">Image Previews</div>
+                      <Container.Col className="d-flex justify-content-center flex-wrap mt-0">
+                        {product.images.length !== 0 &&
+                        product.images[0]?.length ? (
+                          <div
+                            id="addProductImages"
+                            className="carousel slide"
+                            data-bs-ride="carousel"
+                          >
+                            <div className="carousel-indicators">
+                              {product.images.map((_, i) => (
+                                <button
+                                  key={customNanoid()}
+                                  type="button"
+                                  className={classNames({
+                                    active: i === 0,
+                                  })}
+                                  data-bs-target="#addProductImages"
+                                  data-bs-slide-to={i}
+                                  aria-current={i}
+                                ></button>
+                              ))}
+                            </div>
+                            <div className="carousel-inner">
+                              {product.images.map((url, i) => (
+                                <div
+                                  key={customNanoid()}
+                                  className={classNames("carousel-item", {
+                                    active: i === 0,
+                                  })}
+                                >
+                                  <img
+                                    src={url}
+                                    className="d-block w-100"
+                                    alt=""
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              className="carousel-control-prev"
+                              type="button"
+                              data-bs-target="#addProductImages"
+                              data-bs-slide="prev"
+                            >
+                              <span
+                                className="carousel-control-prev-icon"
+                                aria-hidden="true"
+                              />
+                              <span className="visually-hidden">Previous</span>
+                            </button>
+                            <button
+                              className="carousel-control-next"
+                              type="button"
+                              data-bs-target="#addProductImages"
+                              data-bs-slide="next"
+                            >
+                              <span
+                                className="carousel-control-next-icon"
+                                aria-hidden="true"
+                              />
+                              <span className="visually-hidden">Next</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-muted mt-0 p-3">
+                            No valid image links provided.
+                          </div>
+                        )}
+                      </Container.Col>
+                    </Container.Row>
+                  </Container.Col>
+
+                  {/* ------------------------------ Variants ------------------------------ */}
+                  <div
+                    className={classNames("col-sm-6 ps-2", {
+                      "mt-0": isMobile,
+                    })}
+                  >
+                    <AddVariantForm
+                      disable={disable}
+                      setDisable={setDisable}
+                      variants={variants}
+                      setVariants={setVariants}
+                    />
                   </div>
-                </div>
-              </div>
+                </Container.Row>
+              </form>
+            </ModalMenu.Body>
 
-              {/* ------------------------------ Variants ------------------------------ */}
-              <div
-                className={classNames("col-sm-6 ps-2", { "mt-0": isMobile })}
+            <ModalMenu.Footer>
+              <label
+                htmlFor="csvImportBtn"
+                className="bt-file-upload btn btn-primary ms-2 disabled"
               >
-                <AddVariantForm
-                  disable={disable}
-                  setDisable={setDisable}
-                  variants={variants}
-                  setVariants={setVariants}
-                />
-              </div>
-            </div>
-          </form>
-        </div>
-      }
-      footer={
-        <>
-          <label
-            htmlFor="csvImportBtn"
-            className="bt-file-upload btn btn-primary ms-2 disabled"
-          >
-            Import CSV
-          </label>
-          <input
-            id="csvImportBtn"
-            type="file"
-            accept=".csv"
-            onChange={onImportCSV}
-          />
+                Import CSV
+              </label>
+              <input
+                id="csvImportBtn"
+                type="file"
+                accept=".csv"
+                onChange={onImportCSV}
+              />
 
-          <button
-            id="resetBtn"
-            type="reset"
-            className="btn btn-secondary ms-2"
-            disabled={disable.resetBtn}
-            onClick={resetToDefaults}
-          >
-            {text.resetBtn}
-          </button>
-          <button
-            id="submitBtn"
-            type="submit"
-            className="btn btn-success ms-2"
-            role="status"
-            onClick={handleSubmit}
-            disabled={disable.submitBtn}
-          >
-            {saveStatus !== Constants.IDLE ||
-            modifyStatus !== Constants.IDLE ? (
-              <Spinner addClass="spinner-border-sm">{text.saveBtn}</Spinner>
-            ) : (
-              text.saveBtn
-            )}
-          </button>
-        </>
-      }
-    />
+              <button
+                id="resetBtn"
+                type="reset"
+                className="btn btn-secondary ms-2"
+                disabled={disable.resetBtn}
+                onClick={resetToDefaults}
+              >
+                {text.resetBtn}
+              </button>
+
+              <button
+                id="submitBtn"
+                type="submit"
+                className="btn btn-success ms-2"
+                role="status"
+                onClick={handleSubmit}
+                disabled={disable.submitBtn}
+              >
+                {saveStatus !== Constants.IDLE ||
+                modifyStatus !== Constants.IDLE ? (
+                  <Spinner addClass="spinner-border-sm">{text.saveBtn}</Spinner>
+                ) : (
+                  text.saveBtn
+                )}
+              </button>
+            </ModalMenu.Footer>
+          </ModalMenu.Content>
+        </ModalMenu.Dialog>
+      </ModalMenu>
+    </>
   );
 }
 

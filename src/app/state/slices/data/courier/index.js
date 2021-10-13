@@ -86,7 +86,7 @@ const slice = createSlice({
         state.data = action.payload;
       })
       .addCase(fetchCouriers.rejected, (state, action) => {
-        state.status.fetch = Constants.SUCCESS;
+        state.status.fetch = Constants.FAILED;
 
         state.error = action.error.message;
       });

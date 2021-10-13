@@ -38,7 +38,7 @@ function UnreadNotification({
               New
             </span>
           </p>
-          <p className={"me-1 mb-1 " + toastStyle(type)}>{type}</p>
+          <p className={"me-1 mb-1 ps-3 " + toastStyle(type)}>{type}</p>
         </div>
         <p
           className={

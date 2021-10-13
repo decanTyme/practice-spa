@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { parseISO } from "date-fns";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,6 +7,8 @@ import {
   moveStock,
   stockMarkInventoryChecked,
 } from "../../../../../../app/state/slices/data/product/async-thunks";
+import Card from "../../../../common/Card";
+import Container from "../../../../common/Container";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 
 const INIT_STATE_LOADING = {
@@ -44,7 +47,7 @@ function StockMenu({ type, stockList }) {
     try {
       const moveToType = e.target.dataset.move;
       const previousType = e.target.dataset.typePrev;
-      const isInventoryChecked = e.target.checked;
+      const isInventoryChecked = JSON.parse(e.target.dataset.checked || false);
       const batchNo = e.target.dataset.batch;
 
       if (!isInventoryChecked && moveToType === "sold") {
@@ -75,221 +78,234 @@ function StockMenu({ type, stockList }) {
   };
 
   return (
-    <ModalMenu
-      id={`${type}StockMenu`}
-      fade={true}
-      scrollable={true}
-      title={`All ${type.capitalize()} Stocks`}
-      headerBtn={
-        <button
-          className="btn py-1 px-2"
-          data-bs-target={`#${type}AddStockMenu`}
-          data-bs-toggle="modal"
-          data-bs-dismiss="modal"
-        >
-          Add Stock
-        </button>
-      }
-      body={
-        <div style={{ fontSize: "0.925rem" }}>
-          {stockList && stockList.length !== 0 ? (
-            stockList.map(
-              (
-                {
-                  _id,
-                  _type,
-                  batch,
-                  checked,
-                  addedBy,
-                  description,
-                  quantity,
-                  pricePerUnit,
-                  purchasedOn,
-                  arrivedOn,
-                  manufacturedOn,
-                  courier,
-                  expiry,
-                },
-                i
-              ) => (
-                <div className={"card " + (i >= 1 && "mt-3")} key={batch}>
-                  <a
-                    href={`#_${_id}`}
-                    className="card-body text-decoration-none text-black"
-                    data-bs-toggle="collapse"
-                    data-bs-target={`#_${_id}`}
-                    aria-expanded="false"
-                    aria-controls={`_${_id}`}
-                  >
-                    <div className="card-title">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <h6 className="mb-1">Batch No.: {batch}</h6>
-                        <p
-                          className="fst-italic me-1 mb-1 text-success"
-                          style={{ fontSize: "0.875rem" }}
-                        >
-                          #{_id.truncate(12)}
-                        </p>
-                        {!checked && type !== "sold" && (
-                          <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-                            <span className="visually-hidden">New stock</span>
-                          </span>
+    <ModalMenu id={`${type}StockMenu`} fade>
+      <ModalMenu.Dialog scrollable>
+        <ModalMenu.Content>
+          <ModalMenu.Header>
+            <ModalMenu.Title>{`All ${type.capitalize()} Stocks`}</ModalMenu.Title>
+            <button
+              className="btn py-1 px-2"
+              data-bs-target={`#${type}AddStockMenu`}
+              data-bs-toggle="modal"
+              data-bs-dismiss="modal"
+            >
+              Add Stock
+            </button>
+          </ModalMenu.Header>
+          <ModalMenu.Body>
+            <div style={{ fontSize: "0.925rem" }}>
+              {stockList && stockList.length !== 0 ? (
+                stockList.map(
+                  (
+                    {
+                      _id,
+                      _type,
+                      batch,
+                      checked,
+                      addedBy,
+                      description,
+                      quantity,
+                      pricePerUnit,
+                      purchasedOn,
+                      arrivedOn,
+                      manufacturedOn,
+                      courier,
+                      expiry,
+                    },
+                    i
+                  ) => (
+                    <Card
+                      key={batch}
+                      className={classNames({ "mt-3": i >= 1 })}
+                    >
+                      <a
+                        href={`#_${_id}`}
+                        className="card-body text-decoration-none text-black"
+                        data-bs-toggle="collapse"
+                        data-bs-target={`#_${_id}`}
+                        aria-expanded="false"
+                        aria-controls={`_${_id}`}
+                      >
+                        <Card.Title>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <h6 className="mb-0">Batch No.: {batch}</h6>
+                            <p
+                              className="fst-italic fw-normal me-1 mb-0 text-success"
+                              style={{ fontSize: "0.875rem" }}
+                            >
+                              #{_id.truncate(10)}
+                            </p>
+                            {checked ? null : (
+                              <span className="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+                                <span className="visually-hidden">
+                                  New stock
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </Card.Title>
+                        <Card.SubTitle>{`Added by: ${addedBy.user.firstname} ${addedBy.user.lastname}`}</Card.SubTitle>
+
+                        <Card.Text>{description}</Card.Text>
+                      </a>
+
+                      <Card.ListGroup id={`_${_id}`} flush className="collapse">
+                        <Card.ListGroupItem>
+                          <Container.Row>
+                            <Container.Col
+                              columns="6"
+                              className="d-inline-flex justify-content-between pe-3"
+                            >
+                              <div>Quantity</div>
+                              <div className="fw-bolder">
+                                {quantity.commaSplice()}
+                              </div>
+                            </Container.Col>
+
+                            <Container.Col
+                              columns="6"
+                              className="d-inline-flex justify-content-between"
+                            >
+                              <div>Price Per Unit</div>
+                              <div className="fw-bolder">
+                                Php{pricePerUnit.commaSplice()}
+                              </div>
+                            </Container.Col>
+                          </Container.Row>
+                        </Card.ListGroupItem>
+
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Total Incured</div>
+                          <div className="fw-bold text-danger">
+                            Php{(quantity * pricePerUnit).commaSplice()}
+                          </div>
+                        </Card.ListGroupItem>
+
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Date of Purchase</div>
+                          <div>{parseISO(purchasedOn).toDateString()}</div>
+                        </Card.ListGroupItem>
+
+                        {type === "warehouse" && (
+                          <Card.ListGroupItem className="d-inline-flex justify-content-between"></Card.ListGroupItem>
                         )}
-                      </div>
-                      <p className="card-subtitle text-muted mb-2">
-                        {`Added by: ${addedBy.firstname} ${addedBy.lastname}`}
-                      </p>
-                    </div>
-                    <p className="card-text">{description}</p>
-                  </a>
-                  <ul
-                    id={`_${_id}`}
-                    className="list-group list-group-flush collapse"
-                  >
-                    <li className="list-group-item">
-                      <div className="row">
-                        <div className="col-6 d-inline-flex justify-content-between pe-3">
-                          <div>Quantity</div>
-                          <div className="fw-bolder">
-                            {quantity.commaSplice()}
-                          </div>
-                        </div>
-                        <div className="col-6 d-inline-flex justify-content-between">
-                          <div>Price Per Unit</div>
-                          <div className="fw-bolder">
-                            Php{pricePerUnit.commaSplice()}
-                          </div>
-                        </div>
-                      </div>
-                    </li>
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Total Incured</div>
-                      <div className="fw-bold text-danger">
-                        Php{(quantity * pricePerUnit).commaSplice()}
-                      </div>
-                    </li>
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Date of Arrival</div>
+                          <div>{parseISO(arrivedOn).toDateString()}</div>
+                        </Card.ListGroupItem>
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Date of Purchase</div>
-                      <div>{parseISO(purchasedOn).toDateString()}</div>
-                    </li>
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Manufacture Date</div>
+                          <div>{parseISO(manufacturedOn).toDateString()}</div>
+                        </Card.ListGroupItem>
 
-                    {type === "warehouse" && (
-                      <li className="list-group-item d-inline-flex justify-content-between">
-                        <div>Date of Arrival</div>
-                        <div>{parseISO(arrivedOn).toDateString()}</div>
-                      </li>
-                    )}
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Indicated Expiry</div>
+                          <div>{parseISO(expiry).toDateString()}</div>
+                        </Card.ListGroupItem>
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Manufacture Date</div>
-                      <div>{parseISO(manufacturedOn).toDateString()}</div>
-                    </li>
+                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                          <div>Courier</div>
+                          <div>{courier.name}</div>
+                        </Card.ListGroupItem>
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Indicated Expiry</div>
-                      <div>{parseISO(expiry).toDateString()}</div>
-                    </li>
+                        {type === "warehouse" && (
+                          <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                            <div>
+                              Mark Inventory {checked ? "Unchecked" : "Checked"}
+                            </div>
+                            <div className="form-check m-0 d-inline-flex  align-items-center">
+                              {loading.check && (
+                                <span
+                                  className="spinner-border spinner-border-sm"
+                                  role="status"
+                                  aria-hidden={false}
+                                ></span>
+                              )}
+                              <input
+                                id="inventoryCheckbox"
+                                className="form-check-input m-0 ms-2"
+                                type="checkbox"
+                                checked={checked}
+                                onChange={handleMark}
+                                data-id={_id}
+                                disabled={!access || loading.check}
+                              />
+                            </div>
+                          </Card.ListGroupItem>
+                        )}
 
-                    <li className="list-group-item d-inline-flex justify-content-between">
-                      <div>Courier</div>
-                      <div>{courier.name}</div>
-                    </li>
-
-                    {type === "warehouse" && (
-                      <li className="list-group-item d-inline-flex justify-content-between">
-                        <div>
-                          Mark Inventory {checked ? "Unchecked" : "Checked"}
-                        </div>
-                        <div className="form-check m-0 d-inline-flex  align-items-center">
-                          {loading.check && (
-                            <span
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                              aria-hidden={false}
-                            ></span>
-                          )}
-                          <input
-                            id="inventoryCheckbox"
-                            className="form-check-input m-0 ms-2"
-                            type="checkbox"
-                            checked={checked}
-                            onChange={handleMark}
-                            data-id={_id}
-                            disabled={!access || loading.check}
-                          />
-                        </div>
-                      </li>
-                    )}
-
-                    {type !== "sold" && (
-                      <li className="list-group-item d-inline-flex justify-content-between align-items-center p-0">
-                        <div className="py-2 px-3">Move</div>
-                        <div
-                          className="btn-group d-inline-flex align-items-center"
-                          role="group"
-                          aria-label="Product options"
-                        >
-                          {loading.move && (
-                            <span
-                              className="spinner-border spinner-border-sm me-3"
-                              role="status"
-                              aria-hidden={false}
-                            ></span>
-                          )}
-
-                          {type === "inbound" && (
-                            <button
-                              type="button"
-                              className="btn btn-light border-start border-end rounded-0 px-3 py-2"
-                              data-id={_id}
-                              data-move="warehouse"
-                              data-type-prev={_type}
-                              onClick={handleMove}
+                        {type !== "sold" && (
+                          <Card.ListGroupItem className="d-inline-flex justify-content-between align-items-center p-0">
+                            <div className="py-2 px-3">Move</div>
+                            <div
+                              className="btn-group d-inline-flex align-items-center"
+                              role="group"
+                              aria-label="Product options"
                             >
-                              Warehouse
-                            </button>
-                          )}
+                              {loading.move && (
+                                <span
+                                  className="spinner-border spinner-border-sm me-3"
+                                  role="status"
+                                  aria-hidden={false}
+                                ></span>
+                              )}
 
-                          {type === "warehouse" && (
-                            <button
-                              type="button"
-                              className="btn btn-light border-start rounded-0 px-3 py-2"
-                              data-id={_id}
-                              data-batch={batch}
-                              data-move="sold"
-                              data-move-checked={checked}
-                              data-type-prev={_type}
-                              onClick={handleMove}
-                            >
-                              Sold
-                            </button>
-                          )}
-                        </div>
-                      </li>
-                    )}
-                  </ul>
+                              {type === "inbound" && (
+                                <button
+                                  type="button"
+                                  className="btn btn-light border-start border-end rounded-0 px-3 py-2"
+                                  data-id={_id}
+                                  data-move="warehouse"
+                                  data-type-prev={_type}
+                                  onClick={handleMove}
+                                >
+                                  Warehouse
+                                </button>
+                              )}
+
+                              {type === "warehouse" && (
+                                <button
+                                  type="button"
+                                  className="btn btn-light border-start rounded-0 px-3 py-2"
+                                  data-id={_id}
+                                  data-batch={batch}
+                                  data-move="sold"
+                                  data-checked={checked}
+                                  data-type-prev={_type}
+                                  onClick={handleMove}
+                                >
+                                  Sold
+                                </button>
+                              )}
+                            </div>
+                          </Card.ListGroupItem>
+                        )}
+                      </Card.ListGroup>
+                    </Card>
+                  )
+                )
+              ) : (
+                <div className="text-center text-muted">
+                  No stocks currently available.
                 </div>
-              )
-            )
-          ) : (
-            <div className="text-center text-muted">
-              No stocks currently available.
+              )}
             </div>
-          )}
-        </div>
-      }
-      dismissBtn={
-        <button
-          type="button"
-          className="btn btn-primary"
-          data-bs-dismiss="modal"
-        >
-          Dismiss
-        </button>
-      }
-    />
+          </ModalMenu.Body>
+
+          <ModalMenu.Footer>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Dismiss
+            </button>
+          </ModalMenu.Footer>
+        </ModalMenu.Content>
+      </ModalMenu.Dialog>
+    </ModalMenu>
   );
 }
 

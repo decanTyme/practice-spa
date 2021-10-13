@@ -19,59 +19,65 @@ function NotificationsMenu() {
   const hasHistory = notifyRead.length !== 0;
 
   return (
-    <ModalMenu
-      id="notificationsMenu"
-      fade={true}
-      scrollable={true}
-      title="Recent Notifications"
-      themeMode={Themes[theme]}
-      body={
-        hasUnread || hasHistory ? (
-          <>
-            <h6>Unread</h6>
-            {hasUnread ? (
-              notifyUnread.map((data, i) => (
-                <UnreadNotification
-                  key={data.id}
-                  unfilteredLength={notifyUnread.length + notifyRead.length}
-                  data={data}
-                  index={i}
-                />
-              ))
+    <ModalMenu id="notificationsMenu" fade themeMode={Themes[theme]}>
+      <ModalMenu.Dialog scrollable>
+        <ModalMenu.Content>
+          <ModalMenu.Header>
+            <ModalMenu.Title>Recent Notifications</ModalMenu.Title>
+          </ModalMenu.Header>
+          <ModalMenu.Body>
+            {hasUnread || hasHistory ? (
+              <>
+                <h6>Unread</h6>
+                {hasUnread ? (
+                  notifyUnread.map((data, i) => (
+                    <UnreadNotification
+                      key={data.id}
+                      unfilteredLength={notifyUnread.length + notifyRead.length}
+                      data={data}
+                      index={i}
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-muted m-2">
+                    No new notifications for now.
+                  </p>
+                )}
+
+                <h6 className="mt-3">History</h6>
+                {hasHistory ? (
+                  notifyRead.map((data, i) => (
+                    <OldNotification
+                      key={data.id}
+                      unfilteredLength={notifyUnread.length + notifyRead.length}
+                      data={data}
+                      index={i}
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-muted m-2">
+                    That's all there is.
+                  </p>
+                )}
+              </>
             ) : (
               <p className="text-center text-muted m-2">
-                No new notifications for now.
+                Nothing to show here...
               </p>
             )}
-
-            <h6 className="mt-3">History</h6>
-            {hasHistory ? (
-              notifyRead.map((data, i) => (
-                <OldNotification
-                  key={data.id}
-                  unfilteredLength={notifyUnread.length + notifyRead.length}
-                  data={data}
-                  index={i}
-                />
-              ))
-            ) : (
-              <p className="text-center text-muted m-2">That's all there is.</p>
-            )}
-          </>
-        ) : (
-          <p className="text-center text-muted m-2">Nothing to show here...</p>
-        )
-      }
-      dismissBtn={
-        <button
-          type="button"
-          className="btn btn-primary"
-          data-bs-dismiss="modal"
-        >
-          Dismiss
-        </button>
-      }
-    />
+          </ModalMenu.Body>
+          <ModalMenu.Footer>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Dismiss
+            </button>
+          </ModalMenu.Footer>
+        </ModalMenu.Content>
+      </ModalMenu.Dialog>
+    </ModalMenu>
   );
 }
 

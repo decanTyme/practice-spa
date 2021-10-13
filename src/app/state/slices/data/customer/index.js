@@ -9,7 +9,7 @@ const http = HttpService();
 export const fetchCustomers = createAsyncThunk(
   "customers/fetch",
   async (_, { dispatch }) => {
-    const response = await http.onDataFetch("customers", { populated: true });
+    const response = await http.onDataFetch("customers");
 
     if (response.status !== 200) {
       dispatch(setStale(true));
@@ -89,7 +89,7 @@ const slice = createSlice({
         }));
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
-        state.status.fetch = Constants.SUCCESS;
+        state.status.fetch = Constants.FAILED;
 
         state.error = action.error.message;
       });

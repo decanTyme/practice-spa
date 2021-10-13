@@ -50,6 +50,7 @@ import {
   viewProductDetail,
 } from "../../../../../app/state/slices/data/product";
 import ProductOptions from "./components/ProductOptionsCard";
+import Container from "../../../common/Container";
 
 function ProductsWrapper() {
   const location = useLocation();
@@ -198,8 +199,8 @@ function ProductsWrapper() {
 
   return (
     <Wrapper pageTitle="Products">
-      <section className="row g-3">
-        <div className="col-sm-9">
+      <Container.Row section g="3">
+        <Container.Col modifier="sm" columns="9">
           <div className="product-table-wrapper">
             <ErrorBoundary>
               <PaginationTable
@@ -224,16 +225,22 @@ function ProductsWrapper() {
               />
             </ErrorBoundary>
           </div>
+
           <div className="mt-3">
             {productDetails ? (
               <ErrorBoundary>
                 <ProductDetailsCard product={productDetails} />
               </ErrorBoundary>
             ) : (
-              <Card title="Select a product to view" />
+              <Card>
+                <Card.Body>
+                  <Card.Title>Select a product to view</Card.Title>
+                </Card.Body>
+              </Card>
             )}
           </div>
-          {importedCSV ? (
+
+          {importedCSV && (
             <Card title="Imported CSV (Preview)" className="mt-3">
               <table></table>
               {importedCSV.map((data) => (
@@ -250,9 +257,10 @@ function ProductsWrapper() {
                 </div>
               ))}
             </Card>
-          ) : null}
-        </div>
-        <aside className="col-sm-3">
+          )}
+        </Container.Col>
+
+        <Container.Col aside modifier="sm" columns="3">
           <ErrorBoundary>
             <FilterOptionsCard
               getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
@@ -277,8 +285,8 @@ function ProductsWrapper() {
               <ProductOptions />
             </ErrorBoundary>
           </div>
-        </aside>
-      </section>
+        </Container.Col>
+      </Container.Row>
     </Wrapper>
   );
 }

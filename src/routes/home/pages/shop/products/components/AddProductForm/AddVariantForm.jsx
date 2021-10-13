@@ -3,7 +3,7 @@ import { isMobile } from "react-device-detect";
 import { getInitVariantVal } from "./init";
 
 function AddVariantForm({ disable, setDisable, variants, setVariants }) {
-  const handleVariantChange = (variantIndex, priceIndex) => (e) => {
+  const handleChange = (variantIndex, priceIndex) => (e) => {
     setDisable({
       ...disable,
       inputs: false,
@@ -22,7 +22,6 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
       value: name === "variantValue" ? value : newVariants[variantIndex].value,
       description:
         name === "description" ? value : newVariants[variantIndex].description,
-      image: name === "image" ? value : newVariants[variantIndex].image,
       prices: newVariants[variantIndex].prices,
     };
 
@@ -77,6 +76,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
               e.preventDefault();
               setVariants([...variants, getInitVariantVal()]);
             }}
+            disabled={disable.inputs}
           >
             <i className="fas fa-plus"></i>
           </button>
@@ -108,11 +108,11 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     id="variantName"
                     type="text"
                     name="vname"
-                    className="form-control form-control-sm"
+                    className="form-control"
                     placeholder="Classic"
                     data-id={variantId}
                     value={name}
-                    onChange={handleVariantChange(variantIndex)}
+                    onChange={handleChange(variantIndex)}
                     disabled={disable.inputs}
                     pattern="[a-zA-Z]+"
                     required
@@ -135,11 +135,11 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     id="productName"
                     type="text"
                     name="variantValue"
-                    className="form-control form-control-sm"
+                    className="form-control"
                     placeholder="120ml"
                     data-id={variantId}
                     value={variantValue}
-                    onChange={handleVariantChange(variantIndex)}
+                    onChange={handleChange(variantIndex)}
                     disabled={disable.inputs}
                     pattern="[a-z0-9]+"
                     required
@@ -156,11 +156,12 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                   <textarea
                     id="variantDesc"
                     name="description"
-                    className="form-control form-control-sm"
+                    className="form-control"
                     placeholder="Any description of the variant here..."
                     style={{ height: "75px" }}
                     value={description}
-                    onChange={handleVariantChange(variantIndex)}
+                    onChange={handleChange(variantIndex)}
+                    disabled={disable.inputs}
                   ></textarea>
                   <div className="valid-feedback">Looks good!</div>
                 </div>
@@ -201,7 +202,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                                 className="form-control"
                                 value={priceValue}
                                 min={label === "sale" ? 0 : 1}
-                                onChange={handleVariantChange(
+                                onChange={handleChange(
                                   variantIndex,
                                   priceIndex
                                 )}
@@ -235,6 +236,8 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     setVariants((variants) =>
                       variants.filter((variant) => variant.id !== variantId)
                     );
+
+                    setDisable((disable) => ({ ...disable, submitBtn: false }));
                   }}
                   disabled={variants.length <= 1}
                 >

@@ -42,6 +42,7 @@ import {
 } from "../../../../../app/state/slices/auth/selectors";
 import AddCustomerForm from "./components/forms/AddCustomerForm";
 import Constants from "../../../../../app/state/slices/constants";
+import Container from "../../../common/Container";
 
 function Customers() {
   const dispatch = useDispatch();
@@ -110,7 +111,7 @@ function Customers() {
   const tableActionsDropdown = useCallback(
     ({ row }) => {
       return (
-        <div>
+        <>
           <button
             className="btn btn-primary float-end mx-1"
             onClick={() => viewDataDetails(row.original)}
@@ -129,7 +130,7 @@ function Customers() {
           >
             Quick Delete
           </button>
-        </div>
+        </>
       );
     },
     [viewDataDetails]
@@ -150,8 +151,8 @@ function Customers() {
 
   return (
     <Wrapper pageTitle="Customers">
-      <section className="row g-3">
-        <div className="col-sm-9">
+      <Container.Row section g="3">
+        <Container.Col modifier="sm" columns="9">
           <ErrorBoundary>
             <div className="customer-table-wrapper">
               <PaginationTable
@@ -173,8 +174,8 @@ function Customers() {
               />
             </div>
           </ErrorBoundary>
-        </div>
-        <aside className="col-sm-3">
+        </Container.Col>
+        <Container.Col aside modifier="sm" columns="3">
           {customerDetails ? (
             <ErrorBoundary>
               <CustomerDetailsCard customerDetails={customerDetails} />
@@ -187,27 +188,30 @@ function Customers() {
             </Card>
           )}
 
-          <ErrorBoundary>
-            <FilterOptionsCard
-              className="mt-3"
-              getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
-              preGlobalFilteredRows={preGlobalFilteredRows}
-              setGlobalFilter={setGlobalFilter}
-              globalFilter={globalFilter}
-              toggleColumns={allColumns.filter(
-                ({ id }) =>
-                  id !== "details" &&
-                  id !== "selection" &&
-                  id !== "name" &&
-                  id !== "debt"
-              )}
-              filterColumns={allColumns.filter(({ Filter }) => Filter !== "")}
-            />
-          </ErrorBoundary>
+          <div className="mt-3">
+            <ErrorBoundary>
+              <FilterOptionsCard
+                getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
+                preGlobalFilteredRows={preGlobalFilteredRows}
+                setGlobalFilter={setGlobalFilter}
+                globalFilter={globalFilter}
+                toggleColumns={allColumns.filter(
+                  ({ id }) =>
+                    id !== "details" &&
+                    id !== "selection" &&
+                    id !== "name" &&
+                    id !== "debt"
+                )}
+                filterColumns={allColumns.filter(({ Filter }) => Filter !== "")}
+              />
+            </ErrorBoundary>
+          </div>
 
-          <AddCustomerForm className="mt-3" />
-        </aside>
-      </section>
+          <div className="mt-3">
+            <AddCustomerForm />
+          </div>
+        </Container.Col>
+      </Container.Row>
     </Wrapper>
   );
 }

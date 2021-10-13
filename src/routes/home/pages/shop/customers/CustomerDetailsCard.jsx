@@ -1,4 +1,6 @@
 // import placeholderCustomerImg from "../../../../../assets/placeholder_customer_image.png";
+import Card from "../../../common/Card";
+import Container from "../../../common/Container";
 
 function CustomerDetailsCard({ customerDetails }) {
   const onEditProduct = (e) => {
@@ -19,14 +21,14 @@ function CustomerDetailsCard({ customerDetails }) {
     //   dispatch(removeProduct(props?.product?._id));
   };
   return (
-    <div className="card">
-      <div className="card-body">
+    <Card>
+      <Card.Body>
         <div className="d-flex justify-content-between">
           <div>
             <h5 className="flex-fill mb-1">{`${customerDetails.lastname}, ${customerDetails.firstname}`}</h5>
-            <p className="card-subtitle text-muted text-capitalize">
+            <Card.SubTitle className="text-capitalize">
               {customerDetails._type}
-            </p>
+            </Card.SubTitle>
           </div>
           <div>
             <img
@@ -37,10 +39,10 @@ function CustomerDetailsCard({ customerDetails }) {
             />
           </div>
         </div>
-      </div>
+      </Card.Body>
 
-      <ul className="list-group list-group-flush">
-        <li className="list-group-item d-flex justify-content-between">
+      <Card.ListGroup flush>
+        <Card.ListGroupItem className="d-inline-flex justify-content-between">
           <div>Contact Numbers</div>
           <div>
             {customerDetails.contacts.map(({ _id, telcom, number }) => (
@@ -52,11 +54,12 @@ function CustomerDetailsCard({ customerDetails }) {
               </div>
             ))}
           </div>
-        </li>
-        <li className="list-group-item">
-          <div className="row">
-            <div className="col-3">Address</div>
-            <div className="col">
+        </Card.ListGroupItem>
+
+        <Card.ListGroupItem>
+          <Container.Row>
+            <Container.Col columns="3">Address</Container.Col>
+            <Container.Col>
               {Object.entries(customerDetails.address)
                 .filter(([key]) => key !== "postcode")
                 .map(([label, value]) => (
@@ -65,31 +68,40 @@ function CustomerDetailsCard({ customerDetails }) {
                     <div>{value}</div>
                   </div>
                 ))}
-            </div>
-          </div>
-        </li>
+            </Container.Col>
+          </Container.Row>
+        </Card.ListGroupItem>
 
-        <li className="list-group-item d-inline-flex justify-content-between">
+        <Card.ListGroupItem className="d-inline-flex justify-content-between">
           <div>Postal Code</div>
           <div>{customerDetails.address.postcode}</div>
-        </li>
-        <li className="list-group-item d-inline-flex justify-content-between">
+        </Card.ListGroupItem>
+
+        <Card.ListGroupItem className="d-inline-flex justify-content-between">
           <div>Designation</div>
           <div>{customerDetails.designation || "N/A"}</div>
-        </li>
-        <li className="list-group-item">
-          <div className="row">
-            <div className="col-4 d-inline-flex justify-content-between pe-4">
+        </Card.ListGroupItem>
+
+        <Card.ListGroupItem>
+          <Container.Row>
+            <Container.Col
+              columns="4"
+              className="d-inline-flex justify-content-between pe-4"
+            >
               <div>Debt</div>
               <div className="fw-bolder">{customerDetails.debt}</div>
-            </div>
-            <div className="col-8 d-inline-flex justify-content-between">
+            </Container.Col>
+            <Container.Col
+              columns="8"
+              className="d-inline-flex justify-content-between"
+            >
               <div>Total Purchased Products</div>
               <div className="fw-bolder">123</div>
-            </div>
-          </div>
-        </li>
-      </ul>
+            </Container.Col>
+          </Container.Row>
+        </Card.ListGroupItem>
+      </Card.ListGroup>
+
       <div className="btn-group" role="group" aria-label="Mini options">
         <button
           type="button"
@@ -106,10 +118,8 @@ function CustomerDetailsCard({ customerDetails }) {
           Delete
         </button>
       </div>
-      <div className="card-footer text-muted">
-        Customer ID: {customerDetails._id}
-      </div>
-    </div>
+      <Card.Footer>Customer ID: {customerDetails._id}</Card.Footer>
+    </Card>
   );
 }
 

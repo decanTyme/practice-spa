@@ -118,82 +118,88 @@ function Scanner(props) {
   return (
     <ModalMenu
       id="addProductScannerModal"
-      title={title}
-      fade={true}
-      static={true}
+      fade
+      _static
       size={{ fullscreen: true, modifier: "-sm-down" }}
-      headerBtn={
-        currentDevice?.label ? (
-          <div className="dropdown" hidden={scanData?.hasDataFound}>
+    >
+      <ModalMenu.Dialog>
+        <ModalMenu.Content>
+          <ModalMenu.Header>
+            <ModalMenu.Title>{title}</ModalMenu.Title>
+
+            {currentDevice?.label && (
+              <div className="dropdown" hidden={scanData?.hasDataFound}>
+                <button
+                  className="btn btn-secondary dropdown-toggle"
+                  type="button"
+                  id="deviceIdToggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  disabled={disabled}
+                >
+                  {currentDevice?.label}
+                </button>
+                <ul className="dropdown-menu" aria-labelledby="deviceIdToggle">
+                  {availableDevices}
+                </ul>
+              </div>
+            )}
+          </ModalMenu.Header>
+
+          <ModalMenu.Body>
+            <div id="scannerPrev">
+              {scanData?.hasDataFound ? (
+                <div className="p-2">
+                  <p className="">Data: {scanData.text}</p>
+                  <p>
+                    Scanned on: {new Date(scanData.timestamp).toUTCString()}
+                  </p>
+                </div>
+              ) : null}
+
+              <div hidden={scanData?.hasDataFound}>
+                <video
+                  className="w-100 h-100"
+                  poster={videoPlaceholder}
+                  muted
+                ></video>
+                <p>{DEF_SCANNER_TEXT}</p>
+              </div>
+            </div>
+          </ModalMenu.Body>
+
+          <ModalMenu.Footer>
             <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              id="deviceIdToggle"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+              id="restartScannerBtn"
+              className="btn btn-dark"
+              onClick={onScannerRestart}
               disabled={disabled}
             >
-              {currentDevice?.label}
+              {controller ? "Restart" : "Start"}
             </button>
-            <ul className="dropdown-menu" aria-labelledby="deviceIdToggle">
-              {availableDevices}
-            </ul>
-          </div>
-        ) : null
-      }
-      body={
-        <>
-          <div id="scannerPrev">
+
             {scanData?.hasDataFound ? (
-              <div className="p-2">
-                <p className="">Data: {scanData.text}</p>
-                <p>Scanned on: {new Date(scanData.timestamp).toUTCString()}</p>
-              </div>
+              <button
+                id="useCodeBtn"
+                className="btn btn-success"
+                data-bs-dismiss="modal"
+                onClick={onCodeSave}
+              >
+                Use as S/N
+              </button>
             ) : null}
 
-            <div hidden={scanData?.hasDataFound}>
-              <video
-                className="w-100 h-100"
-                poster={videoPlaceholder}
-                muted
-              ></video>
-              <p>{DEF_SCANNER_TEXT}</p>
-            </div>
-          </div>
-        </>
-      }
-      footer={
-        <>
-          <button
-            id="restartScannerBtn"
-            className="btn btn-dark"
-            onClick={onScannerRestart}
-            disabled={disabled}
-          >
-            {controller ? "Restart" : "Start"}
-          </button>
-
-          {scanData?.hasDataFound ? (
             <button
-              id="useCodeBtn"
-              className="btn btn-success"
+              className="btn btn-primary"
               data-bs-dismiss="modal"
-              onClick={onCodeSave}
+              onClick={onModalDismiss}
             >
-              Use as S/N
+              {scanData?.hasDataFound ? "Cancel" : "Dismiss"}
             </button>
-          ) : null}
-
-          <button
-            className="btn btn-primary"
-            data-bs-dismiss="modal"
-            onClick={onModalDismiss}
-          >
-            {scanData?.hasDataFound ? "Cancel" : "Dismiss"}
-          </button>
-        </>
-      }
-    />
+          </ModalMenu.Footer>
+        </ModalMenu.Content>
+      </ModalMenu.Dialog>
+    </ModalMenu>
   );
 }
 export default Scanner;

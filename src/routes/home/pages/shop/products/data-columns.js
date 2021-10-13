@@ -37,7 +37,7 @@ export const webColumns = [
     columns: [
       {
         Header: "Brand",
-        accessor: "brand",
+        accessor: "brand.name",
         width: "12%",
         Filter: SelectColumnFilter,
         filter: "includes",

@@ -1,6 +1,7 @@
 import { selectCurrentlySelectedProducts } from "../../../../../../app/state/slices/data/product/selectors";
 import { useSelector } from "react-redux";
 import AddProductMenu from "./AddProductMenu";
+import Card from "../../../../common/Card";
 
 function ProductOptions() {
   const dataInSelection = useSelector(selectCurrentlySelectedProducts);
@@ -9,7 +10,9 @@ function ProductOptions() {
     if (
       window.confirm(
         "Are you sure you want to delete the following?\n\n" +
-          dataInSelection?.map(({ name }) => name).join("\n")
+          dataInSelection
+            ?.map(({ brand, name }) => `${brand.name} ${name}`)
+            .join("\n")
       )
     ) {
       const reallySure = prompt(
@@ -24,9 +27,9 @@ function ProductOptions() {
 
   return (
     <>
-      <div className="card">
-        <div className="card-body">
-          <h6 className="card-title mb-3">Options</h6>
+      <Card>
+        <Card.Body>
+          <Card.Title className="mb-3">Options</Card.Title>
           <button
             className="btn btn-sm btn-success"
             data-bs-target="#addProductMenu"
@@ -34,8 +37,9 @@ function ProductOptions() {
           >
             Add New Product
           </button>
-        </div>
-        {dataInSelection.length !== 0 ? (
+        </Card.Body>
+
+        {dataInSelection.length !== 0 && (
           <div
             className="btn-group"
             role="group"
@@ -52,18 +56,19 @@ function ProductOptions() {
               Delete All
             </button>
           </div>
-        ) : null}
-        <ul className="list-group list-group-flush">
+        )}
+
+        <Card.ListGroup flush>
           {dataInSelection.map(({ _id, brand, name, unit }) => (
-            <div
+            <Card.ListGroupItem
               key={_id}
-              className="list-group-item  d-inline-flex justify-content-between fst-italic text-danger"
+              className="d-inline-flex justify-content-between fst-italic text-danger"
             >
-              {`${brand} - ${name} (${unit.capitalize()})`}
-            </div>
+              {`${brand.name} - ${name} (${unit.capitalize()})`}
+            </Card.ListGroupItem>
           ))}
-        </ul>
-      </div>
+        </Card.ListGroup>
+      </Card>
 
       <AddProductMenu />
     </>
