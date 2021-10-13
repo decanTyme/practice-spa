@@ -14,6 +14,7 @@ export const fetchProducts = createAsyncThunk(
 
     switch (response.status) {
       case 401:
+      case 418:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
@@ -23,7 +24,6 @@ export const fetchProducts = createAsyncThunk(
 
       case 403:
       case 404:
-      case 418:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
