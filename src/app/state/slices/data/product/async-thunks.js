@@ -62,7 +62,7 @@ export const pushProduct = createAsyncThunk(
       default:
         dispatch(notify(Constants.SUCCESS, successMsg));
 
-        return response.data.product;
+        return response.data;
     }
   }
 );
@@ -88,6 +88,7 @@ export const updateProduct = createAsyncThunk(
       case 400:
       case 403:
       case 404:
+      case 500:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
@@ -114,6 +115,7 @@ export const removeProduct = createAsyncThunk(
 
     switch (response.status) {
       case 401:
+      case 418:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
@@ -121,7 +123,9 @@ export const removeProduct = createAsyncThunk(
         dispatch(setStale(true));
         throw new Error();
 
+      case 400:
       case 403:
+      case 404:
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );

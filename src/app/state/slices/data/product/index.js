@@ -219,7 +219,7 @@ const slice = createSlice({
           const images = [];
           let total = 0;
 
-          const product = action.payload;
+          const product = action.payload.product;
 
           product.variants.forEach((variant) => {
             const inbound = variant.stocks
