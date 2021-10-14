@@ -123,6 +123,9 @@ function AddProductMenu() {
         dispatch(
           updateProduct({
             ...product,
+            unit: product.unit.toLowerCase(),
+            category: product.category.toLowerCase(),
+            _class: product._class.toLowerCase(),
             description:
               product.description === "" ? undefined : product.description,
             images: product.images.map((url) => ({ url })),
@@ -144,6 +147,9 @@ function AddProductMenu() {
         dispatch(
           pushProduct({
             ...product,
+            unit: product.unit.toLowerCase(),
+            category: product.category.toLowerCase(),
+            _class: product._class.toLowerCase(),
             description:
               product.description === "" ? undefined : product.description,
             images:
@@ -188,10 +194,10 @@ function AddProductMenu() {
       code: name === "code" ? value : product.code,
       brand: name === "brand" ? value : product.brand,
       name: name === "name" ? value : product.name,
-      _class: name === "class" ? value.toLowerCase() : product._class,
-      category: name === "category" ? value.toLowerCase() : product.category,
+      _class: name === "class" ? value : product._class,
+      category: name === "category" ? value : product.category,
       description: name === "description" ? value : product.description,
-      unit: name === "unit" ? value.toLowerCase() : product.unit,
+      unit: name === "unit" ? value : product.unit,
       images: name === "image" ? value.split(",") : product.images,
     });
   };
@@ -483,6 +489,7 @@ function AddProductMenu() {
                           list="productClassList"
                           id="productClass"
                           name="class"
+                          autoComplete="off"
                           placeholder={classes[0]}
                           value={product._class}
                           onChange={handleChange}
@@ -511,6 +518,7 @@ function AddProductMenu() {
                           list="unitList"
                           id="productUnit"
                           name="unit"
+                          autoComplete="off"
                           placeholder={units[0]}
                           value={product.unit}
                           onChange={handleChange}
@@ -538,6 +546,7 @@ function AddProductMenu() {
                           list="categoryList"
                           id="productCategory"
                           name="category"
+                          autoComplete="off"
                           placeholder={categories[0]}
                           value={product.category}
                           onChange={handleChange}
