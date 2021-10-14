@@ -186,14 +186,12 @@ function StockMenu({ type, stockList }) {
                           <div>{parseISO(purchasedOn).toDateString()}</div>
                         </Card.ListGroupItem>
 
-                        {type === "warehouse" && (
-                          <Card.ListGroupItem className="d-inline-flex justify-content-between"></Card.ListGroupItem>
+                        {type !== "inbound" && (
+                          <Card.ListGroupItem className="d-inline-flex justify-content-between">
+                            <div>Date of Arrival</div>
+                            <div>{parseISO(arrivedOn).toDateString()}</div>
+                          </Card.ListGroupItem>
                         )}
-
-                        <Card.ListGroupItem className="d-inline-flex justify-content-between">
-                          <div>Date of Arrival</div>
-                          <div>{parseISO(arrivedOn).toDateString()}</div>
-                        </Card.ListGroupItem>
 
                         <Card.ListGroupItem className="d-inline-flex justify-content-between">
                           <div>Manufacture Date</div>

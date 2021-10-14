@@ -47,7 +47,7 @@ function AddStockMenu({ variant, type }) {
   const importedCSV = useSelector(selectProductImportedCSV);
 
   const [stock, setStock] = useState(INIT_FORM_VAL);
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(false);
   const [disable, setDisable] = useState(INIT_BTN_STATE);
 
   const handleSubmit = async (e) => {
@@ -133,9 +133,17 @@ function AddStockMenu({ variant, type }) {
     // Revert all states to INIT
     setDisable(INIT_BTN_STATE);
     setStock(INIT_FORM_VAL);
+    document
+      .getElementById(`${type}StockForm`)
+      .classList.remove("was-validated");
   }, [dispatch, importedCSV, type]);
 
   useEffect(() => {
+    // If a save action is a success, hide the menu
+    if (saveStatus === Constants.SUCCESS)
+      return Modal.getOrCreateInstance(
+        document.getElementById(`${type}AddStockMenu`)
+      ).hide();
 
     // Otherwise, only reset the button state
     // so the user has a chance to re-edit
@@ -148,6 +156,33 @@ function AddStockMenu({ variant, type }) {
       });
   }, [saveStatus, type]);
 
+  // Listen for modal events
+  useEffect(() => {
+    const addStockMenu = document.getElementById(`${type}AddStockMenu`);
+
+    // When modal is closed, revert all states to INIT
+    const hideModalListener = () => resetAll();
+
+    const hidePreventedListener = () =>
+      console.log("Modal prevented from closing");
+
+    addStockMenu.addEventListener("hidden.bs.modal", hideModalListener);
+
+    addStockMenu.addEventListener(
+      "hidePrevented.bs.modal",
+      hidePreventedListener
+    );
+
+    const removeListeners = () => {
+      addStockMenu.removeEventListener("hidden.bs.modal", hideModalListener);
+      addStockMenu.removeEventListener(
+        "hidePrevented.bs.modal",
+        hidePreventedListener
+      );
+    };
+
+    return () => removeListeners();
+  }, [dispatch, resetAll, type]);
 
   const batchPlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
