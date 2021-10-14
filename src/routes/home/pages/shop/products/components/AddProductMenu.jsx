@@ -80,11 +80,11 @@ function AddProductMenu() {
       setVariants(
         productInEdit.variants.map((variant) => {
           const newVariant = { ...variant };
-          newVariant.id = customNanoid();
+          newVariant.__id = customNanoid();
 
           newVariant.prices = newVariant.prices.map((price) => {
             const newPrice = { ...price };
-            newPrice.id = customNanoid();
+            newPrice.__id = customNanoid();
 
             return newPrice;
           });
@@ -158,7 +158,6 @@ function AddProductMenu() {
                 : product.images.map((url) => ({ url })),
             variants: variants.map((variant) => {
               variant.prices = variant.prices.map((price) => {
-                delete price.id;
                 delete price.description;
                 return price;
               });
@@ -166,7 +165,6 @@ function AddProductMenu() {
               variant.description =
                 variant.description === "" ? undefined : product.description;
 
-              delete variant.id;
               return variant;
             }),
           })

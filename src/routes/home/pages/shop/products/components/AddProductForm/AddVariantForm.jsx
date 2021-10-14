@@ -43,9 +43,9 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
         className={classNames("nav nav-tabs mb-2", { "mb-3": isMobile })}
         role="tablist"
       >
-        {variants.map(({ id, name }, variantIndex) => (
+        {variants.map(({ __id, name }, variantIndex) => (
           <li
-            key={id}
+            key={__id}
             className="nav-item d-flex align-items-center"
             role="presentation"
           >
@@ -55,10 +55,10 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
               })}
               id="pills-home-tab"
               data-bs-toggle="tab"
-              data-bs-target={`#${id}`}
+              data-bs-target={`#${__id}`}
               type="button"
               role="tab"
-              aria-controls={id}
+              aria-controls={__id}
               aria-selected={variantIndex === 0}
             >
               {name || "Variant " + (variantIndex + 1)}
@@ -86,7 +86,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
       <div className="tab-content px-1" id="pills-tabContent">
         {variants.map(
           (
-            { id: variantId, name, value: variantValue, description, prices },
+            { __id: variantId, name, value: variantValue, description, prices },
             variantIndex
           ) => (
             <div
@@ -172,7 +172,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     <div className="row row-cols-2 g-3">
                       {prices.map(
                         (
-                          { id: priceId, label, value: priceValue },
+                          { __id: priceId, label, value: priceValue },
                           priceIndex
                         ) => (
                           <div key={priceId} className="col">
@@ -234,7 +234,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     e.preventDefault();
 
                     setVariants((variants) =>
-                      variants.filter((variant) => variant.id !== variantId)
+                      variants.filter((variant) => variant.__id !== variantId)
                     );
 
                     setDisable((disable) => ({ ...disable, submitBtn: false }));

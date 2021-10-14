@@ -30,42 +30,42 @@ export const INIT_BTN_TEXT = {
 
 export const getInitVariantVal = () => {
   return {
-    id: customNanoid(),
+    __id: customNanoid(),
     name: "",
     value: "",
     prices: [
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "retail",
         value: 0,
         description: "The price for a regular customer.",
       },
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "reseller",
         value: 0,
         description: "The price for a reseller.",
       },
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "bulker",
         value: 0,
         description: "The price for a bulker or wholesaler.",
       },
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "city distributor",
         value: 0,
         description: "The price for a city distributor.",
       },
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "provincial distributor",
         value: 0,
         description: "The price for a provincial distributor.",
       },
       {
-        id: customNanoid(),
+        __id: customNanoid(),
         label: "sale",
         value: 0,
         description: "The price for a regular customer.",
