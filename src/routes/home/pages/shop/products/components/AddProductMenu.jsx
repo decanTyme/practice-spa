@@ -7,7 +7,6 @@ import {
   selectProductScannedCode,
   selectProductPushStatus,
   selectProductImportedCSV,
-  selectAllBrands,
   selectAllClasses,
   selectAllCategories,
   selectAllUnits,
@@ -37,6 +36,8 @@ import {
   INIT_FORM_VAL,
 } from "./AddProductForm/init";
 import useInitializeTooltips from "../../../../../../services/hooks/use-init-tooltips";
+import { selectAllBrands } from "../../../../../../app/state/slices/data/brand";
+import AddBrandMenu from "./AddBrandMenu";
 import Container from "../../../../common/Container";
 
 function AddProductMenu() {
@@ -72,6 +73,7 @@ function AddProductMenu() {
     if (productInEdit) {
       setProduct({
         ...productInEdit,
+        brand: productInEdit.brand._id,
         images: productInEdit.images.map(({ url }) => url),
       });
 
@@ -571,7 +573,7 @@ function AddProductMenu() {
                           <i
                             className="fas fa-question-circle text-muted"
                             data-bs-toggle="tooltip"
-                            title="Valid image links only, no spaces. Multiple links may be separated by commas."
+                            title="Optional. Valid image links only, no spaces. Multiple links may be separated by commas."
                             onClick={(e) => e.preventDefault()}
                           />
                         </label>
@@ -727,6 +729,8 @@ function AddProductMenu() {
           </ModalMenu.Content>
         </ModalMenu.Dialog>
       </ModalMenu>
+
+      <AddBrandMenu />
     </>
   );
 }

@@ -5,15 +5,15 @@ export const mobileColumns = [
     columns: [
       {
         Header: "Brand",
-        accessor: "brand",
-        width: "30%",
+        accessor: "brand.name",
+        width: "20%",
         Filter: SelectColumnFilter,
         filter: "includes",
       },
       {
         Header: "Name",
         accessor: "name",
-        width: "35%",
+        width: "55%",
         Filter: "",
       },
     ],

@@ -3,13 +3,6 @@ import { createSelector } from "reselect";
 export const selectAllProducts = (state) =>
   state.root.DataService.products.data;
 
-export const selectAllBrands = createSelector(
-  [selectAllProducts],
-  (products) => {
-    return [...new Set(products.map(({ brand }) => brand))].sort();
-  }
-);
-
 export const selectAllClasses = createSelector(
   [selectAllProducts],
   (products) => {

@@ -51,6 +51,7 @@ import {
 } from "../../../../../app/state/slices/data/product";
 import ProductOptions from "./components/ProductOptionsCard";
 import Container from "../../../common/Container";
+import { fetchBrands } from "../../../../../app/state/slices/data/brand";
 
 function ProductsWrapper() {
   const location = useLocation();
@@ -91,6 +92,7 @@ function ProductsWrapper() {
         !stale
       ) {
         dispatch(fetchProducts());
+        dispatch(fetchBrands());
       }
     });
 
