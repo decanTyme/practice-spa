@@ -12,7 +12,7 @@ export const INIT_FORM_VAL = {
   _class: "",
   category: "",
   unit: "single",
-  description: "Any description of the product here...",
+  description: "",
   images: [],
 };
 
@@ -71,7 +71,7 @@ export const getInitVariantVal = () => {
         description: "The price for a regular customer.",
       },
     ],
-    description: "Any description of the variant here...",
+    description: "",
     images: [],
   };
 };

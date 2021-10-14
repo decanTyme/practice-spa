@@ -123,30 +123,42 @@ function AddProductMenu() {
         dispatch(
           updateProduct({
             ...product,
+            description:
+              product.description === "" ? undefined : product.description,
             images: product.images.map((url) => ({ url })),
             variants: variants.map((variant) => {
               variant.prices = variant.prices.map((price) => {
-                delete price.id;
+                delete price.description;
                 return price;
               });
 
-              delete variant.stocks;
-              delete variant.id;
+              variant.description =
+                variant.description === "" ? undefined : product.description;
+
               return variant;
             }),
           })
         );
-      // else if (importedCSV) dispatch(pushProduct(importedCSV));
+      else if (importedCSV) dispatch(pushProduct(importedCSV));
       else
         dispatch(
           pushProduct({
             ...product,
-            images: product.images.map((url) => ({ url })),
+            description:
+              product.description === "" ? undefined : product.description,
+            images:
+              product.images.length === 0
+                ? undefined
+                : product.images.map((url) => ({ url })),
             variants: variants.map((variant) => {
               variant.prices = variant.prices.map((price) => {
                 delete price.id;
+                delete price.description;
                 return price;
               });
+
+              variant.description =
+                variant.description === "" ? undefined : product.description;
 
               delete variant.id;
               return variant;

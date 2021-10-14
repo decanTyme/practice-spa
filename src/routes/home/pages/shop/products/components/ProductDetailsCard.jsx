@@ -269,7 +269,7 @@ function ProductDetailsCard() {
               <Card.ListGroupItem
                 className={classNames(
                   "h-100 border-bottom-0 d-flex flex-column",
-                  { "pb-3": isMobile, "p-3": !isMobile }
+                  { "py-3": isMobile, "p-3": !isMobile }
                 )}
               >
                 <h6 className="mb-3" style={{ fontSize: "0.9rem" }}>
