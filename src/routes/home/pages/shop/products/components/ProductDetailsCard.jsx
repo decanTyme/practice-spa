@@ -18,7 +18,6 @@ import { removeProduct } from "../../../../../../app/state/slices/data/product/a
 import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
 import Card from "../../../../common/Card";
 import Container from "../../../../common/Container";
-import AddStockMenu from "./AddStockMenu";
 import StockMenu from "./StockMenu";
 
 function ProductDetailsCard() {
@@ -95,6 +94,9 @@ function ProductDetailsCard() {
         .sort((a, _) => (a.checked ? 1 : -1)),
     [variant.stocks.inbound, variant.stocks.sold, variant.stocks.warehouse]
   );
+
+  // For toggling to different stock type menus
+  const [menuType, setMenuType] = useState("");
 
   return (
     <>
@@ -294,9 +296,9 @@ function ProductDetailsCard() {
                           <a
                             href={`#_${_id}`}
                             className="card-body text-decoration-none text-black"
-                            data-bs-target={`#${_type}StockMenu`}
+                            data-bs-target={`#${menuType}StockMenu`}
                             data-bs-toggle="modal"
-                            data-bs-dismiss="modal"
+                            onClick={() => setMenuType(_type)}
                           >
                             <Card.Title>
                               <div className="d-flex justify-content-between align-items-center">
@@ -336,9 +338,9 @@ function ProductDetailsCard() {
                   <button
                     href="#inbound"
                     className="col-4 btn btn-sm m-0 p-0"
-                    data-bs-target="#inboundStockMenu"
+                    data-bs-target={`#${menuType}StockMenu`}
                     data-bs-toggle="modal"
-                    data-bs-dismiss="modal"
+                    onClick={() => setMenuType("inbound")}
                   >
                     <div>Inbound</div>
                     <div className="fw-bold">
@@ -348,9 +350,9 @@ function ProductDetailsCard() {
                   <button
                     href="#warehouse"
                     className="col-4 btn btn-sm m-0 p-0 border-end border-start"
-                    data-bs-target="#warehouseStockMenu"
+                    data-bs-target={`#${menuType}StockMenu`}
                     data-bs-toggle="modal"
-                    data-bs-dismiss="modal"
+                    onClick={() => setMenuType("warehouse")}
                   >
                     <div>Warehouse</div>
                     <div className="fw-bold">
@@ -360,9 +362,9 @@ function ProductDetailsCard() {
                   <button
                     href="#sold"
                     className="col-4 btn btn-sm m-0 p-0"
-                    data-bs-target="#soldStockMenu"
+                    data-bs-target={`#${menuType}StockMenu`}
                     data-bs-toggle="modal"
-                    data-bs-dismiss="modal"
+                    onClick={() => setMenuType("sold")}
                   >
                     <div>Sold</div>
                     <div className="fw-bold">{variant.stocks.sold.length}</div>
@@ -402,13 +404,7 @@ function ProductDetailsCard() {
 
       {/* ----------------- Stock Menus ----------------- */}
 
-      <StockMenu type="inbound" stockList={variant.stocks.inbound} />
-      <StockMenu type="warehouse" stockList={variant.stocks.warehouse} />
-      <StockMenu type="sold" stockList={variant.stocks.sold} />
-
-      <AddStockMenu type="inbound" variant={variant} />
-      <AddStockMenu type="warehouse" variant={variant} />
-      <AddStockMenu type="sold" variant={variant} />
+      <StockMenu type={menuType} stockList={variant.stocks} />
     </>
   );
 }

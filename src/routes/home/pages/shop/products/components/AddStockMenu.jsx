@@ -3,11 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import ModalMenu from "../../../../common/menus/ModalMenu";
 import {
   selectProductImportedCSV,
+  selectProductModifyStatus,
   selectProductPushStatus,
+  selectStockInEdit,
 } from "../../../../../../app/state/slices/data/product/selectors";
 import Constants from "../../../../../../app/state/slices/constants";
-import { pushStock } from "../../../../../../app/state/slices/data/product/async-thunks";
-import { abortCSVImport } from "../../../../../../app/state/slices/data/product";
+import {
+  pushStock,
+  updateStock,
+} from "../../../../../../app/state/slices/data/product/async-thunks";
+import {
+  abortCSVImport,
+  resetAllStockModification,
+} from "../../../../../../app/state/slices/data/product";
 import { selectAllCouriers } from "../../../../../../app/state/slices/data/courier";
 import { Modal } from "bootstrap";
 import Container from "../../../../common/Container";
@@ -25,6 +33,11 @@ const INIT_FORM_VAL = {
   arrivedOn: "",
 };
 
+export const INIT_BTN_TEXT = {
+  saveBtn: "Save",
+  resetBtn: "Reset",
+};
+
 const INIT_BTN_STATE = {
   submitBtn: true,
   resetBtn: true,
@@ -38,17 +51,57 @@ const StockTypes = {
   SOLD: "sold",
 };
 
-function AddStockMenu({ variant, type }) {
+function AddStockMenu({ backTarget, variant, type }) {
   const dispatch = useDispatch();
 
   const couriers = useSelector(selectAllCouriers);
 
   const saveStatus = useSelector(selectProductPushStatus);
+  const modifyStatus = useSelector(selectProductModifyStatus);
+
   const importedCSV = useSelector(selectProductImportedCSV);
+  const stockInEdit = useSelector(selectStockInEdit);
 
   const [stock, setStock] = useState(INIT_FORM_VAL);
+  const [text, setText] = useState(INIT_BTN_TEXT);
   const [loading, setLoading] = useState(false);
   const [disable, setDisable] = useState(INIT_BTN_STATE);
+
+  // Always listen for stock-in-edit states
+  useEffect(() => {
+    if (stockInEdit) {
+      setStock({
+        ...stockInEdit,
+        courier: stockInEdit.courier._id,
+        arrivedOn: stockInEdit.arrivedOn ? stockInEdit.arrivedOn : "",
+      });
+
+      setDisable({
+        submitBtn: true,
+        resetBtn: false,
+        inputs: false,
+        inputCode: true,
+      });
+
+      setText({
+        saveBtn: "Update",
+        resetBtn: "Cancel",
+      });
+
+      return;
+    }
+
+    // For some reason when an in-edit stock
+    // is canceled, the forms won't automatically
+    // clear through the event listeners.
+    //
+    // Hence, this serves as a "fix" for now.
+    if (!stockInEdit) {
+      setStock(INIT_FORM_VAL);
+      setDisable(INIT_BTN_STATE);
+      setText(INIT_BTN_TEXT);
+    }
+  }, [stockInEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,21 +118,31 @@ function AddStockMenu({ variant, type }) {
       });
 
       try {
-        await dispatch(
-          pushStock({
-            ...stock,
-            checked: type === StockTypes.SOLD ? true : stock.checked,
-            purchasedOn: new Date(stock.purchasedOn).toISOString(),
-            manufacturedOn:
-              stock.manufacturedOn &&
-              new Date(stock.manufacturedOn).toISOString(),
-            expiry: new Date(stock.expiry).toISOString(),
-            arrivedOn:
-              stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
-            variantId: variant._id,
-            _type: type,
-          })
-        ).unwrap();
+        if (stockInEdit)
+          await dispatch(
+            updateStock({
+              ...stock,
+              arrivedOn:
+                stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
+              variantId: stock.variant,
+            })
+          ).unwrap();
+        else
+          await dispatch(
+            pushStock({
+              ...stock,
+              checked: type === StockTypes.SOLD ? true : stock.checked,
+              purchasedOn: new Date(stock.purchasedOn).toISOString(),
+              manufacturedOn:
+                stock.manufacturedOn &&
+                new Date(stock.manufacturedOn).toISOString(),
+              expiry: new Date(stock.expiry).toISOString(),
+              arrivedOn:
+                stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
+              variantId: variant._id,
+              _type: type,
+            })
+          ).unwrap();
       } catch (error) {
         console.error(error);
       } finally {
@@ -98,13 +161,14 @@ function AddStockMenu({ variant, type }) {
       submitBtn: false,
       resetBtn: false,
       inputs: false,
-      inputCode: false,
+      inputCode: stockInEdit ? true : false,
     });
 
     const name = e.target.name,
       value = e.target.value;
 
     setStock({
+      ...stock,
       batch: name === "batch" ? value.toUpperCase() : stock.batch,
       checked: name === "checked" ? e.target.checked : stock.checked,
       description: name === "description" ? value : stock.description,
@@ -122,46 +186,64 @@ function AddStockMenu({ variant, type }) {
     });
   };
 
-  const resetAll = useCallback(() => {
-    // Make sure to clear CSV imports only if there is a
+  const resetToDefaults = useCallback(() => {
+    // Only hide the menu if there was a recent stock edit
+    // and the user has cancelled editing
+    //! BUG: Won't automatically reset on menu close
+    // The menu listeners will take care of
+    // resetting the forms
+    if (stockInEdit)
+      return Modal.getOrCreateInstance(
+        document.getElementById(`${type}AddStockMenu`)
+      ).hide();
+
+    // Clear CSV imports only if there is a
     // CSV currently imported
-    if (!!importedCSV) {
+    if (importedCSV) {
       dispatch(abortCSVImport());
       document.getElementById("csvImportBtn").value = "";
+      return;
     }
 
     // Revert all states to INIT
-    setDisable(INIT_BTN_STATE);
     setStock(INIT_FORM_VAL);
+    setDisable(INIT_BTN_STATE);
+    setText(INIT_BTN_TEXT);
     document
       .getElementById(`${type}StockForm`)
       .classList.remove("was-validated");
-  }, [dispatch, importedCSV, type]);
+  }, [dispatch, importedCSV, stockInEdit, type]);
 
   useEffect(() => {
     // If a save action is a success, hide the menu
-    if (saveStatus === Constants.SUCCESS)
+    if (saveStatus === Constants.SUCCESS || modifyStatus === Constants.SUCCESS)
       return Modal.getOrCreateInstance(
         document.getElementById(`${type}AddStockMenu`)
       ).hide();
 
     // Otherwise, only reset the button state
     // so the user has a chance to re-edit
-    if (saveStatus === Constants.FAILED)
+    if (saveStatus === Constants.FAILED || modifyStatus === Constants.FAILED)
       return setDisable({
         submitBtn: true,
         resetBtn: false,
         inputs: false,
         inputCode: true,
       });
-  }, [saveStatus, type]);
+  }, [modifyStatus, saveStatus, type]);
 
   // Listen for modal events
   useEffect(() => {
     const addStockMenu = document.getElementById(`${type}AddStockMenu`);
 
     // When modal is closed, revert all states to INIT
-    const hideModalListener = () => resetAll();
+    const hideModalListener = () => {
+      document
+        .getElementById(`${type}StockForm`)
+        .classList.remove("was-validated");
+
+      dispatch(resetAllStockModification());
+    };
 
     const hidePreventedListener = () =>
       console.log("Modal prevented from closing");
@@ -182,7 +264,7 @@ function AddStockMenu({ variant, type }) {
     };
 
     return () => removeListeners();
-  }, [dispatch, resetAll, type]);
+  }, [dispatch, stockInEdit, type]);
 
   const batchPlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
@@ -193,16 +275,20 @@ function AddStockMenu({ variant, type }) {
       <ModalMenu.Dialog>
         <ModalMenu.Content>
           <ModalMenu.Header>
-            <ModalMenu.Title>{`Add ${type.capitalize()} Stock`}</ModalMenu.Title>
+            <ModalMenu.Title>
+              {stockInEdit ? "Edit Stock" : `Add ${type.capitalize()} Stock`}
+            </ModalMenu.Title>
 
-            <button
-              className="btn py-1 px-2"
-              data-bs-target={`#${type}StockMenu`}
-              data-bs-toggle="modal"
-              data-bs-dismiss="modal"
-            >
-              Back
-            </button>
+            {type !== "edit" && (
+              <button
+                className="btn py-1 px-2"
+                data-bs-target={`#${type}StockMenu`}
+                data-bs-toggle="modal"
+                data-bs-dismiss="modal"
+              >
+                Back
+              </button>
+            )}
           </ModalMenu.Header>
 
           <ModalMenu.Body>
@@ -478,10 +564,12 @@ function AddStockMenu({ variant, type }) {
               id="resetBtn"
               type="reset"
               className="btn btn-secondary ms-2"
+              data-bs-target={backTarget && `#${backTarget}`}
+              data-bs-toggle={backTarget && "modal"}
               disabled={disable.resetBtn}
-              onClick={resetAll}
+              onClick={resetToDefaults}
             >
-              Reset
+              {text.resetBtn}
             </button>
 
             <button
@@ -499,7 +587,7 @@ function AddStockMenu({ variant, type }) {
                   aria-hidden={false}
                 ></span>
               )}
-              Save
+              {text.saveBtn}
             </button>
           </ModalMenu.Footer>
         </ModalMenu.Content>

@@ -46,6 +46,9 @@ export const selectProductDetailsSold = (state) =>
 export const selectProductInEdit = (state) =>
   state.root.DataService.products.currentlyModifying;
 
+export const selectStockInEdit = (state) =>
+  state.root.DataService.products.currentlyModifyingStock;
+
 export const selectProductScannedCode = (state) =>
   state.root.DataService.products.sn;
 
@@ -74,6 +77,13 @@ export const selectProductModifyStatus = (state) =>
   state.root.DataService.products.status.modify;
 
 export const selectProductModifyError = (state) =>
+  state.root.DataService.products.error.modify;
+
+/* Delete */
+export const selectProductDeleteStatus = (state) =>
+  state.root.DataService.products.status.modify;
+
+export const selectProductDeleteError = (state) =>
   state.root.DataService.products.error.modify;
 
 export const selectAllProductError = (state) =>

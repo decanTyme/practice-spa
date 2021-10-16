@@ -9,6 +9,8 @@ import {
   updateProduct,
   stockMarkInventoryChecked,
   moveStock,
+  updateStock,
+  removeStock,
 } from "./async-thunks";
 
 const slice = createSlice({
@@ -30,6 +32,7 @@ const slice = createSlice({
     currentlyViewedItem: null,
     sn: null,
     currentlyModifying: null,
+    currentlyModifyingStock: null,
     currentlySelected: [],
     importedCSV: null,
   },
@@ -50,6 +53,7 @@ const slice = createSlice({
 
       state.sn = null;
       state.currentlyModifying = null;
+      state.currentlyModifyingStock = null;
     },
 
     modifyProduct: (state, action) => {
@@ -58,8 +62,18 @@ const slice = createSlice({
       state.sn = null;
     },
 
+    modifyStock: (state, action) => {
+      state.currentlyModifyingStock = action.payload;
+
+      state.sn = null;
+    },
+
     resetAllProductModification: (state) => {
       state.currentlyModifying = null;
+    },
+
+    resetAllStockModification: (state) => {
+      state.currentlyModifyingStock = null;
     },
 
     addScannedCode: (state, action) => {
@@ -98,6 +112,7 @@ const slice = createSlice({
       state.currentlyViewedItem = null;
       state.sn = null;
       state.currentlyModifying = null;
+      state.currentlyModifyingStock = null;
       state.currentlySelected = [];
     },
   },
@@ -332,6 +347,7 @@ const slice = createSlice({
 
         // Finally, clear some states
         state.currentlyModifying = null;
+        state.currentlyModifyingStock = null;
         state.sn = null;
       })
       .addCase(updateProduct.rejected, (state) => {
@@ -349,6 +365,7 @@ const slice = createSlice({
 
       state.sn = null;
       state.currentlyModifying = null;
+      state.currentlyModifyingStock = null;
       state.currentlyViewedItem = null;
     });
 
@@ -372,7 +389,7 @@ const slice = createSlice({
                 .sort((a, _) => (a.checked ? 1 : -1));
 
               // Since we're only adding one stock
-              // at a time, just increment the sum
+              // at a time, just increment
               total++;
 
               product.stock = { total };
@@ -389,13 +406,85 @@ const slice = createSlice({
         state.error.push = action.error.message;
       });
 
+    /* Update stock cases */
+    builder
+      .addCase(updateStock.pending, (state) => {
+        state.status.modify = Constants.LOADING;
+      })
+      .addCase(updateStock.fulfilled, (state, action) => {
+        state.status.modify = Constants.SUCCESS;
+
+        for (const product of state.data) {
+          for (const variant of product.variants) {
+            if (action.payload.variantId === variant._id) {
+              variant.stocks[action.payload._type] = variant.stocks[
+                action.payload._type
+              ].filter(({ _id }) => _id !== action.payload.stock._id);
+
+              variant.stocks[action.payload._type].push(action.payload.stock);
+
+              variant.stocks[action.payload._type]
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              // Update the viewed product
+              state.currentlyViewedItem = product;
+            }
+          }
+        }
+      })
+      .addCase(updateStock.rejected, (state, action) => {
+        state.status.modify = Constants.FAILED;
+
+        state.error.modify = action.error.message;
+      });
+
+    /* Delete stock cases */
+    builder
+      .addCase(removeStock.pending, (state) => {
+        state.status.delete = Constants.LOADING;
+      })
+      .addCase(removeStock.fulfilled, (state, action) => {
+        state.status.delete = Constants.SUCCESS;
+
+        for (const product of state.data) {
+          let total = product.stock.total;
+
+          for (const variant of product.variants) {
+            if (action.payload.variantId === variant._id) {
+              variant.stocks[action.payload._type] = variant.stocks[
+                action.payload._type
+              ].filter(({ _id }) => _id !== action.payload._id);
+
+              variant.stocks[action.payload._type]
+                .sort((a, b) => b.expiry.localeCompare(a.expiry))
+                .sort((a, _) => (a.checked ? 1 : -1));
+
+              // Since we're only removing one stock
+              // at a time, just decrement
+              total--;
+
+              product.stock = { total };
+
+              // Update the viewed product
+              state.currentlyViewedItem = product;
+            }
+          }
+        }
+      })
+      .addCase(removeStock.rejected, (state, action) => {
+        state.status.delete = Constants.FAILED;
+
+        state.error.delete = action.error.message;
+      });
+
     /* Stock move location cases */
     builder
       .addCase(moveStock.pending, (state) => {
-        state.status.push = Constants.LOADING;
+        state.status.modify = Constants.LOADING;
       })
       .addCase(moveStock.fulfilled, (state, action) => {
-        state.status.push = Constants.SUCCESS;
+        state.status.modify = Constants.SUCCESS;
 
         for (const product of state.data) {
           for (const variant of product.variants) {
@@ -421,7 +510,7 @@ const slice = createSlice({
         }
       })
       .addCase(moveStock.rejected, (state, action) => {
-        state.status.push = Constants.FAILED;
+        state.status.modify = Constants.FAILED;
 
         state.error.modify = action.error.message;
       });
@@ -429,10 +518,10 @@ const slice = createSlice({
     /* Stock mark inventory check cases */
     builder
       .addCase(stockMarkInventoryChecked.pending, (state) => {
-        state.status.push = Constants.LOADING;
+        state.status.modify = Constants.LOADING;
       })
       .addCase(stockMarkInventoryChecked.fulfilled, (state, action) => {
-        state.status.push = Constants.SUCCESS;
+        state.status.modify = Constants.SUCCESS;
 
         for (const product of state.data) {
           for (const variant of product.variants) {
@@ -458,7 +547,7 @@ const slice = createSlice({
         }
       })
       .addCase(stockMarkInventoryChecked.rejected, (state, action) => {
-        state.status.push = Constants.FAILED;
+        state.status.modify = Constants.FAILED;
 
         state.error.modify = action.error.message;
       });
@@ -470,7 +559,9 @@ export const {
   setProductStatus,
   viewProductDetail,
   modifyProduct,
+  modifyStock,
   resetAllProductModification,
+  resetAllStockModification,
   addScannedCode,
   importCSV,
   abortCSVImport,

@@ -17,6 +17,7 @@ import {
   selectProductImportedCSV,
   selectProductPushStatus,
   selectProductModifyStatus,
+  selectProductDeleteStatus,
 } from "../../../../../app/state/slices/data/product/selectors";
 import {
   useTable,
@@ -69,6 +70,7 @@ function ProductsWrapper() {
   const dataFetchStatus = useSelector(selectProductFetchStatus);
   const saveStatus = useSelector(selectProductPushStatus);
   const modifyStatus = useSelector(selectProductModifyStatus);
+  const removeStatus = useSelector(selectProductDeleteStatus);
 
   useEffect(() => {
     saveStatus !== Constants.IDLE &&
@@ -78,7 +80,11 @@ function ProductsWrapper() {
     modifyStatus !== Constants.IDLE &&
       modifyStatus !== Constants.LOADING &&
       dispatch(setIdle(Constants.DataService.MODIFY));
-  }, [dispatch, modifyStatus, saveStatus]);
+
+    removeStatus !== Constants.IDLE &&
+      removeStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.REMOVE));
+  }, [dispatch, modifyStatus, removeStatus, saveStatus]);
 
   useEffect(() => {
     // Only fetch if either the user is logged in, not stale, or

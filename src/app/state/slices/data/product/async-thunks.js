@@ -189,6 +189,90 @@ export const pushStock = createAsyncThunk(
   }
 );
 
+export const updateStock = createAsyncThunk(
+  "products/stock/modify",
+  async (modifiedStock, { dispatch }) => {
+    const response = await HttpService().onDataModify("stocks", modifiedStock);
+
+    const successMsg = "Stock successfuly updated!";
+    const errMsg = "Stock update unsuccessful!";
+
+    switch (response.status) {
+      case 401:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 403:
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
+
+        return {
+          stock: response.data.stock,
+          variantId: response.data.stock.variant,
+          _type: response.data.stock._type,
+        };
+    }
+  }
+);
+
+export const removeStock = createAsyncThunk(
+  "products/stock/delete",
+  async ({ _id, _type, variant: variantId }, { dispatch }) => {
+    const response = await HttpService().onDataRemove("stocks", void 0, {
+      params: { _id },
+    });
+
+    const successMsg = "Stock successfuly deleted!";
+    const errMsg = "Stock delete unsuccessful!";
+
+    switch (response.status) {
+      case 401:
+      case 418:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        dispatch(setStale(true));
+        throw new Error(response.data.message);
+
+      case 403:
+      case 500:
+        dispatch(
+          notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+        );
+        throw new Error(response.data.message);
+
+      default:
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
+
+        return { _id, variantId, _type };
+    }
+  }
+);
+
 export const moveStock = createAsyncThunk(
   "products/stocks/move",
   async ({ _id, _type, prevType }, { dispatch }) => {
@@ -235,7 +319,8 @@ export const stockMarkInventoryChecked = createAsyncThunk(
   "products/stocks/mark",
   async ({ _id, mark }, { dispatch }) => {
     const response = await HttpService().onDataModify("stocks", void 0, {
-      params: { _id, check: true, mark },
+      params: { _id, mark },
+      endpoint: "mark",
     });
 
     const successMsg = `Stock successfuly ${mark ? "mark" : "unmark"}ed!`;
