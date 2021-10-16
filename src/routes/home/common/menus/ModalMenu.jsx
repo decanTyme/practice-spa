@@ -51,13 +51,14 @@ function Footer({ children }) {
   return <div className="modal-footer">{children}</div>;
 }
 
-function DismissButton({ children }) {
+function DismissButton({ children, onClick }) {
   return (
     <button
       type="button"
       className="btn"
       data-bs-dismiss="modal"
       aria-label="Close"
+      onClick={onClick}
     >
       {children}
     </button>
