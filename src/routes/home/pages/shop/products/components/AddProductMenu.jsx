@@ -61,6 +61,7 @@ function AddProductMenu() {
   const [variants, setVariants] = useState([getInitVariantVal()]);
   const [disable, setDisable] = useState(INIT_BTN_STATE);
   const [text, setText] = useState(INIT_BTN_TEXT);
+  const [isBrandMenuOpen, toggleBrandMenu] = useState();
 
   useEffect(() => {
     if (scannedCode) {
@@ -259,6 +260,8 @@ function AddProductMenu() {
   };
 
   const resetToDefaults = useCallback(() => {
+    toggleBrandMenu(false);
+
     // Make sure to reset all current product modifications
     // only if there is a product currently in edit
     if (productInEdit) {
@@ -281,7 +284,7 @@ function AddProductMenu() {
     setProduct(INIT_FORM_VAL);
     setVariants([getInitVariantVal()]);
     document.getElementById("addProductForm").classList.remove("was-validated");
-  }, [dispatch, importedCSV, productInEdit]);
+  }, [dispatch, importedCSV, productInEdit, toggleBrandMenu]);
 
   useEffect(() => {
     const saveSuccess =
@@ -313,15 +316,18 @@ function AddProductMenu() {
 
     // When modal is closed, revert all states to INIT
     const hideModalListener = () => {
-      setDisable(INIT_BTN_STATE);
-      setText(INIT_BTN_TEXT);
-      setProduct(INIT_FORM_VAL);
-      setVariants([getInitVariantVal()]);
-      document
-        .getElementById("addProductForm")
-        .classList.remove("was-validated");
+      if (!isBrandMenuOpen) {
+        setDisable(INIT_BTN_STATE);
+        setText(INIT_BTN_TEXT);
+        setProduct(INIT_FORM_VAL);
+        setVariants([getInitVariantVal()]);
 
-      dispatch(resetAllProductModification());
+        document
+          .getElementById("addProductForm")
+          .classList.remove("was-validated");
+
+        dispatch(resetAllProductModification());
+      }
     };
 
     const hidePreventedListener = () => {
@@ -344,7 +350,7 @@ function AddProductMenu() {
     };
 
     return () => removeListeners();
-  }, [dispatch]);
+  }, [dispatch, isBrandMenuOpen]);
 
   const codePlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
@@ -360,7 +366,9 @@ function AddProductMenu() {
                 {productInEdit ? "Edit Product" : "Add New Product"}
               </ModalMenu.Title>
               {!productInEdit && (
-                <ModalMenu.DismissButton>Dismiss</ModalMenu.DismissButton>
+                <ModalMenu.DismissButton onClick={() => toggleBrandMenu(false)}>
+                  Dismiss
+                </ModalMenu.DismissButton>
               )}
             </ModalMenu.Header>
 
@@ -453,6 +461,7 @@ function AddProductMenu() {
                           data-bs-toggle="modal"
                           className="text-decoration-none float-end fw-light"
                           style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
+                          onClick={() => toggleBrandMenu(true)}
                         >
                           Add brand
                         </a>
