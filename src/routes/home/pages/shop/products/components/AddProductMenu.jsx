@@ -37,7 +37,7 @@ import {
 } from "./AddProductForm/init";
 import useInitializeTooltips from "../../../../../../services/hooks/use-init-tooltips";
 import { selectAllBrands } from "../../../../../../app/state/slices/data/brand";
-import AddBrandMenu from "./AddBrandMenu";
+import BrandMenu from "./BrandMenu";
 import Container from "../../../../common/Container";
 
 function AddProductMenu() {
@@ -102,7 +102,7 @@ function AddProductMenu() {
       });
 
       setText({
-        saveBtn: "Update",
+        submitBtn: "Update",
         resetBtn: "Cancel",
       });
     }
@@ -213,7 +213,7 @@ function AddProductMenu() {
     });
 
     setText({
-      saveBtn: "Save",
+      submitBtn: "Save",
       resetBtn: "Cancel",
     });
 
@@ -457,13 +457,13 @@ function AddProductMenu() {
                         <a
                           href="#addBrandMenu"
                           role="button"
-                          data-bs-target="#addBrandMenu"
+                          data-bs-target="#brandMenu"
                           data-bs-toggle="modal"
                           className="text-decoration-none float-end fw-light"
                           style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
                           onClick={() => toggleBrandMenu(true)}
                         >
-                          Add brand
+                          Edit brands
                         </a>
                         <select
                           id="productBrand"
@@ -748,9 +748,11 @@ function AddProductMenu() {
               >
                 {saveStatus !== Constants.IDLE ||
                 modifyStatus !== Constants.IDLE ? (
-                  <Spinner addClass="spinner-border-sm">{text.saveBtn}</Spinner>
+                  <Spinner addClass="spinner-border-sm">
+                    {text.submitBtn}
+                  </Spinner>
                 ) : (
-                  text.saveBtn
+                  text.submitBtn
                 )}
               </button>
             </ModalMenu.Footer>
@@ -758,7 +760,7 @@ function AddProductMenu() {
         </ModalMenu.Dialog>
       </ModalMenu>
 
-      <AddBrandMenu />
+      <BrandMenu />
     </>
   );
 }

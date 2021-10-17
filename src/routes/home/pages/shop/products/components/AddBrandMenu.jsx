@@ -4,18 +4,25 @@ import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Constants from "../../../../../../app/state/slices/constants";
 import {
-  pushBrands,
+  pushBrand,
+  resetAllBrandModification,
+  selectBrandInEdit,
+  selectBrandModifyStatus,
   selectBrandPushStatus,
+  selectBrandRemoveStatus,
+  setIdle,
+  updateBrand,
 } from "../../../../../../app/state/slices/data/brand";
 import useInitializeTooltips from "../../../../../../services/hooks/use-init-tooltips";
 import Container from "../../../../common/Container";
 import ModalMenu from "../../../../common/menus/ModalMenu";
+import { INIT_BTN_TEXT } from "./AddProductForm/init";
 
 const INIT_FORM_VAL = {
   name: "",
   _type: "",
   links: [],
-  locations: [{ _type: "", postcode: 0, location: "" }],
+  locations: [{ _type: "main", postcode: 0, location: "" }],
   bio: "",
 };
 
@@ -33,11 +40,66 @@ function AddBrandMenu() {
 
   const dispatch = useDispatch();
 
+  const brandInEdit = useSelector(selectBrandInEdit);
+
   const saveStatus = useSelector(selectBrandPushStatus);
+  const modifyStatus = useSelector(selectBrandModifyStatus);
+  const removeStatus = useSelector(selectBrandRemoveStatus);
 
   const [brand, setBrand] = useState(INIT_FORM_VAL);
+  const [text, setText] = useState(INIT_BTN_TEXT);
   const [loading, setLoading] = useState(false);
   const [disable, setDisable] = useState(INIT_BTN_STATE);
+
+  useEffect(() => {
+    saveStatus !== Constants.IDLE &&
+      saveStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.PUSH));
+
+    modifyStatus !== Constants.IDLE &&
+      modifyStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.MODIFY));
+
+    removeStatus !== Constants.IDLE &&
+      removeStatus !== Constants.LOADING &&
+      dispatch(setIdle(Constants.DataService.REMOVE));
+  }, [dispatch, modifyStatus, removeStatus, saveStatus]);
+
+  // Always listen for stock-in-edit states
+  useEffect(() => {
+    if (brandInEdit) {
+      setBrand({
+        ...brandInEdit,
+        locations:
+          brandInEdit.locations.length !== 0
+            ? brandInEdit.locations.map((loc) => ({
+                ...loc,
+                location: Object.values({
+                  1: loc.street,
+                  2: loc.purok,
+                  3: loc.barangay,
+                  4: loc.city,
+                  5: loc.province,
+                }).join(", "),
+              }))
+            : INIT_FORM_VAL.locations,
+      });
+
+      setDisable({
+        submitBtn: true,
+        resetBtn: false,
+        inputs: false,
+        inputCode: true,
+      });
+
+      setText({
+        submitBtn: "Update",
+        resetBtn: "Cancel",
+      });
+
+      return;
+    }
+  }, [brandInEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,31 +116,60 @@ function AddBrandMenu() {
       });
 
       try {
-        await dispatch(
-          pushBrands({
-            ...brand,
-            _type: brand._type === "" ? undefined : brand._type,
-            links: brand.links.length === 0 ? undefined : brand.links,
-            bio: brand.bio === "" ? undefined : brand.bio,
-            locations:
-              brand.locations[0].location === ""
-                ? undefined
-                : brand.locations.map((loc) => {
-                    const parsedLoc = loc.location
-                      .split(",")
-                      .map((loc) => loc.trim());
+        if (brandInEdit)
+          await dispatch(
+            updateBrand({
+              ...brand,
+              _type: brand._type === "" ? undefined : brand._type,
+              links: brand.links.length === 0 ? undefined : brand.links,
+              bio: brand.bio === "" ? undefined : brand.bio,
+              locations:
+                brand.locations[0].location === ""
+                  ? undefined
+                  : brand.locations.map((loc) => {
+                      const parsedLoc = loc.location
+                        .split(",")
+                        .map((loc) => loc.trim());
 
-                    return {
-                      _type: loc._type,
-                      postcode: loc.postcode,
-                      street: parsedLoc[0] || "",
-                      purok: parsedLoc[1] || "",
-                      barangay: parsedLoc[2] || "",
-                      province: parsedLoc[3] || "",
-                    };
-                  }),
-          })
-        ).unwrap();
+                      return {
+                        _type: loc._type,
+                        postcode: loc.postcode,
+                        street: parsedLoc[0] || "",
+                        purok: parsedLoc[1] || "",
+                        barangay: parsedLoc[2] || "",
+                        city: parsedLoc[3] || "",
+                        province: parsedLoc[4] || "",
+                      };
+                    }),
+            })
+          );
+        else
+          await dispatch(
+            pushBrand({
+              ...brand,
+              _type: brand._type === "" ? undefined : brand._type,
+              links: brand.links.length === 0 ? undefined : brand.links,
+              bio: brand.bio === "" ? undefined : brand.bio,
+              locations:
+                brand.locations[0].location === ""
+                  ? undefined
+                  : brand.locations.map((loc) => {
+                      const parsedLoc = loc.location
+                        .split(",")
+                        .map((loc) => loc.trim());
+
+                      return {
+                        _type: loc._type,
+                        postcode: loc.postcode,
+                        street: parsedLoc[0] || "",
+                        purok: parsedLoc[1] || "",
+                        barangay: parsedLoc[2] || "",
+                        city: parsedLoc[3] || "",
+                        province: parsedLoc[3] || "",
+                      };
+                    }),
+            })
+          ).unwrap();
       } catch (error) {
         console.error(error);
       } finally {
@@ -107,16 +198,18 @@ function AddBrandMenu() {
 
       const newLocations = [...brand.locations];
 
-      newLocations[index] = {
-        _type: name === "locationType" ? value : newLocations[index]._type,
-        postcode:
-          name === "locationPostcode"
-            ? parseInt(value)
-            : newLocations[index].postcode,
-        location: name === "location" ? value : newLocations[index].location,
-      };
+      if (newLocations.length !== 0)
+        newLocations[index] = {
+          _type: name === "locationType" ? value : newLocations[index]._type,
+          postcode:
+            name === "locationPostcode"
+              ? parseInt(value)
+              : newLocations[index].postcode,
+          location: name === "location" ? value : newLocations[index].location,
+        };
 
       setBrand({
+        ...brand,
         name: name === "name" ? value : brand.name,
         _type: name === "type" ? value : brand._type,
         links: name === "image" ? value.split(",") : brand.links,
@@ -126,36 +219,53 @@ function AddBrandMenu() {
     };
 
   const resetAll = useCallback(() => {
+    if (brandInEdit) return;
+
     // Revert all states to INIT
-    setDisable(INIT_BTN_STATE);
     setBrand(INIT_FORM_VAL);
+    setText(INIT_BTN_TEXT);
+    setDisable(INIT_BTN_STATE);
     document.getElementById("addBrandForm").classList.remove("was-validated");
-  }, []);
+  }, [brandInEdit]);
 
   useEffect(() => {
     // If a save action is a success, hide the menu
-    if (saveStatus === Constants.SUCCESS)
+    if (
+      saveStatus === Constants.SUCCESS ||
+      modifyStatus === Constants.SUCCESS
+    ) {
+      Modal.getOrCreateInstance(document.getElementById("addBrandMenu")).hide();
+
       return Modal.getOrCreateInstance(
-        document.getElementById("addBrandForm")
-      ).hide();
+        document.getElementById("brandMenu")
+      ).show();
+    }
 
     // Otherwise, only reset the button state
     // so the user has a chance to re-edit
-    if (saveStatus === Constants.FAILED)
+    if (saveStatus === Constants.FAILED || modifyStatus === Constants.FAILED)
       return setDisable({
         submitBtn: true,
         resetBtn: false,
         inputs: false,
         inputCode: true,
       });
-  }, [saveStatus]);
+  }, [modifyStatus, saveStatus]);
 
   // Listen for modal events
   useEffect(() => {
     const addBrandMenu = document.getElementById("addBrandMenu");
 
     // When modal is closed, revert all states to INIT
-    const hideModalListener = () => resetAll();
+    const hideModalListener = () => {
+      setBrand(INIT_FORM_VAL);
+      setText(INIT_BTN_TEXT);
+      setDisable(INIT_BTN_STATE);
+
+      document.getElementById("addBrandForm").classList.remove("was-validated");
+
+      dispatch(resetAllBrandModification());
+    };
 
     const hidePreventedListener = () =>
       console.log("Modal prevented from closing");
@@ -176,7 +286,7 @@ function AddBrandMenu() {
     };
 
     return () => removeListeners();
-  }, [resetAll]);
+  }, [dispatch, resetAll]);
 
   return (
     <>
@@ -184,15 +294,19 @@ function AddBrandMenu() {
         <ModalMenu.Dialog scrollable>
           <ModalMenu.Content>
             <ModalMenu.Header>
-              <ModalMenu.Title>Add New Brand</ModalMenu.Title>
+              <ModalMenu.Title>
+                {brandInEdit ? "Edit Brand" : "Add New Brand"}
+              </ModalMenu.Title>
 
-              <button
-                className="btn py-1 px-2"
-                data-bs-target="#addProductMenu"
-                data-bs-toggle="modal"
-              >
-                Back
-              </button>
+              {!brandInEdit && (
+                <button
+                  className="btn py-1 px-2"
+                  data-bs-target="#brandMenu"
+                  data-bs-toggle="modal"
+                >
+                  Back
+                </button>
+              )}
             </ModalMenu.Header>
             <ModalMenu.Body>
               <form
@@ -379,7 +493,7 @@ function AddBrandMenu() {
                                   value={postcode}
                                   onChange={handleChange(i)}
                                   disabled={disable.inputs}
-                                  min={0}
+                                  min={1}
                                 />
 
                                 <div className="valid-feedback">
@@ -419,10 +533,12 @@ function AddBrandMenu() {
                 id="resetBtn"
                 type="reset"
                 className="btn btn-secondary ms-2"
+                data-bs-target={brandInEdit && "#brandMenu"}
+                data-bs-toggle={brandInEdit && "modal"}
                 disabled={disable.resetBtn}
                 onClick={resetAll}
               >
-                Reset
+                {text.resetBtn}
               </button>
 
               <button
@@ -440,7 +556,7 @@ function AddBrandMenu() {
                     aria-hidden={false}
                   ></span>
                 )}
-                Save
+                {text.submitBtn}
               </button>
             </ModalMenu.Footer>
           </ModalMenu.Content>

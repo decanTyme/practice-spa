@@ -24,7 +24,7 @@ export const INIT_BTN_STATE = {
 };
 
 export const INIT_BTN_TEXT = {
-  saveBtn: "Save",
+  submitBtn: "Save",
   resetBtn: "Reset",
 };
 

@@ -19,6 +19,7 @@ import {
 import { selectAllCouriers } from "../../../../../../app/state/slices/data/courier";
 import { Modal } from "bootstrap";
 import Container from "../../../../common/Container";
+import { INIT_BTN_TEXT } from "./AddProductForm/init";
 
 const INIT_FORM_VAL = {
   batch: "",
@@ -31,11 +32,6 @@ const INIT_FORM_VAL = {
   expiry: "",
   courier: "",
   arrivedOn: "",
-};
-
-export const INIT_BTN_TEXT = {
-  saveBtn: "Save",
-  resetBtn: "Reset",
 };
 
 const INIT_BTN_STATE = {
@@ -84,7 +80,7 @@ function AddStockMenu({ backTarget, variant, type }) {
       });
 
       setText({
-        saveBtn: "Update",
+        submitBtn: "Update",
         resetBtn: "Cancel",
       });
 
@@ -192,17 +188,13 @@ function AddStockMenu({ backTarget, variant, type }) {
     //! BUG: Won't automatically reset on menu close
     // The menu listeners will take care of
     // resetting the forms
-    if (stockInEdit)
-      return Modal.getOrCreateInstance(
-        document.getElementById(`${type}AddStockMenu`)
-      ).hide();
+    if (stockInEdit) return;
 
     // Clear CSV imports only if there is a
     // CSV currently imported
     if (importedCSV) {
       dispatch(abortCSVImport());
       document.getElementById("csvImportBtn").value = "";
-      return;
     }
 
     // Revert all states to INIT
@@ -238,10 +230,13 @@ function AddStockMenu({ backTarget, variant, type }) {
 
     // When modal is closed, revert all states to INIT
     const hideModalListener = () => {
+      document.getElementById("csvImportBtn").value = "";
+
       document
         .getElementById(`${type}StockForm`)
         .classList.remove("was-validated");
 
+      dispatch(abortCSVImport());
       dispatch(resetAllStockModification());
     };
 
@@ -587,7 +582,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                   aria-hidden={false}
                 ></span>
               )}
-              {text.saveBtn}
+              {text.submitBtn}
             </button>
           </ModalMenu.Footer>
         </ModalMenu.Content>

@@ -200,7 +200,6 @@ function ProductDetailsCard() {
                       aria-label="Select variant"
                       value={variant._id}
                       onChange={changeVariant}
-                      // disabled={disable.inputs}
                     >
                       {variants.map(({ _id, name }) => (
                         <option key={_id} value={_id}>
