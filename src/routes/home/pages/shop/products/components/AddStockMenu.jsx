@@ -392,7 +392,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                   </label>
                   <input
                     id="purchaseDate"
-                    type="date"
+                    type="datetime-local"
                     name="purchasedOn"
                     value={stock.purchasedOn}
                     className="form-control"
@@ -444,7 +444,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                   </label>
                   <input
                     id="manufactureDate"
-                    type="date"
+                    type="datetime-local"
                     name="manufacturedOn"
                     className="form-control"
                     value={stock.manufacturedOn}
@@ -465,7 +465,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                   </label>
                   <input
                     id="expiry"
-                    type="date"
+                    type="datetime-local"
                     name="expiry"
                     className="form-control"
                     value={stock.expiry}
@@ -494,7 +494,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                     <div className="input-group">
                       <input
                         id="arrivalDate"
-                        type="date"
+                        type="datetime-local"
                         name="arrivedOn"
                         className="form-control"
                         value={stock.arrivedOn}
