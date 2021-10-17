@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
 import {
   fetchProducts,
-  removeProduct,
+  removeProducts as removeProduct,
 } from "../../../../../app/state/slices/data/product/async-thunks";
 import {
   selectProductFetchStatus,

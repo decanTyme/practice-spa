@@ -14,7 +14,7 @@ import {
   selectCourierFetchStatus,
 } from "../../../../../../app/state/slices/data/courier";
 import { modifyProduct } from "../../../../../../app/state/slices/data/product";
-import { removeProduct } from "../../../../../../app/state/slices/data/product/async-thunks";
+import { removeProducts as removeProduct } from "../../../../../../app/state/slices/data/product/async-thunks";
 import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
 import Card from "../../../../common/Card";
 import Container from "../../../../common/Container";
@@ -403,7 +403,7 @@ function ProductDetailsCard() {
 
       {/* ----------------- Stock Menus ----------------- */}
 
-      <StockMenu type={menuType} stockList={variant.stocks} />
+      <StockMenu type={menuType} stockList={variant.stocks} variant={variant} />
     </>
   );
 }

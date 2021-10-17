@@ -103,11 +103,11 @@ export const updateProduct = createAsyncThunk(
   }
 );
 
-export const removeProduct = createAsyncThunk(
+export const removeProducts = createAsyncThunk(
   "products/delete",
-  async (_id, { dispatch }) => {
+  async (data, { dispatch }) => {
     const response = await HttpService().onDataRemove("products", void 0, {
-      params: { _id },
+      params: { _id: data },
     });
 
     const successMsg = "Product successfuly deleted!";
@@ -135,7 +135,7 @@ export const removeProduct = createAsyncThunk(
       default:
         dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
-        return _id;
+        return response.data.deleted;
     }
   }
 );

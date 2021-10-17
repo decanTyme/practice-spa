@@ -5,7 +5,7 @@ import {
   fetchProducts,
   pushProduct,
   pushStock,
-  removeProduct,
+  removeProducts,
   updateProduct,
   stockMarkInventoryChecked,
   moveStock,
@@ -355,19 +355,34 @@ const slice = createSlice({
       });
 
     /* Remove product cases */
-    builder.addCase(removeProduct.fulfilled, (state, action) => {
-      state.status.delete = Constants.SUCCESS;
+    builder
+      .addCase(removeProducts.pending, (state) => {
+        state.status.delete = Constants.LOADING;
+      })
+      .addCase(removeProducts.fulfilled, (state, action) => {
+        state.status.delete = Constants.SUCCESS;
 
-      // After removing the aprroved deleted data, remove from datastore
-      // and re-sort
-      state.data = state.data.filter(({ _id }) => _id !== action.payload);
-      state.data.sort(dynamicSort("name"));
+        // Batch delete
+        if (Array.isArray(action.payload))
+          action.payload.forEach(({ _id: itemId }) => {
+            state.data = state.data.filter(({ _id }) => _id !== itemId);
+          });
+        else
+          state.data = state.data.filter(({ _id }) => _id !== action.payload);
 
-      state.sn = null;
-      state.currentlyModifying = null;
-      state.currentlyModifyingStock = null;
-      state.currentlyViewedItem = null;
-    });
+        // After removing the aprroved deleted data, always re-sort
+        state.data.sort(dynamicSort("name"));
+
+        state.sn = null;
+        state.currentlyModifying = null;
+        state.currentlyModifyingStock = null;
+        state.currentlyViewedItem = null;
+      })
+      .addCase(removeProducts.rejected, (state, action) => {
+        state.status.delete = Constants.FAILED;
+
+        state.error.delete = action.error.message;
+      });
 
     /* Push stock cases */
     builder

@@ -1,9 +1,12 @@
 import { selectCurrentlySelectedProducts } from "../../../../../../app/state/slices/data/product/selectors";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AddProductMenu from "./AddProductMenu";
 import Card from "../../../../common/Card";
+import { removeProducts } from "../../../../../../app/state/slices/data/product/async-thunks";
 
 function ProductOptions() {
+  const dispatch = useDispatch();
+
   const dataInSelection = useSelector(selectCurrentlySelectedProducts);
 
   const onMultiDelete = () => {
@@ -20,7 +23,7 @@ function ProductOptions() {
       );
 
       if (reallySure !== null && reallySure === "DELETE ALL") {
-        alert(`Sorry, we can't do that right now!`);
+        dispatch(removeProducts(dataInSelection.map(({ _id }) => _id)));
       }
     }
   };
