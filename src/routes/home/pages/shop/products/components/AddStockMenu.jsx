@@ -483,7 +483,9 @@ function AddStockMenu({ backTarget, variant, type }) {
               </Container.Row>
 
               {/* ------------- Show only when adding warehouse stocks ------------ */}
-              {(type === StockTypes.WAREHOUSE || type === StockTypes.SOLD) && (
+              {type === StockTypes.WAREHOUSE ||
+              type === StockTypes.SOLD ||
+              (type === "edit" && stock.arrivedOn) ? (
                 <Container.Row className="mb-3">
                   <Container.Col columns="12">
                     <label htmlFor="arrivalDate" className="form-label">
@@ -532,7 +534,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                     </div>
                   </Container.Col>
                 </Container.Row>
-              )}
+              ) : null}
 
               <Container.Row>
                 <Container.Col columns="12">
