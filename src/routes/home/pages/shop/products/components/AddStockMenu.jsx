@@ -20,6 +20,7 @@ import { selectAllCouriers } from "../../../../../../app/state/slices/data/couri
 import { Modal } from "bootstrap";
 import Container from "../../../../common/Container";
 import { INIT_BTN_TEXT } from "./AddProductForm/init";
+import CourierMenu from "./CourierMenu";
 
 const INIT_FORM_VAL = {
   batch: "",
@@ -62,6 +63,7 @@ function AddStockMenu({ backTarget, variant, type }) {
   const [text, setText] = useState(INIT_BTN_TEXT);
   const [loading, setLoading] = useState(false);
   const [disable, setDisable] = useState(INIT_BTN_STATE);
+  const [isCourierMenuOpen, toggleCourierMenu] = useState(false);
 
   // Always listen for stock-in-edit states
   useEffect(() => {
@@ -183,6 +185,8 @@ function AddStockMenu({ backTarget, variant, type }) {
   };
 
   const resetToDefaults = useCallback(() => {
+    toggleCourierMenu(false);
+
     // Only hide the menu if there was a recent stock edit
     // and the user has cancelled editing
     //! BUG: Won't automatically reset on menu close
@@ -230,14 +234,16 @@ function AddStockMenu({ backTarget, variant, type }) {
 
     // When modal is closed, revert all states to INIT
     const hideModalListener = () => {
-      document.getElementById("csvImportBtn").value = "";
+      if (!isCourierMenuOpen) {
+        document.getElementById("csvImportBtn").value = "";
 
-      document
-        .getElementById(`${type}StockForm`)
-        .classList.remove("was-validated");
+        document
+          .getElementById(`${type}StockForm`)
+          .classList.remove("was-validated");
 
-      dispatch(abortCSVImport());
-      dispatch(resetAllStockModification());
+        dispatch(abortCSVImport());
+        dispatch(resetAllStockModification());
+      }
     };
 
     const hidePreventedListener = () =>
@@ -259,337 +265,353 @@ function AddStockMenu({ backTarget, variant, type }) {
     };
 
     return () => removeListeners();
-  }, [dispatch, stockInEdit, type]);
+  }, [dispatch, isCourierMenuOpen, stockInEdit, type]);
 
   const batchPlaceholder = useMemo(() => {
     return Math.ceil(Math.random() * 100000000);
   }, []);
 
   return (
-    <ModalMenu id={`${type}AddStockMenu`} fade _static keyboard>
-      <ModalMenu.Dialog>
-        <ModalMenu.Content>
-          <ModalMenu.Header>
-            <ModalMenu.Title>
-              {stockInEdit ? "Edit Stock" : `Add ${type.capitalize()} Stock`}
-            </ModalMenu.Title>
+    <>
+      <ModalMenu id={`${type}AddStockMenu`} fade _static keyboard>
+        <ModalMenu.Dialog>
+          <ModalMenu.Content>
+            <ModalMenu.Header>
+              <ModalMenu.Title>
+                {stockInEdit ? "Edit Stock" : `Add ${type.capitalize()} Stock`}
+              </ModalMenu.Title>
 
-            {type !== "edit" && (
-              <button
-                className="btn py-1 px-2"
-                data-bs-target={`#${type}StockMenu`}
-                data-bs-toggle="modal"
-                data-bs-dismiss="modal"
+              {type !== "edit" && (
+                <button
+                  className="btn py-1 px-2"
+                  data-bs-target={`#${type}StockMenu`}
+                  data-bs-toggle="modal"
+                  data-bs-dismiss="modal"
+                  onClick={() => toggleCourierMenu(false)}
+                >
+                  Back
+                </button>
+              )}
+            </ModalMenu.Header>
+
+            <ModalMenu.Body>
+              <form
+                id={`${type}StockForm`}
+                className="needs-validation px-1 mb-2"
               >
-                Back
-              </button>
-            )}
-          </ModalMenu.Header>
-
-          <ModalMenu.Body>
-            <form
-              id={`${type}StockForm`}
-              className="needs-validation px-1 mb-2"
-            >
-              <Container.Row className="mb-3">
-                <Container.Col columns="12">
-                  <label htmlFor="stockBatch" className="form-label">
-                    Batch Number
-                  </label>
-                  <div className="input-group">
-                    <input
-                      id="stockBatch"
-                      type="text"
-                      name="batch"
-                      className="form-control"
-                      placeholder={batchPlaceholder}
-                      value={stock.batch}
-                      onChange={handleChange}
-                      disabled={disable.inputs || disable.inputCode}
-                      required
-                      pattern="[A-Z0-9]+"
-                    />
-                    {!disable.inputCode && (
-                      <button
-                        id="qrBtn"
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        // data-bs-toggle="modal"
-                        // data-bs-target="#addProductScannerModal"
-                        disabled={true}
-                        aria-label="Scan Batch Code"
-                      >
-                        <i className="fa fa-qrcode"></i>
-                      </button>
-                    )}
-
-                    <div className="invalid-feedback">
-                      Invalid batch number.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </Container.Col>
-              </Container.Row>
-
-              <Container.Row className="mb-3">
-                <Container.Col columns="6">
-                  <label htmlFor="stockQuantity" className="form-label">
-                    Quantity
-                  </label>
-                  <div className="input-group">
-                    <input
-                      id="stockQuantity"
-                      type="number"
-                      name="quantity"
-                      className="form-control"
-                      placeholder="100"
-                      min={1}
-                      value={stock.quantity}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-                    <span className="input-group-text">units</span>
-
-                    <div className="invalid-feedback">
-                      Cannot be less than 1.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </Container.Col>
-
-                <Container.Col columns="6">
-                  <label htmlFor="stockPricePerUnit" className="form-label">
-                    Price Per Unit
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text">Php</span>
-                    <input
-                      id="stockPricePerUnit"
-                      type="number"
-                      name="pricePerUnit"
-                      className="form-control"
-                      placeholder="125"
-                      min={1}
-                      value={stock.pricePerUnit}
-                      onChange={handleChange}
-                      disabled={disable.inputs}
-                      required
-                    />
-
-                    <div className="invalid-feedback">
-                      Cannot be less than 1.
-                    </div>
-                    <div className="valid-feedback">Looks good!</div>
-                  </div>
-                </Container.Col>
-              </Container.Row>
-
-              <Container.Row className="mb-3">
-                <Container.Col columns="6">
-                  <label htmlFor="purchaseDate" className="form-label">
-                    Purchased On
-                  </label>
-                  <input
-                    id="purchaseDate"
-                    type="datetime-local"
-                    name="purchasedOn"
-                    value={stock.purchasedOn}
-                    className="form-control"
-                    onChange={handleChange}
-                    disabled={disable.inputs}
-                    required
-                    min="2020-01-01"
-                  />
-
-                  <div className="invalid-feedback">
-                    Please select a valid date.
-                  </div>
-                  <div className="valid-feedback">Looks good!</div>
-                </Container.Col>
-
-                <Container.Col columns="6">
-                  <label htmlFor="courier" className="form-label">
-                    Courier
-                  </label>
-                  <select
-                    id="courier"
-                    name="courier"
-                    className="form-select"
-                    aria-label="Select courier"
-                    value={stock.courier}
-                    onChange={handleChange}
-                    disabled={disable.inputs}
-                    required
-                  >
-                    <option value="">Select Courier</option>
-                    {couriers.map(({ _id, name }) => (
-                      <option key={_id} value={_id}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <div className="invalid-feedback">
-                    Please select a valid category.
-                  </div>
-                  <div className="valid-feedback">Looks good!</div>
-                </Container.Col>
-              </Container.Row>
-
-              <Container.Row className="mb-3">
-                <Container.Col columns="6">
-                  <label htmlFor="manufactureDate" className="form-label">
-                    Manufactured On
-                  </label>
-                  <input
-                    id="manufactureDate"
-                    type="datetime-local"
-                    name="manufacturedOn"
-                    className="form-control"
-                    value={stock.manufacturedOn}
-                    onChange={handleChange}
-                    disabled={disable.inputs}
-                    min="2020-01-01"
-                  />
-
-                  <div className="invalid-feedback">
-                    Please select a valid date.
-                  </div>
-                  <div className="valid-feedback">Looks good!</div>
-                </Container.Col>
-
-                <Container.Col columns="6">
-                  <label htmlFor="manufactureDate" className="form-label">
-                    Expiry
-                  </label>
-                  <input
-                    id="expiry"
-                    type="datetime-local"
-                    name="expiry"
-                    className="form-control"
-                    value={stock.expiry}
-                    onChange={handleChange}
-                    disabled={disable.inputs}
-                    min="2020-01-01"
-                    required
-                  />
-
-                  <div className="invalid-feedback">
-                    Please select a valid date.
-                  </div>
-                  <div className="valid-feedback">Looks good!</div>
-                </Container.Col>
-              </Container.Row>
-
-              {/* ------------- Show only when adding warehouse stocks ------------ */}
-              {type === StockTypes.WAREHOUSE ||
-              type === StockTypes.SOLD ||
-              (type === "edit" && stock.arrivedOn) ? (
                 <Container.Row className="mb-3">
                   <Container.Col columns="12">
-                    <label htmlFor="arrivalDate" className="form-label">
-                      Arrived On
+                    <label htmlFor="stockBatch" className="form-label">
+                      Batch Number
                     </label>
                     <div className="input-group">
                       <input
-                        id="arrivalDate"
-                        type="datetime-local"
-                        name="arrivedOn"
+                        id="stockBatch"
+                        type="text"
+                        name="batch"
                         className="form-control"
-                        value={stock.arrivedOn}
+                        placeholder={batchPlaceholder}
+                        value={stock.batch}
                         onChange={handleChange}
-                        disabled={disable.inputs}
-                        min="2020-01-01"
+                        disabled={disable.inputs || disable.inputCode}
+                        required
+                        pattern="[A-Z0-9]+"
                       />
-
-                      {type !== StockTypes.SOLD && (
-                        <div className="input-group-text">
-                          <div className="form-check">
-                            <input
-                              id="inventoryChecked"
-                              name="checked"
-                              type="checkbox"
-                              className="form-check-input"
-                              checked={stock.checked}
-                              onChange={handleChange}
-                              style={{ marginTop: "0.32rem" }}
-                              disabled={disable.inputs}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="inventoryChecked"
-                              style={{ fontSize: "0.9rem" }}
-                            >
-                              Batch Already Checked
-                            </label>
-                          </div>
-                        </div>
+                      {!disable.inputCode && (
+                        <button
+                          id="qrBtn"
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          // data-bs-toggle="modal"
+                          // data-bs-target="#addProductScannerModal"
+                          disabled={true}
+                          aria-label="Scan Batch Code"
+                        >
+                          <i className="fa fa-qrcode"></i>
+                        </button>
                       )}
 
                       <div className="invalid-feedback">
-                        Please select a valid date.
+                        Invalid batch number.
                       </div>
                       <div className="valid-feedback">Looks good!</div>
                     </div>
                   </Container.Col>
                 </Container.Row>
-              ) : null}
 
-              <Container.Row>
-                <Container.Col columns="12">
-                  <label htmlFor="stockDesc" className="form-label">
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    id="stockDesc"
-                    name="description"
-                    className="form-control"
-                    placeholder="Any description or remarks of the batch here..."
-                    style={{ height: "100px" }}
-                    value={stock.description}
-                    onChange={handleChange}
-                  ></textarea>
-                  <div className="valid-feedback">Looks good!</div>
-                </Container.Col>
-              </Container.Row>
-            </form>
-          </ModalMenu.Body>
+                <Container.Row className="mb-3">
+                  <Container.Col columns="6">
+                    <label htmlFor="stockQuantity" className="form-label">
+                      Quantity
+                    </label>
+                    <div className="input-group">
+                      <input
+                        id="stockQuantity"
+                        type="number"
+                        name="quantity"
+                        className="form-control"
+                        placeholder="100"
+                        min={1}
+                        value={stock.quantity}
+                        onChange={handleChange}
+                        disabled={disable.inputs}
+                        required
+                      />
+                      <span className="input-group-text">units</span>
 
-          <ModalMenu.Footer>
-            <button
-              id="resetBtn"
-              type="reset"
-              className="btn btn-secondary ms-2"
-              data-bs-target={backTarget && `#${backTarget}`}
-              data-bs-toggle={backTarget && "modal"}
-              disabled={disable.resetBtn}
-              onClick={resetToDefaults}
-            >
-              {text.resetBtn}
-            </button>
+                      <div className="invalid-feedback">
+                        Cannot be less than 1.
+                      </div>
+                      <div className="valid-feedback">Looks good!</div>
+                    </div>
+                  </Container.Col>
 
-            <button
-              id="submitBtn"
-              type="submit"
-              className="btn btn-success ms-2"
-              role="status"
-              onClick={handleSubmit}
-              disabled={disable.submitBtn}
-            >
-              {loading && (
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden={false}
-                ></span>
-              )}
-              {text.submitBtn}
-            </button>
-          </ModalMenu.Footer>
-        </ModalMenu.Content>
-      </ModalMenu.Dialog>
-    </ModalMenu>
+                  <Container.Col columns="6">
+                    <label htmlFor="stockPricePerUnit" className="form-label">
+                      Price Per Unit
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">Php</span>
+                      <input
+                        id="stockPricePerUnit"
+                        type="number"
+                        name="pricePerUnit"
+                        className="form-control"
+                        placeholder="125"
+                        min={1}
+                        value={stock.pricePerUnit}
+                        onChange={handleChange}
+                        disabled={disable.inputs}
+                        required
+                      />
+
+                      <div className="invalid-feedback">
+                        Cannot be less than 1.
+                      </div>
+                      <div className="valid-feedback">Looks good!</div>
+                    </div>
+                  </Container.Col>
+                </Container.Row>
+
+                <Container.Row className="mb-3">
+                  <Container.Col columns="6">
+                    <label htmlFor="purchaseDate" className="form-label">
+                      Purchased On
+                    </label>
+                    <input
+                      id="purchaseDate"
+                      type="datetime-local"
+                      name="purchasedOn"
+                      value={stock.purchasedOn}
+                      className="form-control"
+                      onChange={handleChange}
+                      disabled={disable.inputs}
+                      required
+                      min="2020-01-01"
+                    />
+
+                    <div className="invalid-feedback">
+                      Please select a valid date.
+                    </div>
+                    <div className="valid-feedback">Looks good!</div>
+                  </Container.Col>
+
+                  <Container.Col columns="6">
+                    <label htmlFor="courier" className="form-label">
+                      Courier
+                    </label>
+                    <a
+                      href="#courierMenu"
+                      role="button"
+                      data-bs-target="#courierMenu"
+                      data-bs-toggle="modal"
+                      className="text-decoration-none float-end fw-light"
+                      style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
+                      onClick={() => toggleCourierMenu(true)}
+                    >
+                      Edit couriers
+                    </a>
+                    <select
+                      id="courier"
+                      name="courier"
+                      className="form-select"
+                      aria-label="Select courier"
+                      value={stock.courier}
+                      onChange={handleChange}
+                      disabled={disable.inputs}
+                      required
+                    >
+                      <option value="">Select Courier</option>
+                      {couriers.map(({ _id, name }) => (
+                        <option key={_id} value={_id}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="invalid-feedback">
+                      Please select a valid category.
+                    </div>
+                    <div className="valid-feedback">Looks good!</div>
+                  </Container.Col>
+                </Container.Row>
+
+                <Container.Row className="mb-3">
+                  <Container.Col columns="6">
+                    <label htmlFor="manufactureDate" className="form-label">
+                      Manufactured On
+                    </label>
+                    <input
+                      id="manufactureDate"
+                      type="datetime-local"
+                      name="manufacturedOn"
+                      className="form-control"
+                      value={stock.manufacturedOn}
+                      onChange={handleChange}
+                      disabled={disable.inputs}
+                      min="2020-01-01"
+                    />
+
+                    <div className="invalid-feedback">
+                      Please select a valid date.
+                    </div>
+                    <div className="valid-feedback">Looks good!</div>
+                  </Container.Col>
+
+                  <Container.Col columns="6">
+                    <label htmlFor="manufactureDate" className="form-label">
+                      Expiry
+                    </label>
+                    <input
+                      id="expiry"
+                      type="datetime-local"
+                      name="expiry"
+                      className="form-control"
+                      value={stock.expiry}
+                      onChange={handleChange}
+                      disabled={disable.inputs}
+                      min="2020-01-01"
+                      required
+                    />
+
+                    <div className="invalid-feedback">
+                      Please select a valid date.
+                    </div>
+                    <div className="valid-feedback">Looks good!</div>
+                  </Container.Col>
+                </Container.Row>
+
+                {/* ------------- Show only when adding warehouse stocks ------------ */}
+                {type === StockTypes.WAREHOUSE ||
+                type === StockTypes.SOLD ||
+                (type === "edit" && stock.arrivedOn) ? (
+                  <Container.Row className="mb-3">
+                    <Container.Col columns="12">
+                      <label htmlFor="arrivalDate" className="form-label">
+                        Arrived On
+                      </label>
+                      <div className="input-group">
+                        <input
+                          id="arrivalDate"
+                          type="datetime-local"
+                          name="arrivedOn"
+                          className="form-control"
+                          value={stock.arrivedOn}
+                          onChange={handleChange}
+                          disabled={disable.inputs}
+                          min="2020-01-01"
+                        />
+
+                        {type !== StockTypes.SOLD && (
+                          <div className="input-group-text">
+                            <div className="form-check">
+                              <input
+                                id="inventoryChecked"
+                                name="checked"
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={stock.checked}
+                                onChange={handleChange}
+                                style={{ marginTop: "0.32rem" }}
+                                disabled={disable.inputs}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor="inventoryChecked"
+                                style={{ fontSize: "0.9rem" }}
+                              >
+                                Batch Already Checked
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="invalid-feedback">
+                          Please select a valid date.
+                        </div>
+                        <div className="valid-feedback">Looks good!</div>
+                      </div>
+                    </Container.Col>
+                  </Container.Row>
+                ) : null}
+
+                <Container.Row>
+                  <Container.Col columns="12">
+                    <label htmlFor="stockDesc" className="form-label">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      id="stockDesc"
+                      name="description"
+                      className="form-control"
+                      placeholder="Any description or remarks of the batch here..."
+                      style={{ height: "100px" }}
+                      value={stock.description}
+                      onChange={handleChange}
+                    ></textarea>
+                    <div className="valid-feedback">Looks good!</div>
+                  </Container.Col>
+                </Container.Row>
+              </form>
+            </ModalMenu.Body>
+
+            <ModalMenu.Footer>
+              <button
+                id="resetBtn"
+                type="reset"
+                className="btn btn-secondary ms-2"
+                data-bs-target={backTarget && `#${backTarget}`}
+                data-bs-toggle={backTarget && "modal"}
+                disabled={disable.resetBtn}
+                onClick={resetToDefaults}
+              >
+                {text.resetBtn}
+              </button>
+
+              <button
+                id="submitBtn"
+                type="submit"
+                className="btn btn-success ms-2"
+                role="status"
+                onClick={handleSubmit}
+                disabled={disable.submitBtn}
+              >
+                {loading && (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden={false}
+                  ></span>
+                )}
+                {text.submitBtn}
+              </button>
+            </ModalMenu.Footer>
+          </ModalMenu.Content>
+        </ModalMenu.Dialog>
+      </ModalMenu>
+
+      <CourierMenu type={type} />
+    </>
   );
 }
 
