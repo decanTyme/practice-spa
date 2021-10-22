@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Themes from "../../../../../../../themes";
 import ModalMenu from "../../../../../common/menus/ModalMenu";
 import useThemeProvider from "../../../../../../../services/providers/theme";
@@ -8,6 +8,9 @@ import {
 } from "../../../../../../../app/state/slices/notification/selectors";
 import UnreadNotification from "./components/UnreadNotification";
 import OldNotification from "./components/OldNotification";
+import { useEffect, useRef } from "react";
+import useOnScreen from "../../../../../../../services/hooks/use-on-screen";
+import { read } from "../../../../../../../app/state/slices/notification";
 
 function NotificationsMenu() {
   const { theme } = useThemeProvider();
@@ -18,8 +21,26 @@ function NotificationsMenu() {
   const hasUnread = notifyUnread.length !== 0;
   const hasHistory = notifyRead.length !== 0;
 
+  const dispatch = useDispatch();
+
+  const ref = useRef();
+
+  const isVisible = useOnScreen(ref && ref);
+
+  useEffect(() => {
+    const notifRead = () =>
+      isVisible && notifyUnread.forEach((unread) => dispatch(read(unread.id)));
+
+    return () => notifRead();
+  });
+
   return (
-    <ModalMenu id="notificationsMenu" fade themeMode={Themes[theme]}>
+    <ModalMenu
+      id="notificationsMenu"
+      fade
+      themeMode={Themes[theme]}
+      reference={ref}
+    >
       <ModalMenu.Dialog scrollable>
         <ModalMenu.Content>
           <ModalMenu.Header>

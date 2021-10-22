@@ -1,35 +1,14 @@
+import classNames from "classnames";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
-import { read } from "../../../../../../../../app/state/slices/notification";
-import useOnScreen from "../../../../../../../../services/hooks/use-on-screen";
 import { determineMargin, toastStyle } from "../utils";
 
 function UnreadNotification({
   unfilteredLength,
-  data: { id, date, type, title, message },
+  data: { date, type, title, message },
   index: i,
 }) {
-  const dispatch = useDispatch();
-
-  const ref = useRef();
-
-  const isVisible = useOnScreen(ref && ref);
-
-  useEffect(() => {
-    const notifRead = () => {
-      isVisible && dispatch(read(id));
-    };
-
-    return () => notifRead();
-  });
-
   return (
-    <div
-      key={id}
-      className={"card " + determineMargin(unfilteredLength, i, 2)}
-      ref={ref}
-    >
+    <div className={"card " + determineMargin(unfilteredLength, i, 2)}>
       <div className="card-body" style={{ fontSize: "0.925rem" }}>
         <div className="d-flex justify-content-between align-items-center">
           <p className="mb-0 fw-bolder">
@@ -41,9 +20,9 @@ function UnreadNotification({
           <p className={"me-1 mb-1 ps-3 " + toastStyle(type)}>{type}</p>
         </div>
         <p
-          className={
-            "card-subtitle text-muted fst-italic " + (message ? "mb-2" : "mb-1")
-          }
+          className={classNames("card-subtitle text-muted fst-italic mb-2", {
+            "mb-1": !message,
+          })}
         >
           {formatDistanceToNow(parseISO(date))} ago
         </p>
