@@ -21,6 +21,7 @@ import { Modal } from "bootstrap";
 import Container from "../../../../common/Container";
 import { INIT_BTN_TEXT } from "./AddProductForm/init";
 import CourierMenu from "./CourierMenu";
+import SpinnerButton from "../../../components/SpinnerButton";
 
 const INIT_FORM_VAL = {
   batch: "",
@@ -577,7 +578,6 @@ function AddStockMenu({ backTarget, variant, type }) {
 
             <ModalMenu.Footer>
               <button
-                id="resetBtn"
                 type="reset"
                 className="btn btn-secondary ms-2"
                 data-bs-target={backTarget && `#${backTarget}`}
@@ -588,23 +588,16 @@ function AddStockMenu({ backTarget, variant, type }) {
                 {text.resetBtn}
               </button>
 
-              <button
-                id="submitBtn"
+              <SpinnerButton
                 type="submit"
-                className="btn btn-success ms-2"
                 role="status"
+                className="btn btn-success ms-2"
+                isLoading={loading}
                 onClick={handleSubmit}
                 disabled={disable.submitBtn}
               >
-                {loading && (
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden={false}
-                  ></span>
-                )}
                 {text.submitBtn}
-              </button>
+              </SpinnerButton>
             </ModalMenu.Footer>
           </ModalMenu.Content>
         </ModalMenu.Dialog>

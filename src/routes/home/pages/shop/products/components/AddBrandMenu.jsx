@@ -16,6 +16,7 @@ import {
 import useInitializeTooltips from "../../../../../../services/hooks/use-init-tooltips";
 import Container from "../../../../common/Container";
 import ModalMenu from "../../../../common/menus/ModalMenu";
+import SpinnerButton from "../../../components/SpinnerButton";
 import { INIT_BTN_TEXT } from "./AddProductForm/init";
 
 const INIT_FORM_VAL = {
@@ -530,7 +531,6 @@ function AddBrandMenu() {
 
             <ModalMenu.Footer>
               <button
-                id="resetBtn"
                 type="reset"
                 className="btn btn-secondary ms-2"
                 data-bs-target={brandInEdit && "#brandMenu"}
@@ -541,23 +541,16 @@ function AddBrandMenu() {
                 {text.resetBtn}
               </button>
 
-              <button
-                id="submitBtn"
+              <SpinnerButton
                 type="submit"
-                className="btn btn-success ms-2"
                 role="status"
+                className="btn btn-success ms-2"
+                isLoading={loading}
                 onClick={handleSubmit}
                 disabled={disable.submitBtn}
               >
-                {loading && (
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden={false}
-                  ></span>
-                )}
                 {text.submitBtn}
-              </button>
+              </SpinnerButton>
             </ModalMenu.Footer>
           </ModalMenu.Content>
         </ModalMenu.Dialog>

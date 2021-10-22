@@ -1,5 +1,5 @@
 import "./products-wrapper.css";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ProductDetailsCard from "./components/ProductDetailsCard";
 import PaginationTable from "../common/table/PaginationTable";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
@@ -53,6 +53,7 @@ import {
 import ProductOptions from "./components/ProductOptionsCard";
 import Container from "../../../common/Container";
 import { fetchBrands } from "../../../../../app/state/slices/data/brand";
+import SpinnerButton from "../../components/SpinnerButton";
 
 function ProductsWrapper() {
   const location = useLocation();
@@ -110,14 +111,28 @@ function ProductsWrapper() {
     [dispatch]
   );
 
+  const [loading, setLoading] = useState({});
+
   const onRemoveProduct = useCallback(
-    (product) => {
+    async (product) => {
       const ans = prompt(
         `Are you sure you want to delete "${product.name}"? \n\nType the the product name below to confirm.`
       );
 
-      if (ans !== null && ans === product.name)
-        dispatch(removeProduct(product._id));
+      if (ans !== null && ans === product.name) {
+        setLoading((prevLoading) => ({ ...prevLoading, [product._id]: true }));
+
+        try {
+          await dispatch(removeProduct(product._id)).unwrap();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading((prevLoading) => ({
+            ...prevLoading,
+            [product._id]: false,
+          }));
+        }
+      }
     },
     [dispatch]
   );
@@ -180,16 +195,19 @@ function ProductsWrapper() {
           >
             Quick Edit
           </button>
-          <button
+
+          <SpinnerButton
             className="btn btn-danger float-end mx-1"
+            isLoading={loading[item._id]}
             onClick={() => onRemoveProduct(item)}
+            disabled={loading[item._id]}
           >
             Quick Delete
-          </button>
+          </SpinnerButton>
         </div>
       );
     },
-    [dispatch, onRemoveProduct, viewDataDetails]
+    [dispatch, onRemoveProduct, viewDataDetails, loading]
   );
 
   const selectData = useCallback(

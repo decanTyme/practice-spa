@@ -3,13 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import AddProductMenu from "./AddProductMenu";
 import Card from "../../../../common/Card";
 import { removeProducts } from "../../../../../../app/state/slices/data/product/async-thunks";
+import { useState } from "react";
+import SpinnerButton from "../../../components/SpinnerButton";
 
 function ProductOptions() {
   const dispatch = useDispatch();
 
   const dataInSelection = useSelector(selectCurrentlySelectedProducts);
 
-  const onMultiDelete = () => {
+  const [loading, setLoading] = useState(false);
+
+  const onMultiDelete = async () => {
     if (
       window.confirm(
         "Are you sure you want to delete the following?\n\n" +
@@ -23,7 +27,17 @@ function ProductOptions() {
       );
 
       if (reallySure !== null && reallySure === "DELETE ALL") {
-        dispatch(removeProducts(dataInSelection.map(({ _id }) => _id)));
+        setLoading(true);
+
+        try {
+          await dispatch(
+            removeProducts(dataInSelection.map(({ _id }) => _id))
+          ).unwrap();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
       }
     }
   };
@@ -51,13 +65,16 @@ function ProductOptions() {
             <div className="border-top py-2 px-5">
               Selected items: {dataInSelection.length}
             </div>
-            <button
-              type="button"
+
+            <SpinnerButton
+              role="status"
               className="btn btn-danger rounded-0"
+              isLoading={loading}
               onClick={onMultiDelete}
+              disabled={loading}
             >
               Delete All
-            </button>
+            </SpinnerButton>
           </div>
         )}
 

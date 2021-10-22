@@ -2,7 +2,6 @@ import "./AddProductForm/add-product-form.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Papa from "papaparse";
-import Spinner from "../../../components/spinner";
 import {
   selectProductScannedCode,
   selectProductPushStatus,
@@ -39,6 +38,7 @@ import useInitializeTooltips from "../../../../../../services/hooks/use-init-too
 import { selectAllBrands } from "../../../../../../app/state/slices/data/brand";
 import BrandMenu from "./BrandMenu";
 import Container from "../../../../common/Container";
+import SpinnerButton from "../../../components/SpinnerButton";
 
 function AddProductMenu() {
   useInitializeTooltips();
@@ -729,7 +729,6 @@ function AddProductMenu() {
               />
 
               <button
-                id="resetBtn"
                 type="reset"
                 className="btn btn-secondary ms-2"
                 disabled={disable.resetBtn}
@@ -738,23 +737,19 @@ function AddProductMenu() {
                 {text.resetBtn}
               </button>
 
-              <button
-                id="submitBtn"
+              <SpinnerButton
                 type="submit"
-                className="btn btn-success ms-2"
                 role="status"
+                className="btn btn-success ms-2"
+                isLoading={
+                  saveStatus !== Constants.IDLE ||
+                  modifyStatus !== Constants.IDLE
+                }
                 onClick={handleSubmit}
                 disabled={disable.submitBtn}
               >
-                {saveStatus !== Constants.IDLE ||
-                modifyStatus !== Constants.IDLE ? (
-                  <Spinner addClass="spinner-border-sm">
-                    {text.submitBtn}
-                  </Spinner>
-                ) : (
-                  text.submitBtn
-                )}
-              </button>
+                {text.submitBtn}
+              </SpinnerButton>
             </ModalMenu.Footer>
           </ModalMenu.Content>
         </ModalMenu.Dialog>

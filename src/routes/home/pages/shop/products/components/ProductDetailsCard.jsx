@@ -18,6 +18,7 @@ import { removeProducts as removeProduct } from "../../../../../../app/state/sli
 import { selectProductDetails } from "../../../../../../app/state/slices/data/product/selectors";
 import Card from "../../../../common/Card";
 import Container from "../../../../common/Container";
+import SpinnerButton from "../../../components/SpinnerButton";
 import StockMenu from "./StockMenu";
 
 function ProductDetailsCard() {
@@ -62,6 +63,7 @@ function ProductDetailsCard() {
   }, [dispatch, dataFetchStatus, isLoggedIn, stale, database]);
 
   const [variant, setVariant] = useState(variants[0]);
+  const [loading, setLoading] = useState(false);
 
   const changeVariant = (e) => {
     setVariant(variants.find(({ _id }) => _id === e.target.value));
@@ -71,12 +73,22 @@ function ProductDetailsCard() {
     dispatch(modifyProduct(productDetails));
   };
 
-  const onRemoveProduct = () => {
+  const onRemoveProduct = async () => {
     const ans = prompt(
       `Are you sure you want to delete "${name}"? \n\nType the the product name below to confirm.`
     );
 
-    if (ans !== null && ans === name) dispatch(removeProduct(_id));
+    if (ans !== null && ans === name) {
+      setLoading(true);
+
+      try {
+        await dispatch(removeProduct(_id)).unwrap();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   useEffect(() => {
@@ -386,13 +398,15 @@ function ProductDetailsCard() {
                 >
                   Edit
                 </button>
-                <button
-                  type="button"
+
+                <SpinnerButton
                   className="btn btn-danger rounded-0"
+                  isLoading={loading}
                   onClick={onRemoveProduct}
+                  disabled={loading}
                 >
                   Delete
-                </button>
+                </SpinnerButton>
               </div>
             </Card.ListGroup>
           </Container.Col>
