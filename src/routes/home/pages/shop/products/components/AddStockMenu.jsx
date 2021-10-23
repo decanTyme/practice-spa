@@ -26,7 +26,7 @@ import SpinnerButton from "../../../components/SpinnerButton";
 const INIT_FORM_VAL = {
   batch: "",
   checked: false,
-  description: "Any description or remarks of the batch here...",
+  description: "",
   quantity: 0,
   pricePerUnit: 0,
   purchasedOn: "",
@@ -72,7 +72,12 @@ function AddStockMenu({ backTarget, variant, type }) {
       setStock({
         ...stockInEdit,
         courier: stockInEdit.courier._id,
-        arrivedOn: stockInEdit.arrivedOn ? stockInEdit.arrivedOn : "",
+        arrivedOn: stockInEdit.arrivedOn
+          ? stockInEdit.arrivedOn.split(".")[0]
+          : "",
+        purchasedOn: stockInEdit.purchasedOn.split(".")[0],
+        manufacturedOn: stockInEdit.manufacturedOn.split(".")[0],
+        expiry: stockInEdit.expiry.split(".")[0],
       });
 
       setDisable({
@@ -122,7 +127,8 @@ function AddStockMenu({ backTarget, variant, type }) {
             updateStock({
               ...stock,
               arrivedOn:
-                stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
+                stock.arrivedOn &&
+                new Date(stock.arrivedOn).toISOString().split(".")[0],
               variantId: stock.variant,
             })
           ).unwrap();
@@ -131,13 +137,18 @@ function AddStockMenu({ backTarget, variant, type }) {
             pushStock({
               ...stock,
               checked: type === StockTypes.SOLD ? true : stock.checked,
-              purchasedOn: new Date(stock.purchasedOn).toISOString(),
-              manufacturedOn:
-                stock.manufacturedOn &&
-                new Date(stock.manufacturedOn).toISOString(),
-              expiry: new Date(stock.expiry).toISOString(),
+              description:
+                stock.description === "" ? undefined : stock.description,
+              purchasedOn: new Date(stock.purchasedOn)
+                .toISOString()
+                .split(".")[0],
+              manufacturedOn: new Date(stock.manufacturedOn)
+                .toISOString()
+                .split(".")[0],
+              expiry: new Date(stock.expiry).toISOString().split(".")[0],
               arrivedOn:
-                stock.arrivedOn && new Date(stock.arrivedOn).toISOString(),
+                stock.arrivedOn &&
+                new Date(stock.arrivedOn).toISOString().split(".")[0],
               variantId: variant._id,
               _type: type,
             })
@@ -471,6 +482,7 @@ function AddStockMenu({ backTarget, variant, type }) {
                       onChange={handleChange}
                       disabled={disable.inputs}
                       min="2020-01-01"
+                      required
                     />
 
                     <div className="invalid-feedback">
@@ -521,6 +533,11 @@ function AddStockMenu({ backTarget, variant, type }) {
                           onChange={handleChange}
                           disabled={disable.inputs}
                           min="2020-01-01"
+                          required={
+                            type === StockTypes.WAREHOUSE ||
+                            type === StockTypes.SOLD ||
+                            type === "edit"
+                          }
                         />
 
                         {type !== StockTypes.SOLD && (
