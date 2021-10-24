@@ -23,7 +23,8 @@ function SidebarHeader() {
 
   useEffect(() => {
     if (
-      database.status === Constants.IDLE &&
+      (database.status === Constants.IDLE ||
+        database.status === Constants.AuthManager.Database.CONNECTING) &&
       authStatus === Constants.IDLE &&
       isLoggedIn
     )
@@ -32,7 +33,10 @@ function SidebarHeader() {
   }, [dispatch, router, authStatus, isLoggedIn]);
 
   let dbStatus, dbStatusColor;
-  if (database.status === "CONNECTING" && !database.connected) {
+  if (
+    database.status === Constants.AuthManager.Database.CONNECTING &&
+    !database.connected
+  ) {
     dbStatus = "Connecting to database";
     dbStatusColor = "darkorange";
   } else if (database.connected) {
@@ -55,12 +59,7 @@ function SidebarHeader() {
         </span>
         <span className="user-role">{userData.role ?? "null"}</span>
         <span className="user-status">
-          <i
-            style={{
-              color: dbStatusColor,
-            }}
-            className="fa fa-circle"
-          ></i>
+          <i style={{ color: dbStatusColor }} className="fa fa-circle"></i>
           <span>{dbStatus}</span>
         </span>
       </div>
