@@ -6,8 +6,8 @@ import "./index.css";
 import { Provider } from "react-redux";
 import { BrowserRouter, Route } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
-import NotFound from "./routes/404";
-import App from "./app";
+import NotFound from "./app/pages/components/404";
+import App from "./App";
 import state from "./app/state";
 
 ReactDOM.render(
