@@ -1,5 +1,4 @@
 import { Modal } from "bootstrap";
-import classNames from "classnames";
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Constants from "../../../../../../../state/slices/constants";
@@ -34,7 +33,7 @@ const INIT_BTN_STATE = {
 };
 
 const companyTypes = ["Inc.", "Co.", "Corp.", "LLC", "Ltd."];
-const locationTypes = ["main", "branch"];
+// const locationTypes = ["main", "branch"];
 
 function AddBrandMenu() {
   useInitializeTooltips();
@@ -394,7 +393,7 @@ function AddBrandMenu() {
                   </Container.Col>
                 </Container.Row>
 
-                <Container.Row className="mb-3">
+                <Container.Row>
                   <Container.Col columns="12">
                     <label htmlFor="brandBio" className="form-label">
                       Bio (Optional)
@@ -415,7 +414,7 @@ function AddBrandMenu() {
                   </Container.Col>
                 </Container.Row>
 
-                <Container.Row>
+                {/* <Container.Row>
                   <Container.Col columns="12">
                     <label htmlFor="brandLocation" className="form-label">
                       Locations (Optional)
@@ -525,7 +524,7 @@ function AddBrandMenu() {
                       )
                     )}
                   </Container.Col>
-                </Container.Row>
+                </Container.Row> */}
               </form>
             </ModalMenu.Body>
 
