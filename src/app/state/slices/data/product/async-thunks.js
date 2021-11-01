@@ -4,6 +4,9 @@ import { setStale } from "../../auth";
 import Constants from "../../constants";
 import { notify } from "../../notification";
 
+const successMsg = `Operation success!`;
+const errMsg = `Operation failed!`;
+
 /* Products */
 export const fetchProducts = createAsyncThunk(
   "products/fetch",
@@ -27,7 +30,7 @@ export const fetchProducts = createAsyncThunk(
         dispatch(
           notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
         );
-        throw new Error();
+        throw new Error(response.data.message);
 
       default:
         return response.data;
@@ -39,9 +42,6 @@ export const pushProduct = createAsyncThunk(
   "products/push",
   async (data, { dispatch }) => {
     const response = await HttpService().onDataPush("products", data);
-
-    const successMsg = "Product successfuly saved!";
-    const errMsg = "Product save unsuccessful!";
 
     switch (response.status) {
       case 401:
@@ -60,7 +60,14 @@ export const pushProduct = createAsyncThunk(
         throw new Error(response.data.message);
 
       default:
-        dispatch(notify(Constants.SUCCESS, successMsg));
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
         return response.data;
     }
@@ -71,9 +78,6 @@ export const updateProduct = createAsyncThunk(
   "products/modify",
   async (modifiedData, { dispatch }) => {
     const response = await HttpService().onDataModify("products", modifiedData);
-
-    const successMsg = "Product successfuly updated!";
-    const errMsg = "Product update unsuccessful!";
 
     switch (response.status) {
       case 401:
@@ -96,7 +100,14 @@ export const updateProduct = createAsyncThunk(
         throw new Error(response.data.message);
 
       default:
-        dispatch(notify(Constants.SUCCESS, successMsg));
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
+        dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
         return response.data.product;
     }
@@ -110,9 +121,6 @@ export const removeProducts = createAsyncThunk(
       params: { _id: data },
     });
 
-    const successMsg = "Product successfuly deleted!";
-    const errMsg = "Product delete unsuccessful!";
-
     switch (response.status) {
       case 401:
       case 418:
@@ -133,6 +141,13 @@ export const removeProducts = createAsyncThunk(
         throw new Error();
 
       default:
+        if (!response.data.success) {
+          dispatch(
+            notify(Constants.NotifyService.ERROR, errMsg, response.data.message)
+          );
+          throw new Error(response.data.message);
+        }
+
         dispatch(notify(Constants.SUCCESS, successMsg, response.data.message));
 
         return response.data.deleted;
@@ -150,9 +165,6 @@ export const pushStock = createAsyncThunk(
         _type: newStock._type,
       },
     });
-
-    const successMsg = "Stock successfuly saved!";
-    const errMsg = "Stock save unsuccessful!";
 
     switch (response.status) {
       case 401:
@@ -193,9 +205,6 @@ export const updateStock = createAsyncThunk(
   "products/stock/modify",
   async (modifiedStock, { dispatch }) => {
     const response = await HttpService().onDataModify("stocks", modifiedStock);
-
-    const successMsg = "Stock successfuly updated!";
-    const errMsg = "Stock update unsuccessful!";
 
     switch (response.status) {
       case 401:
@@ -239,9 +248,6 @@ export const removeStock = createAsyncThunk(
       params: { _id },
     });
 
-    const successMsg = "Stock successfuly deleted!";
-    const errMsg = "Stock delete unsuccessful!";
-
     switch (response.status) {
       case 401:
       case 418:
@@ -281,9 +287,6 @@ export const moveStock = createAsyncThunk(
       endpoint: "move",
     });
 
-    const successMsg = `Stock move success!`;
-    const errMsg = `Stock move unsuccessful!`;
-
     switch (response.status) {
       case 401:
       case 403:
@@ -322,9 +325,6 @@ export const stockMarkInventoryChecked = createAsyncThunk(
       params: { _id, mark },
       endpoint: "mark",
     });
-
-    const successMsg = `Stock successfuly ${mark ? "mark" : "unmark"}ed!`;
-    const errMsg = `Stock ${mark ? "mark" : "unmark"} unsuccessful!`;
 
     switch (response.status) {
       case 401:
