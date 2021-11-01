@@ -39,6 +39,7 @@ import { selectAllBrands } from "../../../../../../../state/slices/data/brand";
 import BrandMenu from "./BrandMenu";
 import Container from "../../../../../../common/Container";
 import SpinnerButton from "../../../../../../common/SpinnerButton";
+import { transformProduct } from "../utils";
 
 function AddProductMenu() {
   useInitializeTooltips();
@@ -121,55 +122,9 @@ function AddProductMenu() {
       });
 
       if (productInEdit)
-        dispatch(
-          updateProduct({
-            ...product,
-            unit: product.unit.toLowerCase(),
-            category: product.category.toLowerCase(),
-            _class: product._class.toLowerCase(),
-            description:
-              product.description === "" ? undefined : product.description,
-            images: product.images.map((url) => ({ url })),
-            variants: variants.map((variant) => {
-              variant.prices = variant.prices.map((price) => {
-                delete price.description;
-                return price;
-              });
-
-              variant.description =
-                variant.description === "" ? undefined : product.description;
-
-              return variant;
-            }),
-          })
-        );
+        dispatch(updateProduct(transformProduct({ product, variants })));
       else if (importedCSV) dispatch(pushProduct(importedCSV));
-      else
-        dispatch(
-          pushProduct({
-            ...product,
-            unit: product.unit.toLowerCase(),
-            category: product.category.toLowerCase(),
-            _class: product._class.toLowerCase(),
-            description:
-              product.description === "" ? undefined : product.description,
-            images:
-              product.images.length === 0
-                ? undefined
-                : product.images.map((url) => ({ url })),
-            variants: variants.map((variant) => {
-              variant.prices = variant.prices.map((price) => {
-                delete price.description;
-                return price;
-              });
-
-              variant.description =
-                variant.description === "" ? undefined : product.description;
-
-              return variant;
-            }),
-          })
-        );
+      else dispatch(pushProduct(transformProduct({ product, variants })));
 
       productForm.classList.remove("was-validated");
     } else {
@@ -306,9 +261,9 @@ function AddProductMenu() {
         submitBtn: true,
         resetBtn: false,
         inputs: false,
-        inputCode: true,
+        inputCode: productInEdit ? true : false,
       });
-  }, [dispatch, saveStatus, modifyStatus]);
+  }, [dispatch, saveStatus, modifyStatus, productInEdit]);
 
   // Listen for modal events
   useEffect(() => {
