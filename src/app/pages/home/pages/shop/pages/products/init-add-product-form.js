@@ -11,7 +11,7 @@ export const INIT_FORM_VAL = {
   brand: "",
   _class: "",
   category: "",
-  unit: "single",
+  unit: "",
   description: "",
   images: [],
 };

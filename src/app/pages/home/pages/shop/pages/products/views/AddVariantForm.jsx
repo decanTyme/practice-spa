@@ -114,7 +114,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     value={name}
                     onChange={handleChange(variantIndex)}
                     disabled={disable.inputs}
-                    pattern="[a-zA-Z]+"
+                    pattern="[a-zA-Z0-9 ]+"
                     required
                   />
                   <div className="invalid-feedback">Invalid variant name.</div>
@@ -127,7 +127,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                       className="fas fa-question-circle text-muted"
                       data-bs-toggle="tooltip"
                       data-bs-placement="right"
-                      title="The volume or net weight of the variant"
+                      title="The volume, net weight, or quantity of the variant"
                       onClick={(e) => e.preventDefault()}
                     />
                   </label>

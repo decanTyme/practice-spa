@@ -344,24 +344,39 @@ function AddProductMenu() {
                     )}
 
                     <Container.Row>
-                      <Container.Col className="mb-3">
-                        <label htmlFor="productName" className="form-label">
-                          Name
+                      <Container.Col modifier="sm" columns="7" className="mb-3">
+                        <label htmlFor="productBrand" className="form-label">
+                          Brand
                         </label>
-                        <input
-                          id="productName"
-                          type="text"
-                          name="name"
-                          className="form-control"
-                          placeholder="Facial Cream"
-                          value={product.name}
+                        <a
+                          href="#addBrandMenu"
+                          role="button"
+                          data-bs-target="#brandMenu"
+                          data-bs-toggle="modal"
+                          className="text-decoration-none float-end fw-light"
+                          style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
+                          onClick={() => toggleBrandMenu(true)}
+                        >
+                          Edit brands
+                        </a>
+                        <select
+                          id="productBrand"
+                          name="brand"
+                          className="form-select"
+                          value={product.brand}
                           onChange={handleChange}
                           disabled={disable.inputs}
                           required
-                          pattern="[a-zA-Z0-9- ]+"
-                        />
+                        >
+                          <option value="">Select Brand</option>
+                          {brands.map((brand) => (
+                            <option key={brand._id} value={brand._id}>
+                              {brand.name}
+                            </option>
+                          ))}
+                        </select>
                         <div className="invalid-feedback">
-                          Invalid product name.
+                          Please select a valid brand.
                         </div>
                         <div className="valid-feedback">Looks good!</div>
                       </Container.Col>
@@ -405,39 +420,24 @@ function AddProductMenu() {
                     </Container.Row>
 
                     <Container.Row>
-                      <Container.Col modifier="sm" columns="6" className="mb-3">
-                        <label htmlFor="productBrand" className="form-label">
-                          Brand
+                      <Container.Col className="mb-3">
+                        <label htmlFor="productName" className="form-label">
+                          Name
                         </label>
-                        <a
-                          href="#addBrandMenu"
-                          role="button"
-                          data-bs-target="#brandMenu"
-                          data-bs-toggle="modal"
-                          className="text-decoration-none float-end fw-light"
-                          style={{ fontSize: "0.8rem", marginTop: "0.075rem" }}
-                          onClick={() => toggleBrandMenu(true)}
-                        >
-                          Edit brands
-                        </a>
-                        <select
-                          id="productBrand"
-                          name="brand"
-                          className="form-select"
-                          value={product.brand}
+                        <input
+                          id="productName"
+                          type="text"
+                          name="name"
+                          className="form-control"
+                          placeholder="Facial Cream"
+                          value={product.name}
                           onChange={handleChange}
                           disabled={disable.inputs}
                           required
-                        >
-                          <option value="">Select Brand</option>
-                          {brands.map((brand) => (
-                            <option key={brand._id} value={brand._id}>
-                              {brand.name}
-                            </option>
-                          ))}
-                        </select>
+                          pattern="[a-zA-Z0-9- ]+"
+                        />
                         <div className="invalid-feedback">
-                          Please select a valid brand.
+                          Invalid product name.
                         </div>
                         <div className="valid-feedback">Looks good!</div>
                       </Container.Col>
