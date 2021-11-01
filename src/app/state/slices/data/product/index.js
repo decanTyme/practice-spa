@@ -3,14 +3,14 @@ import Constants from "../../constants";
 import { dynamicSort } from "../sort";
 import {
   fetchProducts,
+  moveStock,
   pushProduct,
   pushStock,
   removeProducts,
-  updateProduct,
-  stockMarkInventoryChecked,
-  moveStock,
-  updateStock,
   removeStock,
+  stockMarkInventoryChecked,
+  updateProduct,
+  updateStock,
 } from "./async-thunks";
 
 const slice = createSlice({
@@ -84,7 +84,7 @@ const slice = createSlice({
       state.importedCSV = action.payload;
     },
 
-    abortCSVImport: (state, action) => {
+    abortCSVImport: (state) => {
       state.importedCSV = null;
     },
 
@@ -359,16 +359,15 @@ const slice = createSlice({
       .addCase(removeProducts.pending, (state) => {
         state.status.delete = Constants.LOADING;
       })
-      .addCase(removeProducts.fulfilled, (state, action) => {
+      .addCase(removeProducts.fulfilled, (state, { payload }) => {
         state.status.delete = Constants.SUCCESS;
 
         // Batch delete
-        if (Array.isArray(action.payload))
-          action.payload.forEach(({ _id: itemId }) => {
+        if (Array.isArray(payload))
+          payload.forEach(({ _id: itemId }) => {
             state.data = state.data.filter(({ _id }) => _id !== itemId);
           });
-        else
-          state.data = state.data.filter(({ _id }) => _id !== action.payload);
+        else state.data = state.data.filter(({ _id }) => _id !== payload._id);
 
         // After removing the aprroved deleted data, always re-sort
         state.data.sort(dynamicSort("name"));
