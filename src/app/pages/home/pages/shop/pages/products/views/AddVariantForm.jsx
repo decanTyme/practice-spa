@@ -1,8 +1,11 @@
+import { useState } from "react";
 import classNames from "classnames";
 import { isMobile } from "react-device-detect";
 import { getInitVariantVal } from "../init-add-product-form";
 
 function AddVariantForm({ disable, setDisable, variants, setVariants }) {
+  const [activeTab, setActiveTab] = useState(0);
+
   const handleChange = (variantIndex, priceIndex) => (e) => {
     setDisable({
       ...disable,
@@ -51,7 +54,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
           >
             <button
               className={classNames("nav-link text-black", {
-                active: variantIndex === 0,
+                active: variantIndex === activeTab,
               })}
               id="pills-home-tab"
               data-bs-toggle="tab"
@@ -59,9 +62,10 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
               type="button"
               role="tab"
               aria-controls={__id}
-              aria-selected={variantIndex === 0}
+              aria-selected={variantIndex === activeTab}
+              onClick={() => setActiveTab(variantIndex)}
             >
-              {name || "Variant " + (variantIndex + 1)}
+              {name || `Variant ${variantIndex + 1}`}
             </button>
           </li>
         ))}
@@ -75,6 +79,7 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
             onClick={(e) => {
               e.preventDefault();
               setVariants([...variants, getInitVariantVal()]);
+              setActiveTab(variants.length);
             }}
             disabled={disable.inputs}
           >
@@ -92,8 +97,8 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
             <div
               key={variantId}
               className={classNames("tab-pane fade", {
-                active: variantIndex === 0,
-                show: variantIndex === 0,
+                active: variantIndex === activeTab,
+                show: variantIndex === activeTab,
               })}
               id={variantId}
               role="tabpanel"
@@ -110,7 +115,6 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     name="vname"
                     className="form-control"
                     placeholder="Classic"
-                    data-id={variantId}
                     value={name}
                     onChange={handleChange(variantIndex)}
                     disabled={disable.inputs}
@@ -242,6 +246,13 @@ function AddVariantForm({ disable, setDisable, variants, setVariants }) {
                     );
 
                     setDisable((disable) => ({ ...disable, submitBtn: false }));
+
+                    setActiveTab((prevActiveTab) => {
+                      if (prevActiveTab === variants.length - 1)
+                        return prevActiveTab - 1;
+
+                      return prevActiveTab;
+                    });
                   }}
                   disabled={variants.length <= 1}
                 >
