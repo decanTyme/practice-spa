@@ -3,12 +3,12 @@ import useAuthManagerRouter from "../../../../services/router-auth";
 import Spinner from "../../common/Spinner";
 
 function ProtectedRoute({ children, ...rest }) {
-  const stale = useAuthManagerRouter();
+  const { stale, rememberUser } = useAuthManagerRouter();
 
-  if (stale)
+  if (stale && !rememberUser)
     return (
       <Spinner type="grow" color="text-secondary">
-        Refreshing some infromation...
+        Authenticating...
       </Spinner>
     );
 

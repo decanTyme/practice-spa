@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { requestAuthToken, setAuthError } from "../app/state/slices/auth";
 import { selectAuthCurrentState } from "../app/state/slices/auth/selectors";
 import Constants from "../app/state/slices/constants";
+import { notify } from "../app/state/slices/notification";
 import useRouter from "./hooks/use-router";
 
 const encodeURL = (str) => window.btoa(unescape(encodeURIComponent(str)));
@@ -22,7 +23,7 @@ function useAuthManagerRouter() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { isLoggedIn, status, stale, error } = useSelector(
+  const { isLoggedIn, status, stale, rememberUser, error } = useSelector(
     selectAuthCurrentState
   );
 
@@ -43,7 +44,20 @@ function useAuthManagerRouter() {
 
       // Should only request a new auth token if the current auth token
       // is stale and Auth Manager state is on standby
-      if (stale && status === Constants.IDLE) dispatch(requestAuthToken());
+      if (stale && status === Constants.IDLE) {
+        // Only notify when `rememberUser` is `true` since
+        // the without it the user will be immediately
+        // sent back to the login page anyways
+        rememberUser &&
+          dispatch(
+            notify(
+              Constants.NotifyService.ERROR,
+              "Just a moment! Refreshing some infromation..."
+            )
+          );
+
+        dispatch(requestAuthToken());
+      }
 
       return;
     }
@@ -76,9 +90,18 @@ function useAuthManagerRouter() {
 
       return router.replace("/login" + nextCallback);
     }
-  }, [dispatch, error, isLoggedIn, isOnProtectedRoute, router, stale, status]);
+  }, [
+    dispatch,
+    error,
+    isLoggedIn,
+    isOnProtectedRoute,
+    rememberUser,
+    router,
+    stale,
+    status,
+  ]);
 
-  return stale;
+  return { stale, rememberUser };
 }
 
 export default useAuthManagerRouter;
