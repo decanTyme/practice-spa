@@ -1,15 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import HttpService from "../../../../services/http";
 import Constants from "../constants";
-import { selectAuthRefToken, selectAuthUserId } from "./selectors";
+import { resetAllCachedBrandData } from "../data/brand";
+import { resetAllCachedCourierData } from "../data/courier";
 import { resetAllCachedCustomerData } from "../data/customer";
 import { resetAllCachedProductData } from "../data/product";
 import { clearAllNotifications, notify } from "../notification";
+import { selectAuthRememberUser, selectAuthUserId } from "./selectors";
 
 const http = HttpService();
 
 const hardReset = (dispatch) => {
   dispatch(resetAllCachedProductData());
+  dispatch(resetAllCachedBrandData());
+  dispatch(resetAllCachedCourierData());
   dispatch(resetAllCachedCustomerData());
   dispatch(clearAllNotifications());
 };
@@ -29,9 +33,8 @@ export const signOut = createAsyncThunk(
   "AuthManager/signout",
   async (_, { dispatch, getState }) => {
     const userId = selectAuthUserId(getState());
-    const refToken = selectAuthRefToken(getState());
 
-    await http.onAuthSignoffRequest(userId, refToken);
+    await http.onAuthSignoffRequest(userId);
 
     hardReset(dispatch);
   }
@@ -51,19 +54,19 @@ export const getDatabaseStatus = createAsyncThunk(
 export const requestAuthToken = createAsyncThunk(
   "AuthManager/requestToken",
   async (_, { dispatch, getState }) => {
-    const refToken = selectAuthRefToken(getState());
+    const rememeberUser = selectAuthRememberUser(getState());
     const userId = selectAuthUserId(getState());
 
     const successMsg = "Successfully refreshed. You may resume operations.";
 
-    const response = await http.onReAuthRequest(userId, refToken);
+    const response = await http.onReAuthRequest(userId);
 
     if (!response.data.auth) {
       hardReset(dispatch);
       throw new Error(response.data.message);
     }
 
-    refToken && dispatch(notify(Constants.SUCCESS, successMsg));
+    rememeberUser && dispatch(notify(Constants.SUCCESS, successMsg));
 
     return response.data;
   }
@@ -75,7 +78,6 @@ const slice = createSlice({
     isLoggedIn: false,
     rememberUser: false,
     userId: null,
-    t_key: null,
     access: null,
     userData: { firstname: null, lastname: null, role: null },
     stale: false,
@@ -90,7 +92,6 @@ const slice = createSlice({
       state.isLoggedIn = false;
       state.rememberUser = false;
       state.userId = null;
-      state.t_key = null;
       state.userData = { firstname: null, lastname: null, role: null };
       state.stale = false;
       state.database = { connected: false, status: Constants.IDLE };
@@ -115,14 +116,14 @@ const slice = createSlice({
   extraReducers: (builder) => {
     /* Signin */
     builder
-      .addCase(signIn.pending, (state, action) => {
+      .addCase(signIn.pending, (state) => {
         state.status = Constants.AuthManager.Sign.SIGNING_IN;
         state.error = null;
 
         state.database = { connected: false, status: Constants.IDLE };
       })
       .addCase(signIn.fulfilled, (state, action) => {
-        const { userId, refToken, adminAccess, userData } = action.payload;
+        const { userId, persist, adminAccess, userData } = action.payload;
 
         state.status = Constants.IDLE;
 
@@ -130,11 +131,7 @@ const slice = createSlice({
         state.isLoggedIn = true;
         state.userId = userId;
         state.access = adminAccess;
-
-        if (refToken) {
-          state.t_key = refToken;
-          state.rememberUser = true;
-        }
+        state.rememberUser = persist;
 
         /* User Information */
         const { firstname, lastname, role } = userData;
@@ -163,7 +160,6 @@ const slice = createSlice({
         state.status = Constants.AuthManager.Sign.SIGNED_OFF;
 
         state.userId = null;
-        state.t_key = null;
       });
 
     /* Database */
@@ -203,7 +199,6 @@ const slice = createSlice({
         state.isLoggedIn = false;
         state.rememberUser = false;
         state.userId = null;
-        state.t_key = null;
         state.userData = { firstname: null, lastname: null, role: null };
         state.stale = false;
         state.database = { connected: false, status: Constants.IDLE };
