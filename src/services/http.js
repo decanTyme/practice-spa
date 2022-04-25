@@ -8,7 +8,7 @@ import axios from "axios";
 function HttpService() {
   /* Axios instance */
   const instance = axios.create({
-    baseURL: "https://polar-wave-26304.herokuapp.com/api",
+    baseURL: process.env.API_URL,
     headers: {
       "Content-Type": "application/json; charset=UTF-8",
     },
